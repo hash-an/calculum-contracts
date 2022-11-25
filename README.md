@@ -1,46 +1,88 @@
-# Advanced Sample Hardhat Project
+# Calculum Vault
 
-This project demonstrates an advanced Hardhat use case, integrating other tools commonly used alongside Hardhat in the ecosystem.
+Calculum v1 is the first version our Vault, based on ERC4626, with several improvenment and adaptation
 
-The project comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts. It also comes with a variety of other tools, preconfigured to work with the project code.
+v1 changes include:
 
-Try running some of the following tasks:
+- Full compliance with ERC-4626
+- Some improven of security
+- Gas Cost improvenment
+- Integration with Trader Bot, API in the Unit-Test
 
-```shell
-npx hardhat accounts
-npx hardhat compile
-npx hardhat clean
-npx hardhat test
-npx hardhat node
-npx hardhat help
-REPORT_GAS=true npx hardhat test
-npx hardhat coverage
-npx hardhat run scripts/deploy.ts
-TS_NODE_FILES=true npx ts-node scripts/deploy.ts
-npx eslint '**/*.{js,ts}'
-npx eslint '**/*.{js,ts}' --fix
-npx prettier '**/*.{json,sol,md}' --check
-npx prettier '**/*.{json,sol,md}' --write
-npx solhint 'contracts/**/*.sol'
-npx solhint 'contracts/**/*.sol' --fix
+v2 changes include:
+
+- "Fair module", where the performance fee only apply if the user have a positive balance in your invesment
+
+## Getting Started
+
+First, install the dependencies with yarn:
+
+```bash
+yarn install
 ```
 
-# Etherscan verification
+Next, we need to populate the .env file with these values.\
+Copy the .env.example -> .env and fill out the value.\
+Reach out to the team if you need help on these variables. The `TEST_URI` needs to be an archive node.
 
-To try out Etherscan verification, you first need to deploy a contract to an Ethereum network that's supported by Etherscan, such as Ropsten.
-
-In this project, copy the .env.example file to a file named .env, and then edit it to fill in the details. Enter your Etherscan API key, your Ropsten node URL (eg from Alchemy), and the private key of the account which will send the deployment transaction. With a valid .env file in place, first deploy your contract:
-
-```shell
-hardhat run --network ropsten scripts/deploy.ts
+```bash
+MNEMONIC=
+INFURAKEY=
+PRIVATE_KEY=
+DEPLOYER_ADDRESS=
+COINMARKETCAP_API_KEY=
+BSCSCAN_API_KEY=
+ETHERSCAN_API_KEY=
+POLYGON_API_KEY=
+ALCHEMY_KEY=
+URL_BSC=https://bsc-dataseed1.binance.org
+URL_TESTNET_BSC=https://data-seed-prebsc-1-s1.binance.org:8545
+URL_MOONBEAM_TESTNET=https://rpc.testnet.moonbeam.network
+HTTP_HOST_TESTNET = https://api.stage.dydx.exchange
+WS_HOST_TESTNET = wss://api.stage.dydx.exchange/v3/ws
+ACCOUNTS=
 ```
 
-Then, copy the deployment address and paste it in to replace `DEPLOYED_CONTRACT_ADDRESS` in this command:
+Can run the Build of contracts
 
-```shell
-npx hardhat verify --network ropsten DEPLOYED_CONTRACT_ADDRESS "Hello, Hardhat!"
+```bash
+# Run all the tests
+yarn build
 ```
 
-# Performance optimizations
+Finally, we can run the tests:
 
-For faster runs of your tests and scripts, consider skipping ts-node's type checking by setting the environment variable `TS_NODE_TRANSPILE_ONLY` to `1` in hardhat's environment. For more details see [the documentation](https://hardhat.org/guides/typescript.html#performance-optimizations).
+```bash
+# Run all the tests
+yarn test
+```
+
+## Deployment
+
+Calculum Vault V1 uses [hardhat-deploy](https://github.com/wighawag/hardhat-deploy) to manage contract deployments to the blockchain.
+
+To deploy all the contractsin the Testnet for Short Support of ethereum forum to Sepolia, do
+
+```
+yarn deploy:sepolia
+```
+
+To deploy all the contracts in the Testnet for long Support of ethereum forum to Goerli, do
+
+```
+yarn deploy:testnet
+```
+
+## Testing
+
+Will run all tests on Ethereum fork-mainnet based on Alchemy RPC
+
+```
+yarn test
+```
+
+Runs local Own Ethereum Node (Hardhat Local Node)
+
+```
+yarn test-local
+```
