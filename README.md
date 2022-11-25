@@ -1,17 +1,17 @@
 # Calculum Vault
 
-Calculum v1 is the first version our Vault, based on ERC4626, with several improvenment and adaptation
+Calculum v1 is the first version our Vault, based on ERC4626, with several improvement and adaptation
 
 v1 changes include:
 
 - Full compliance with ERC-4626
 - Some improven of security
-- Gas Cost improvenment
+- Gas Cost improvement
 - Integration with Trader Bot, API in the Unit-Test
 
 v2 changes include:
 
-- "Fair module", where the performance fee only apply if the user have a positive balance in your invesment
+- "Fair module", where the performance fee only apply if the user have a positive balance in your investment
 
 ## Getting Started
 
@@ -61,7 +61,7 @@ yarn test
 
 Calculum Vault V1 uses [hardhat-deploy](https://github.com/wighawag/hardhat-deploy) to manage contract deployments to the blockchain.
 
-To deploy all the contractsin the Testnet for Short Support of ethereum forum to Sepolia, do
+To deploy all the contracts in the Testnet for Short Support of ethereum forum to Sepolia, do
 
 ```
 yarn deploy:sepolia
