@@ -9,10 +9,6 @@ v1 changes include:
 - Gas Cost improvement
 - Integration with Trader Bot, API in the Unit-Test
 
-v2 changes include:
-
-- "Fair module", where the performance fee only apply if the user have a positive balance in your investment
-
 ## Getting Started
 
 First, install the dependencies with yarn:
