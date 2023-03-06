@@ -7,7 +7,7 @@ import {USDC} from "../../src/USDC.sol";
 import {MockUpOracle} from "../../src/mock/MockUpOracle.sol";
 import {UUPSProxy} from "OZ-Upgradeable-Foundry/src/UpgradeUUPS.sol";
 
-contract BasicValuesTest is Test {
+contract BasicTest is Test {
 
     CalculumVault public implementation;
     CalculumVault public vault;
@@ -35,9 +35,6 @@ contract BasicValuesTest is Test {
         transferBotAddress = makeAddr("transferBot");
         transferBotRoleAddress = makeAddr("transferBotRole");
         treasuryWallet = makeAddr("treasury");
-        // investors[0] = _setUpAccount("investor0");
-        // investors[1] = _setUpAccount("investor1");
-        // investors[2] = _setUpAccount("investor2");
 
         startTime = block.timestamp;
         initialValues[0] = startTime;
@@ -65,6 +62,10 @@ contract BasicValuesTest is Test {
             initialValues
         );
         vm.stopPrank();
+
+        investors[0] = _setUpAccount("investor0");
+        investors[1] = _setUpAccount("investor1");
+        investors[2] = _setUpAccount("investor2");
     }
 
     function testBasicValues() public {
@@ -89,7 +90,7 @@ contract BasicValuesTest is Test {
     function _setUpAccount(string memory accountName) private returns (address account) {
         account = makeAddr(accountName);
         uint256 amount = _usdc(1000_000);
-        hoax(account);
+        hoax(deployer);
         usdc.mint(account, amount);
         hoax(account);
         usdc.approve(address(vault), amount);
