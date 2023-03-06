@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity <0.9.0;
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin-contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
 
 contract MockUpOracle is Ownable {
     IERC20Upgradeable private _asset;

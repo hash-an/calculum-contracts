@@ -4,11 +4,11 @@ pragma solidity ^0.8.13;
 import "./lib/IERC4626.sol";
 import "./lib/Claimable.sol";
 import "./lib/Helpers.sol";
-import "@openzeppelin-contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
-import "@openzeppelin-contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin-contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin-contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
+import "openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/access/AccessControlUpgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
+import "v2-periphery/interfaces/IUniswapV2Router02.sol";
 
 // import "hardhat/console.sol";
 

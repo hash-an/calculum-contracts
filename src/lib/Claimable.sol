@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "@openzeppelin-contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
-import "@openzeppelin-contracts-upgradeable/utils/math/MathUpgradeable.sol";
-import "@openzeppelin-contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import "@openzeppelin-contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
-import "@openzeppelin-contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol";
-import "@openzeppelin-contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/utils/math/SafeMathUpgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/token/ERC1155/IERC1155Upgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 
 // import "./Blacklistable.sol";
 
