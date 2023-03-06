@@ -20,6 +20,3 @@
 	path = lib/OZ-Upgradeable-Foundry
 	url = https://github.com/jordaniza/OZ-Upgradeable-Foundry
 	branch = v1.4.0
-[submodule "lib/foundry-upgrades"]
-	path = lib/foundry-upgrades
-	url = https://github.com/odyslam/foundry-upgrades
