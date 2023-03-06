@@ -15,7 +15,7 @@ contract BasicTest is Test {
     MockUpOracle public oracle;
     IUniswapV2Router02 public router;
     UUPSProxy public proxy;
-    
+
     address public deployer;
     address public traderBotAddress;
     address public transferBotAddress;
@@ -41,7 +41,7 @@ contract BasicTest is Test {
         traderBotAddress = makeAddr("traderBotAddress");
         transferBotAddress = makeAddr("transferBot");
         transferBotRoleAddress = makeAddr("transferBotRole");
-        treasuryWallet = makeAddr("treasury");        
+        treasuryWallet = makeAddr("treasury");
 
         startTime = block.timestamp;
         initialValues[0] = startTime;
@@ -49,7 +49,7 @@ contract BasicTest is Test {
         initialValues[2] = MAX_DEPOSIT_PER_ADDR;
         initialValues[3] = TOKEN_MAX_TOTAL_SUPPLY;
 
-        vm.startPrank(deployer);        
+        vm.startPrank(deployer);
         usdc = new USDC();
         IERC20MetadataUpgradeable iusdc = IERC20MetadataUpgradeable(address(usdc));
         oracle = new MockUpOracle(traderBotAddress, iusdc);
