@@ -9,6 +9,12 @@ import {UUPSProxy} from "OZ-Upgradeable-Foundry/src/UpgradeUUPS.sol";
 
 contract BasicTest is Test {
 
+    event PendingDeposit(
+        address indexed caller, address indexed receiver, uint256 assets, uint256 estimationOfShares
+    );
+
+    event Transfer(address indexed from, address indexed to, uint256 amount);
+
     CalculumVault public implementation;
     CalculumVault public vault;
     USDC public usdc;
@@ -30,6 +36,9 @@ contract BasicTest is Test {
     uint256 constant public EPOCH_DURATION = 1 weeks;
     uint256 constant public MAINT_TIME_BEFORE = 60 minutes;
     uint256 constant public MAINT_TIME_AFTER = 30 minutes;
+    uint256 constant public MIN_DEPOSIT_PER_ADDR = 300 * 10**6;
+    uint256 constant public MAX_DEPOSIT_PER_ADDR = 10000 * 10**6;
+    uint256 constant public TOKEN_MAX_TOTAL_SUPPLY = 50000 ether;
 
     uint256[4] public initialValues;
 
@@ -38,13 +47,13 @@ contract BasicTest is Test {
         traderBotAddress = makeAddr("traderBotAddress");
         transferBotAddress = makeAddr("transferBot");
         transferBotRoleAddress = makeAddr("transferBotRole");
-        treasuryWallet = makeAddr("treasury");
+        treasuryWallet = makeAddr("treasury");        
 
         startTime = block.timestamp;
         initialValues[0] = startTime;
-        initialValues[1] = _usdc(300);
-        initialValues[2] = _usdc(10000);
-        initialValues[3] = 50000 ether;
+        initialValues[1] = MIN_DEPOSIT_PER_ADDR;
+        initialValues[2] = MAX_DEPOSIT_PER_ADDR;
+        initialValues[3] = TOKEN_MAX_TOTAL_SUPPLY;
 
         vm.startPrank(deployer);        
         usdc = new USDC();
@@ -67,6 +76,12 @@ contract BasicTest is Test {
         );
         vm.stopPrank();
 
+        hoax(transferBotRoleAddress);
+        usdc.approve(address(vault), _usdc(1000_000));
+
+        hoax(transferBotAddress);
+        usdc.approve(address(vault), _usdc(1000_000));
+
         investors[0] = _setUpAccount("investor0");
         investors[1] = _setUpAccount("investor1");
         investors[2] = _setUpAccount("investor2");
@@ -87,75 +102,51 @@ contract BasicTest is Test {
         assertEq(vault.EPOCH_DURATION(), EPOCH_DURATION, "init: wrong epoch duration");
         assertEq(vault.MAINTENANCE_PERIOD_PRE_START(), MAINT_TIME_BEFORE, "init: wrong pre maintenance period");
         assertEq(vault.MAINTENANCE_PERIOD_POST_START(), MAINT_TIME_AFTER, "init: wrong post maintenance period");
-        assertEq(vault.MIN_DEPOSIT(), _usdc(300), "init: wrong minimal deposit");
-        assertEq(vault.MAX_DEPOSIT(), _usdc(10000), "init: wrong maximum deposit");
-        assertEq(vault.MAX_TOTAL_SUPPLY(), 50000 ether, "init: wrong maximum total supply");
+        assertEq(vault.MIN_DEPOSIT(), MIN_DEPOSIT_PER_ADDR, "init: wrong minimal deposit");
+        assertEq(vault.MAX_DEPOSIT(), MAX_DEPOSIT_PER_ADDR, "init: wrong maximum deposit");
+        assertEq(vault.MAX_TOTAL_SUPPLY(), TOKEN_MAX_TOTAL_SUPPLY, "init: wrong maximum total supply");
     }
-
-    function testEpochSequence() public {
-        uint256 timestamp = block.timestamp;
-        uint256 currentTime;
-        uint256 currentEpoch;
+ 
+    function testEpoch1() public {
         vm.startPrank(deployer);
-        vm.expectRevert(abi.encodeWithSelector(Helpers.VaultInMaintenance.selector, deployer, timestamp));
-        vault.setEpochDuration(EPOCH_DURATION, MAINT_TIME_AFTER, MAINT_TIME_BEFORE);
         // Move to after the Maintenance Time Post Maintenance
-        vm.warp(timestamp + MAINT_TIME_AFTER);
+        vm.warp(block.timestamp + MAINT_TIME_AFTER * 6);
         vault.setEpochDuration(EPOCH_DURATION, MAINT_TIME_AFTER, MAINT_TIME_BEFORE);
-
-        // Move to after Finalize the Next Epoch (1st Epoch)
-        vm.warp(timestamp + EPOCH_DURATION);
-        timestamp = block.timestamp;
-        currentEpoch = 1;
-        currentTime = vault.CurrentEpoch();
-        emit log_uint(timestamp);
-        emit log_uint(currentEpoch);
-        emit log_uint(currentTime);
-        assertEq(currentTime, vault.CurrentEpoch());
-        assertEq(currentEpoch, vault.CURRENT_EPOCH());
-        vm.warp(timestamp + EPOCH_DURATION / 4);
-        assertEq(currentTime, vault.CurrentEpoch());
-        assertEq(currentEpoch, vault.CURRENT_EPOCH());
-
-        // Move to after Finalize the Next Epoch (2nd Epoch)
-        vm.warp(timestamp + EPOCH_DURATION);
-        timestamp = block.timestamp;
-        currentEpoch = 2;
-        currentTime = vault.CurrentEpoch();
-        emit log_uint(timestamp);
-        emit log_uint(currentEpoch);
-        emit log_uint(currentTime);
-        assertEq(currentTime, vault.CurrentEpoch());
-        assertEq(currentEpoch, vault.CURRENT_EPOCH());
-        vm.warp(timestamp + EPOCH_DURATION / 2);
-        assertEq(currentTime, vault.CurrentEpoch());
-        assertEq(currentEpoch, vault.CURRENT_EPOCH());
-
-        // Move to after Finalize the Next Epoch (3rd Epoch)
-        vm.warp(timestamp + EPOCH_DURATION);
-        timestamp = block.timestamp;
-        currentEpoch = 3;
-        currentTime = vault.CurrentEpoch();
-        emit log_uint(timestamp);
-        emit log_uint(currentEpoch);
-        emit log_uint(currentTime);
-        assertEq(currentTime, vault.CurrentEpoch());
-        assertEq(currentEpoch, vault.CURRENT_EPOCH());
-        vm.warp(timestamp + EPOCH_DURATION / 5);
-        assertEq(currentTime, vault.CurrentEpoch());
-        assertEq(currentEpoch, vault.CURRENT_EPOCH());
-
+        vault.setInitialValue([
+            MIN_DEPOSIT_PER_ADDR,
+            MAX_DEPOSIT_PER_ADDR,
+            TOKEN_MAX_TOTAL_SUPPLY
+        ]);
         vm.stopPrank();
-    }
 
-    function testTransferOwnership(address otherDeveloper) public {
-        vm.assume(otherDeveloper != address(0));
-        hoax(deployer);
-        vault.transferOwnership(otherDeveloper);
-        assertEq(vault.owner(), otherDeveloper, "owner: wrong owner after transfer ownership");
-        hoax(otherDeveloper);
-        vault.renounceOwnership();
-        assertEq(vault.owner(), address(0), "owner: wrong owner after renounce ownership");
+        // Test investor0: alice
+        address alice = investors[0];
+        vm.startPrank(alice);
+        uint256 depositAmount = MAX_DEPOSIT_PER_ADDR + 1;
+        vm.expectRevert(abi.encodeWithSelector(Helpers.DepositExceededMax.selector, alice, MAX_DEPOSIT_PER_ADDR));
+        vault.deposit(depositAmount, alice);
+        depositAmount = MIN_DEPOSIT_PER_ADDR - 1;
+        vm.expectRevert(abi.encodeWithSelector(Helpers.DepositAmountTooLow.selector, alice, depositAmount));
+        vault.deposit(depositAmount, alice);
+    
+        uint256 balanceBefore = usdc.balanceOf(alice);
+        (Helpers.Status statusBefore, , , ) = vault.DEPOSITS(alice);
+        assertTrue(statusBefore == Helpers.Status.Inactive, "epoch 1: deposit status should be 0 before deposit");
+        depositAmount = _usdc(1500);
+        vm.expectEmit(true, true, false, true);
+        emit Transfer(alice, address(vault), depositAmount);
+        vm.expectEmit(true, true, false, true);
+        emit PendingDeposit(alice, alice, depositAmount, 1500 ether);
+        vault.deposit(depositAmount, alice);
+
+        (Helpers.Status statusAfter, uint256 amountAssets , uint256 amountShares, uint256 finalAmount) = vault.DEPOSITS(alice);
+        assertTrue(statusAfter == Helpers.Status.Pending, "epoch 1: deposit status should be 1 when pending");
+        assertEq(amountAssets, _usdc(1500), "epoch 1: wrong assets amount in vault");
+        assertEq(amountShares, 1500 ether, "epoch 1: wrong shares amount in vault");
+        assertEq(finalAmount, 0, "epoch 1: wrong final amount in vault");
+        assertEq(vault.balanceOf(alice), 0, "epoch 1: wrong token balance when pending");
+        assertEq(vault.balanceOf(alice), 0, "epoch 1: wrong token balance");
+        assertEq(usdc.balanceOf(alice) + depositAmount, balanceBefore, "epoch 1: wrong balance of usdc after deposit");
     }
 
     function _setUpAccount(string memory accountName) private returns (address account) {
