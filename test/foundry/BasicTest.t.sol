@@ -94,6 +94,7 @@ contract BasicTest is Test {
 
     function testEpochSequence() public {
         uint256 timestamp = block.timestamp;
+        // uint256 DENOMINATOR = type(uint8).max + 1;
         uint256 currentTime;
         uint256 currentEpoch;
         vm.startPrank(deployer);
@@ -102,37 +103,57 @@ contract BasicTest is Test {
         // Move to after the Maintenance Time Post Maintenance
         vm.warp(timestamp + MAINT_TIME_AFTER);
         vault.setEpochDuration(EPOCH_DURATION, MAINT_TIME_AFTER, MAINT_TIME_BEFORE);
+
         // Move to after Finalize the Next Epoch (1st Epoch)
-        vm.warp(block.timestamp + EPOCH_DURATION);
+        vm.warp(timestamp + EPOCH_DURATION);
+        timestamp = block.timestamp;
         currentEpoch = 1;
         currentTime = vault.CurrentEpoch();
         emit log_uint(currentEpoch);
         emit log_uint(currentTime);
         assertEq(currentTime, vault.CurrentEpoch());
         assertEq(currentEpoch, vault.CURRENT_EPOCH());
+        vm.warp(timestamp + EPOCH_DURATION / 4);
         assertEq(currentTime, vault.CurrentEpoch());
         assertEq(currentEpoch, vault.CURRENT_EPOCH());
-        vm.warp(block.timestamp + EPOCH_DURATION/2);
-        assertEq(currentTime, vault.CurrentEpoch());
-        assertEq(currentEpoch, vault.CURRENT_EPOCH());
+
         // Move to after Finalize the Next Epoch (2nd Epoch)
-        vm.warp(block.timestamp + EPOCH_DURATION);
+        vm.warp(timestamp + EPOCH_DURATION);
+        timestamp = block.timestamp;
         currentEpoch = 2;
         currentTime = vault.CurrentEpoch();
         emit log_uint(currentEpoch);
         emit log_uint(currentTime);
         assertEq(currentTime, vault.CurrentEpoch());
         assertEq(currentEpoch, vault.CURRENT_EPOCH());
+        vm.warp(timestamp + EPOCH_DURATION / 2);
+        assertEq(currentTime, vault.CurrentEpoch());
+        assertEq(currentEpoch, vault.CURRENT_EPOCH());
+
         // Move to after Finalize the Next Epoch (3rd Epoch)
-        vm.warp(block.timestamp + EPOCH_DURATION);
+        vm.warp(timestamp + EPOCH_DURATION);
+        timestamp = block.timestamp;
         currentEpoch = 3;
         currentTime = vault.CurrentEpoch();
         emit log_uint(currentEpoch);
         emit log_uint(currentTime);
         assertEq(currentTime, vault.CurrentEpoch());
         assertEq(currentEpoch, vault.CURRENT_EPOCH());
+        vm.warp(timestamp + EPOCH_DURATION / 5);
+        assertEq(currentTime, vault.CurrentEpoch());
+        assertEq(currentEpoch, vault.CURRENT_EPOCH());
 
         vm.stopPrank();
+    }
+
+    function testTransferOwnership(address otherDeveloper) public {
+        vm.assume(otherDeveloper != address(0));
+        hoax(deployer);
+        vault.transferOwnership(otherDeveloper);
+        assertEq(vault.owner(), otherDeveloper, "owner: wrong owner after transfer ownership");
+        hoax(otherDeveloper);
+        vault.renounceOwnership();
+        assertEq(vault.owner(), address(0), "owner: wrong owner after renounce ownership");
     }
 
     function _setUpAccount(string memory accountName) private returns (address account) {
