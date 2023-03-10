@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import {CalculumVault, IUniswapV2Router02, IERC20MetadataUpgradeable} from "../../src/CalculumVault.sol";
+import {Helpers, CalculumVault, IUniswapV2Router02, IERC20MetadataUpgradeable} from "../../src/CalculumVault.sol";
 import {USDC} from "../../src/USDC.sol";
 import {MockUpOracle} from "../../src/mock/MockUpOracle.sol";
 import {UUPSProxy} from "OZ-Upgradeable-Foundry/src/UpgradeUUPS.sol";
@@ -27,6 +27,10 @@ contract BasicTest is Test {
     string constant public TOKEN_NAME = "CalculumUSDC1";
     string constant public TOKEN_SYMBOL = "calcUSDC1";
     uint8 constant public TOKEN_DECIMALS = 18;
+    uint256 constant public EPOCH_DURATION = 1 weeks;
+    uint256 constant public MAINT_TIME_BEFORE = 60 minutes;
+    uint256 constant public MAINT_TIME_AFTER = 30 minutes;
+
     uint256[4] public initialValues;
 
     function setUp() public {
@@ -80,11 +84,55 @@ contract BasicTest is Test {
         assertEq(vault.MANAGEMENT_FEE_PERCENTAGE(), 0.01 ether, "init: wrong management fee percentage");
         assertEq(vault.PERFORMANCE_FEE_PERCENTAGE(), 0.15 ether, "init: wrong performance fee percentage");
         assertEq(vault.EPOCH_START(), startTime, "init: wrong epoch start time");
-        assertEq(vault.EPOCH_DURATION(), 1 weeks, "init: wrong epoch duration");
-        assertEq(vault.MAINTENANCE_PERIOD_PRE_START(), 60 minutes, "init: wrong pre maintenance period");
+        assertEq(vault.EPOCH_DURATION(), EPOCH_DURATION, "init: wrong epoch duration");
+        assertEq(vault.MAINTENANCE_PERIOD_PRE_START(), MAINT_TIME_BEFORE, "init: wrong pre maintenance period");
+        assertEq(vault.MAINTENANCE_PERIOD_POST_START(), MAINT_TIME_AFTER, "init: wrong post maintenance period");
         assertEq(vault.MIN_DEPOSIT(), _usdc(300), "init: wrong minimal deposit");
         assertEq(vault.MAX_DEPOSIT(), _usdc(10000), "init: wrong maximum deposit");
         assertEq(vault.MAX_TOTAL_SUPPLY(), 50000 ether, "init: wrong maximum total supply");
+    }
+
+    function testEpochSequence() public {
+        uint256 timestamp = block.timestamp;
+        uint256 currentTime;
+        uint256 currentEpoch;
+        vm.startPrank(deployer);
+        vm.expectRevert(abi.encodeWithSelector(Helpers.VaultInMaintenance.selector, deployer, timestamp));
+        vault.setEpochDuration(EPOCH_DURATION, MAINT_TIME_AFTER, MAINT_TIME_BEFORE);
+        // Move to after the Maintenance Time Post Maintenance
+        vm.warp(timestamp + MAINT_TIME_AFTER);
+        vault.setEpochDuration(EPOCH_DURATION, MAINT_TIME_AFTER, MAINT_TIME_BEFORE);
+        // Move to after Finalize the Next Epoch (1st Epoch)
+        vm.warp(block.timestamp + EPOCH_DURATION);
+        currentEpoch = 1;
+        currentTime = vault.CurrentEpoch();
+        emit log_uint(currentEpoch);
+        emit log_uint(currentTime);
+        assertEq(currentTime, vault.CurrentEpoch());
+        assertEq(currentEpoch, vault.CURRENT_EPOCH());
+        assertEq(currentTime, vault.CurrentEpoch());
+        assertEq(currentEpoch, vault.CURRENT_EPOCH());
+        vm.warp(block.timestamp + EPOCH_DURATION/2);
+        assertEq(currentTime, vault.CurrentEpoch());
+        assertEq(currentEpoch, vault.CURRENT_EPOCH());
+        // Move to after Finalize the Next Epoch (2nd Epoch)
+        vm.warp(block.timestamp + EPOCH_DURATION);
+        currentEpoch = 2;
+        currentTime = vault.CurrentEpoch();
+        emit log_uint(currentEpoch);
+        emit log_uint(currentTime);
+        assertEq(currentTime, vault.CurrentEpoch());
+        assertEq(currentEpoch, vault.CURRENT_EPOCH());
+        // Move to after Finalize the Next Epoch (3rd Epoch)
+        vm.warp(block.timestamp + EPOCH_DURATION);
+        currentEpoch = 3;
+        currentTime = vault.CurrentEpoch();
+        emit log_uint(currentEpoch);
+        emit log_uint(currentTime);
+        assertEq(currentTime, vault.CurrentEpoch());
+        assertEq(currentEpoch, vault.CURRENT_EPOCH());
+
+        vm.stopPrank();
     }
 
     function _setUpAccount(string memory accountName) private returns (address account) {
