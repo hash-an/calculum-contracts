@@ -103,7 +103,6 @@ contract BasicTest is Test {
 
     function testEpochSequence() public {
         uint256 timestamp = block.timestamp;
-        // uint256 DENOMINATOR = type(uint8).max + 1;
         uint256 currentTime;
         uint256 currentEpoch;
         vm.startPrank(deployer);

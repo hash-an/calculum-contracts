@@ -15,7 +15,7 @@ contract WorkFlowTest is BasicTest {
     );
 
     event Transfer(address indexed from, address indexed to, uint256 amount);
- 
+
     function testEpoch1() public {
         vm.startPrank(deployer);
         // Move to after the Maintenance Time Post Maintenance
@@ -37,8 +37,8 @@ contract WorkFlowTest is BasicTest {
         depositAmount = MIN_DEPOSIT_PER_ADDR - 1;
         vm.expectRevert(abi.encodeWithSelector(Helpers.DepositAmountTooLow.selector, alice, depositAmount));
         vault.deposit(depositAmount, alice);
-    
-        // before Alice 
+
+        // before Alice
         uint256 balanceBefore = usdc.balanceOf(alice);
         (Helpers.Status statusBefore, , , ) = vault.DEPOSITS(alice);
         assertTrue(statusBefore == Helpers.Status.Inactive, "epoch 0: deposit status should be 0 before deposit");
@@ -66,7 +66,7 @@ contract WorkFlowTest is BasicTest {
         vault.finalizeEpoch();
         vm.warp(block.timestamp + 55 minutes);
         hoax(transferBotRoleAddress);
-        vm.warp(block.timestamp + 1 minutes); 
+        vm.warp(block.timestamp + 1 minutes);
         vault.finalizeEpoch();
 
         (status, amountAssets , amountShares, finalAmount) = vault.DEPOSITS(alice);
