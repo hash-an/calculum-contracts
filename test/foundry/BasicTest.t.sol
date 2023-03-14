@@ -30,6 +30,9 @@ contract BasicTest is Test {
     uint256 constant public EPOCH_DURATION = 1 weeks;
     uint256 constant public MAINT_TIME_BEFORE = 60 minutes;
     uint256 constant public MAINT_TIME_AFTER = 30 minutes;
+    uint256 constant public MIN_DEPOSIT_PER_ADDR = 300 * 10**6;
+    uint256 constant public MAX_DEPOSIT_PER_ADDR = 10000 * 10**6;
+    uint256 constant public TOKEN_MAX_TOTAL_SUPPLY = 50000 ether;
 
     uint256[4] public initialValues;
 
@@ -38,13 +41,13 @@ contract BasicTest is Test {
         traderBotAddress = makeAddr("traderBotAddress");
         transferBotAddress = makeAddr("transferBot");
         transferBotRoleAddress = makeAddr("transferBotRole");
-        treasuryWallet = makeAddr("treasury");
+        treasuryWallet = makeAddr("treasury");        
 
         startTime = block.timestamp;
         initialValues[0] = startTime;
-        initialValues[1] = _usdc(300);
-        initialValues[2] = _usdc(10000);
-        initialValues[3] = 50000 ether;
+        initialValues[1] = MIN_DEPOSIT_PER_ADDR;
+        initialValues[2] = MAX_DEPOSIT_PER_ADDR;
+        initialValues[3] = TOKEN_MAX_TOTAL_SUPPLY;
 
         vm.startPrank(deployer);        
         usdc = new USDC();
@@ -67,6 +70,12 @@ contract BasicTest is Test {
         );
         vm.stopPrank();
 
+        hoax(transferBotRoleAddress);
+        usdc.approve(address(vault), _usdc(1000_000));
+
+        hoax(transferBotAddress);
+        usdc.approve(address(vault), _usdc(1000_000));
+
         investors[0] = _setUpAccount("investor0");
         investors[1] = _setUpAccount("investor1");
         investors[2] = _setUpAccount("investor2");
@@ -87,9 +96,9 @@ contract BasicTest is Test {
         assertEq(vault.EPOCH_DURATION(), EPOCH_DURATION, "init: wrong epoch duration");
         assertEq(vault.MAINTENANCE_PERIOD_PRE_START(), MAINT_TIME_BEFORE, "init: wrong pre maintenance period");
         assertEq(vault.MAINTENANCE_PERIOD_POST_START(), MAINT_TIME_AFTER, "init: wrong post maintenance period");
-        assertEq(vault.MIN_DEPOSIT(), _usdc(300), "init: wrong minimal deposit");
-        assertEq(vault.MAX_DEPOSIT(), _usdc(10000), "init: wrong maximum deposit");
-        assertEq(vault.MAX_TOTAL_SUPPLY(), 50000 ether, "init: wrong maximum total supply");
+        assertEq(vault.MIN_DEPOSIT(), MIN_DEPOSIT_PER_ADDR, "init: wrong minimal deposit");
+        assertEq(vault.MAX_DEPOSIT(), MAX_DEPOSIT_PER_ADDR, "init: wrong maximum deposit");
+        assertEq(vault.MAX_TOTAL_SUPPLY(), TOKEN_MAX_TOTAL_SUPPLY, "init: wrong maximum total supply");
     }
 
     function testEpochSequence() public {
@@ -158,7 +167,7 @@ contract BasicTest is Test {
         assertEq(vault.owner(), address(0), "owner: wrong owner after renounce ownership");
     }
 
-    function _setUpAccount(string memory accountName) private returns (address account) {
+    function _setUpAccount(string memory accountName) internal returns (address account) {
         account = makeAddr(accountName);
         uint256 amount = _usdc(1000_000);
         hoax(deployer);
@@ -167,7 +176,7 @@ contract BasicTest is Test {
         usdc.approve(address(vault), amount);
     }
 
-    function _usdc(uint256 amount) private pure returns (uint256) {
+    function _usdc(uint256 amount) internal pure returns (uint256) {
         return amount * 10**6;
     }
 }
