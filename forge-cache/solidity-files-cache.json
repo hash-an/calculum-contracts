@@ -3,7 +3,7 @@
   "paths": {
     "artifacts": "out",
     "build_infos": "out/build-info",
-    "sources": "contracts",
+    "sources": "src",
     "tests": "test/foundry",
     "scripts": "script",
     "libraries": [
@@ -12,10 +12,10 @@
     ]
   },
   "files": {
-    "contracts/CalculumVault.sol": {
-      "lastModificationDate": 1676961216638,
-      "contentHash": "92554bbf9e262f0261196c1bbc0f39c3",
-      "sourceName": "contracts/CalculumVault.sol",
+    "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol": {
+      "lastModificationDate": 1678096015288,
+      "contentHash": "2858d98e74e67987ec81b39605230b74",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol",
       "solcConfig": {
         "settings": {
           "optimizer": {
@@ -41,281 +41,22 @@
             }
           },
           "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "contracts/lib/Claimable.sol",
-        "contracts/lib/Helpers.sol",
-        "contracts/lib/IERC4626.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/access/IAccessControlUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.13",
-      "artifacts": {
-        "CalculumVault": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "CalculumVault.sol/CalculumVault.json"
-        },
-        "Oracle": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "CalculumVault.sol/Oracle.json"
-        }
-      }
-    },
-    "contracts/USDC.sol": {
-      "lastModificationDate": 1677049905384,
-      "contentHash": "22391991633fe4b3cddb0dd5068282f4",
-      "sourceName": "contracts/USDC.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        "node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol",
-        "node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
-        "node_modules/@openzeppelin/contracts/utils/Context.sol"
-      ],
-      "versionRequirement": "<0.9.0",
-      "artifacts": {
-        "USDC": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "USDC.sol/USDC.json"
-        }
-      }
-    },
-    "contracts/lib/Blacklistable.sol": {
-      "lastModificationDate": 1676961216638,
-      "contentHash": "c655914995e53e3b2a4e5f6147c8475b",
-      "sourceName": "contracts/lib/Blacklistable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.13",
-      "artifacts": {
-        "Blacklistable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "Blacklistable.sol/Blacklistable.json"
-        }
-      }
-    },
-    "contracts/lib/Claimable.sol": {
-      "lastModificationDate": 1676961216638,
-      "contentHash": "084968396f29d08c1d5d602b26bf4488",
-      "sourceName": "contracts/lib/Claimable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.13",
-      "artifacts": {
-        "Claimable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "Claimable.sol/Claimable.json"
-        }
-      }
-    },
-    "contracts/lib/ERC4626.sol": {
-      "lastModificationDate": 1676961216638,
-      "contentHash": "270f0d73e5ebcc23c9a55dd261bbe55f",
-      "sourceName": "contracts/lib/ERC4626.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "contracts/lib/IERC4626.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.13",
-      "artifacts": {
-        "ERC4626": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "ERC4626.sol/ERC4626.json"
-        }
-      }
-    },
-    "contracts/lib/Helpers.sol": {
-      "lastModificationDate": 1676961216638,
-      "contentHash": "67e0af731fde3600445922a0fbd72531",
-      "sourceName": "contracts/lib/Helpers.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
       "imports": [],
-      "versionRequirement": "^0.8.13",
+      "versionRequirement": "^0.8.0",
       "artifacts": {
-        "Helpers": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "Helpers.sol/Helpers.json"
+        "IERC1822Proxiable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "draft-IERC1822.sol/IERC1822Proxiable.json"
         }
       }
     },
-    "contracts/lib/IERC4626.sol": {
-      "lastModificationDate": 1676961216638,
-      "contentHash": "6f812095e4339bd2b4ca98e3fce4800a",
-      "sourceName": "contracts/lib/IERC4626.sol",
+    "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Proxy.sol": {
+      "lastModificationDate": 1678096015297,
+      "contentHash": "3fc3c7c0a2956f36e766691bb9473b06",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Proxy.sol",
       "solcConfig": {
         "settings": {
           "optimizer": {
@@ -341,24 +82,29 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
       "imports": [
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol"
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol"
       ],
-      "versionRequirement": "^0.8.13",
+      "versionRequirement": "^0.8.0",
       "artifacts": {
-        "IERC4626": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "IERC4626.sol/IERC4626.json"
+        "ERC1967Proxy": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "ERC1967Proxy.sol/ERC1967Proxy.json"
         }
       }
     },
-    "contracts/mock/MockUpOracle.sol": {
-      "lastModificationDate": 1676961216638,
-      "contentHash": "ecb88a3905cf46131eb33316621b4ed4",
-      "sourceName": "contracts/mock/MockUpOracle.sol",
+    "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol": {
+      "lastModificationDate": 1678096015297,
+      "contentHash": "6baa887a798e95b14f34e093f117e9b2",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
       "solcConfig": {
         "settings": {
           "optimizer": {
@@ -384,18 +130,685 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
       "imports": [
-        "node_modules/@openzeppelin/contracts/access/Ownable.sol",
-        "node_modules/@openzeppelin/contracts/utils/Context.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol"
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol"
       ],
-      "versionRequirement": "<0.9.0",
+      "versionRequirement": "^0.8.2",
       "artifacts": {
-        "MockUpOracle": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "MockUpOracle.sol/MockUpOracle.json"
+        "ERC1967Upgrade": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "ERC1967Upgrade.sol/ERC1967Upgrade.json"
+        }
+      }
+    },
+    "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/Proxy.sol": {
+      "lastModificationDate": 1678096015297,
+      "contentHash": "40b3d81a836d50ff47e03893dcaaf204",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "Proxy": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "Proxy.sol/Proxy.json"
+        }
+      }
+    },
+    "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol": {
+      "lastModificationDate": 1678096015297,
+      "contentHash": "b6bd23bf19e90b771337037706470933",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "IBeacon": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "IBeacon.sol/IBeacon.json"
+        }
+      }
+    },
+    "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/utils/Address.sol": {
+      "lastModificationDate": 1678096015304,
+      "contentHash": "02560bbb9e081911e486286da3fa761f",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/utils/Address.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.1",
+      "artifacts": {
+        "Address": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "Address.sol/Address.json"
+        }
+      }
+    },
+    "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol": {
+      "lastModificationDate": 1678096015305,
+      "contentHash": "f993f8f50186952a59ee5e3a30b68222",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "StorageSlot": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "StorageSlot.sol/StorageSlot.json"
+        }
+      }
+    },
+    "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol": {
+      "lastModificationDate": 1678096015407,
+      "contentHash": "403ce8273abde646bff81558ddf512ad",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "OwnableUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "access/OwnableUpgradeable.sol/OwnableUpgradeable.json"
+        }
+      }
+    },
+    "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/interfaces/draft-IERC1822Upgradeable.sol": {
+      "lastModificationDate": 1678096015412,
+      "contentHash": "a6883cfd85607b16c121a02728369eb3",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/interfaces/draft-IERC1822Upgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "IERC1822ProxiableUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "draft-IERC1822Upgradeable.sol/IERC1822ProxiableUpgradeable.json"
+        }
+      }
+    },
+    "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol": {
+      "lastModificationDate": 1678096015422,
+      "contentHash": "d1ceeaa35b60471b1c6e50d29d70354a",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/interfaces/draft-IERC1822Upgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.2",
+      "artifacts": {
+        "ERC1967UpgradeUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "ERC1967UpgradeUpgradeable.sol/ERC1967UpgradeUpgradeable.json"
+        }
+      }
+    },
+    "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol": {
+      "lastModificationDate": 1678096015422,
+      "contentHash": "21bffd733b4ca013e125a0ffe2e52254",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "IBeaconUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "IBeaconUpgradeable.sol/IBeaconUpgradeable.json"
+        }
+      }
+    },
+    "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol": {
+      "lastModificationDate": 1678096015422,
+      "contentHash": "b98e2f3a856e6e7f2106fb919bacab9e",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.2",
+      "artifacts": {
+        "Initializable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "utils/Initializable.sol/Initializable.json"
+        }
+      }
+    },
+    "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol": {
+      "lastModificationDate": 1678096015422,
+      "contentHash": "eb2268e7f08e65339fdf577dad98c925",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/interfaces/draft-IERC1822Upgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "UUPSUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "UUPSUpgradeable.sol/UUPSUpgradeable.json"
+        }
+      }
+    },
+    "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol": {
+      "lastModificationDate": 1678096015423,
+      "contentHash": "cbe53d6b803c1102081e00b3a0418ea3",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "PausableUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "security/PausableUpgradeable.sol/PausableUpgradeable.json"
+        }
+      }
+    },
+    "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol": {
+      "lastModificationDate": 1678096015428,
+      "contentHash": "ca7c97e716d9caa787e6b63cb28b61d3",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.1",
+      "artifacts": {
+        "AddressUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "utils/AddressUpgradeable.sol/AddressUpgradeable.json"
+        }
+      }
+    },
+    "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol": {
+      "lastModificationDate": 1678096015429,
+      "contentHash": "6200b84950eb05b4a92a39fd1d6e0f9b",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "ContextUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "utils/ContextUpgradeable.sol/ContextUpgradeable.json"
+        }
+      }
+    },
+    "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol": {
+      "lastModificationDate": 1678096015429,
+      "contentHash": "731fafe5fdaca6e0749253ab7ce7d3b9",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "StorageSlotUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "StorageSlotUpgradeable.sol/StorageSlotUpgradeable.json"
+        }
+      }
+    },
+    "lib/OZ-Upgradeable-Foundry/src/UpgradeUUPS.sol": {
+      "lastModificationDate": 1678095998419,
+      "contentHash": "b52a99eab5fe5906d99d442e870b4c55",
+      "sourceName": "lib/OZ-Upgradeable-Foundry/src/UpgradeUUPS.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Proxy.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/interfaces/draft-IERC1822Upgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.12",
+      "artifacts": {
+        "MyContract": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "UpgradeUUPS.sol/MyContract.json"
+        },
+        "MyContractV2": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "UpgradeUUPS.sol/MyContractV2.json"
+        },
+        "UUPSProxy": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "UpgradeUUPS.sol/UUPSProxy.json"
         }
       }
     },
@@ -428,6 +841,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -468,6 +882,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -517,6 +932,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -560,6 +976,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -602,6 +1019,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -648,6 +1066,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -688,6 +1107,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -728,6 +1148,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -770,6 +1191,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -810,6 +1232,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -855,6 +1278,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -898,6 +1322,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -954,6 +1379,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -997,6 +1423,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -1037,6 +1464,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -1077,6 +1505,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -1085,6 +1514,957 @@
       "artifacts": {
         "IMulticall3": {
           "0.8.13+commit.abaa5c0e.Darwin.appleclang": "IMulticall3.sol/IMulticall3.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/access/AccessControlUpgradeable.sol": {
+      "lastModificationDate": 1678092617180,
+      "contentHash": "1e9b13e33c8524e33d22f3f1239efe5c",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/access/AccessControlUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/access/IAccessControlUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StringsUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/ERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "AccessControlUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "access/AccessControlUpgradeable.sol/AccessControlUpgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/access/IAccessControlUpgradeable.sol": {
+      "lastModificationDate": 1678092617180,
+      "contentHash": "21b43d1337ebc77c11da3cbe3fd65316",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/access/IAccessControlUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "IAccessControlUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "access/IAccessControlUpgradeable.sol/IAccessControlUpgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol": {
+      "lastModificationDate": 1678092617180,
+      "contentHash": "403ce8273abde646bff81558ddf512ad",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "OwnableUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "contracts/access/OwnableUpgradeable.sol/OwnableUpgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol": {
+      "lastModificationDate": 1678092617196,
+      "contentHash": "e9b0b058deea0144d9399002b67229f2",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.2",
+      "artifacts": {
+        "Initializable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "proxy/utils/Initializable.sol/Initializable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol": {
+      "lastModificationDate": 1678092617196,
+      "contentHash": "cbe53d6b803c1102081e00b3a0418ea3",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "PausableUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "contracts/security/PausableUpgradeable.sol/PausableUpgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol": {
+      "lastModificationDate": 1678092617196,
+      "contentHash": "1453fc85149da6598faf08c46b88182d",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "ReentrancyGuardUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "security/ReentrancyGuardUpgradeable.sol/ReentrancyGuardUpgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC1155/IERC1155Upgradeable.sol": {
+      "lastModificationDate": 1678092617197,
+      "contentHash": "a407c5f8256246823385d0d7f0a83f57",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC1155/IERC1155Upgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "IERC1155Upgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "ERC1155/IERC1155Upgradeable.sol/IERC1155Upgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol": {
+      "lastModificationDate": 1678092617198,
+      "contentHash": "3731d62752408e56578b89ac293659c6",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/IERC20MetadataUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "ERC20Upgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "ERC20/ERC20Upgradeable.sol/ERC20Upgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol": {
+      "lastModificationDate": 1678092617198,
+      "contentHash": "a9ed3c7bc7d9ebb5e34f20829274f088",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "IERC20Upgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "ERC20/IERC20Upgradeable.sol/IERC20Upgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/IERC20MetadataUpgradeable.sol": {
+      "lastModificationDate": 1678092617199,
+      "contentHash": "9efcd5467a7f0bf533910ee8a267adb2",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/IERC20MetadataUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "IERC20MetadataUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "extensions/IERC20MetadataUpgradeable.sol/IERC20MetadataUpgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol": {
+      "lastModificationDate": 1678092617199,
+      "contentHash": "afab576c4d1f55fbf293a0daf3826e31",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "IERC20PermitUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "extensions/draft-IERC20PermitUpgradeable.sol/IERC20PermitUpgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/utils/SafeERC20Upgradeable.sol": {
+      "lastModificationDate": 1678092617200,
+      "contentHash": "9e4e9c050500ddeb54999d91700a1046",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/utils/SafeERC20Upgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "SafeERC20Upgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "utils/SafeERC20Upgradeable.sol/SafeERC20Upgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol": {
+      "lastModificationDate": 1678092617200,
+      "contentHash": "407d093831013935f7b2ab603ef3f21c",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "IERC721Upgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "ERC721/IERC721Upgradeable.sol/IERC721Upgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol": {
+      "lastModificationDate": 1678092617202,
+      "contentHash": "228f256dbb21393bc9ad02648e222f74",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.1",
+      "artifacts": {
+        "AddressUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "contracts/utils/AddressUpgradeable.sol/AddressUpgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol": {
+      "lastModificationDate": 1678092617202,
+      "contentHash": "6200b84950eb05b4a92a39fd1d6e0f9b",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "ContextUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "contracts/utils/ContextUpgradeable.sol/ContextUpgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/utils/StringsUpgradeable.sol": {
+      "lastModificationDate": 1678092617203,
+      "contentHash": "3805d0267faeda96624b50a67ca89f08",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/utils/StringsUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "StringsUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "utils/StringsUpgradeable.sol/StringsUpgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/ERC165Upgradeable.sol": {
+      "lastModificationDate": 1678092617204,
+      "contentHash": "5f2d8b81c0ff5bd2047b4846c20b998d",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/ERC165Upgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "ERC165Upgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "introspection/ERC165Upgradeable.sol/ERC165Upgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol": {
+      "lastModificationDate": 1678092617204,
+      "contentHash": "d6ecf203a5e72c845be9bbf2f304a289",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "IERC165Upgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "introspection/IERC165Upgradeable.sol/IERC165Upgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol": {
+      "lastModificationDate": 1678092617204,
+      "contentHash": "469f71655418cc5f328fcc9bfdf10e9a",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "MathUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "math/MathUpgradeable.sol/MathUpgradeable.json"
+        }
+      }
+    },
+    "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/SafeMathUpgradeable.sol": {
+      "lastModificationDate": 1678092617205,
+      "contentHash": "d4935b19cfe21e88d08fab5f379dd020",
+      "sourceName": "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/SafeMathUpgradeable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "SafeMathUpgradeable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "math/SafeMathUpgradeable.sol/SafeMathUpgradeable.json"
+        }
+      }
+    },
+    "lib/v2-periphery/contracts/interfaces/IUniswapV2Router01.sol": {
+      "lastModificationDate": 1678094126152,
+      "contentHash": "95d8729b2c698dc663322167b3c085fe",
+      "sourceName": "lib/v2-periphery/contracts/interfaces/IUniswapV2Router01.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.6.2",
+      "artifacts": {
+        "IUniswapV2Router01": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "IUniswapV2Router01.sol/IUniswapV2Router01.json"
+        }
+      }
+    },
+    "lib/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol": {
+      "lastModificationDate": 1678094126152,
+      "contentHash": "3fd36426274a5b35f7e702f87ba08a8e",
+      "sourceName": "lib/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/v2-periphery/contracts/interfaces/IUniswapV2Router01.sol"
+      ],
+      "versionRequirement": ">=0.6.2",
+      "artifacts": {
+        "IUniswapV2Router02": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "IUniswapV2Router02.sol/IUniswapV2Router02.json"
         }
       }
     },
@@ -1117,6 +2497,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -1159,6 +2540,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -1203,6 +2585,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -1243,6 +2626,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -1285,6 +2669,7 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
@@ -1296,10 +2681,10 @@
         }
       }
     },
-    "node_modules/@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "1e9b13e33c8524e33d22f3f1239efe5c",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol",
+    "src/CalculumVault.sol": {
+      "lastModificationDate": 1678115401100,
+      "contentHash": "c27967dd6dbfb64027533ce589614b26",
+      "sourceName": "src/CalculumVault.sol",
       "solcConfig": {
         "settings": {
           "optimizer": {
@@ -1325,30 +2710,51 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
       "imports": [
-        "node_modules/@openzeppelin/contracts-upgradeable/access/IAccessControlUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol"
+        "lib/openzeppelin-contracts-upgradeable/contracts/access/AccessControlUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/access/IAccessControlUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC1155/IERC1155Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/IERC20MetadataUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/utils/SafeERC20Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StringsUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/ERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/SafeMathUpgradeable.sol",
+        "lib/v2-periphery/contracts/interfaces/IUniswapV2Router01.sol",
+        "lib/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol",
+        "src/lib/Claimable.sol",
+        "src/lib/Helpers.sol",
+        "src/lib/IERC4626.sol"
       ],
-      "versionRequirement": "^0.8.0",
+      "versionRequirement": "^0.8.13",
       "artifacts": {
-        "AccessControlUpgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "AccessControlUpgradeable.sol/AccessControlUpgradeable.json"
+        "CalculumVault": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "src/CalculumVault.sol/CalculumVault.json"
+        },
+        "Oracle": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "src/CalculumVault.sol/Oracle.json"
         }
       }
     },
-    "node_modules/@openzeppelin/contracts-upgradeable/access/IAccessControlUpgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "21b43d1337ebc77c11da3cbe3fd65316",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/access/IAccessControlUpgradeable.sol",
+    "src/USDC.sol": {
+      "lastModificationDate": 1678094303854,
+      "contentHash": "145f01a760672decf3bc3969fca1746e",
+      "sourceName": "src/USDC.sol",
       "solcConfig": {
         "settings": {
           "optimizer": {
@@ -1374,21 +2780,219 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
+        "node_modules/@openzeppelin/contracts/utils/Context.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "USDC": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "src/USDC.sol/USDC.json"
+        }
+      }
+    },
+    "src/lib/Blacklistable.sol": {
+      "lastModificationDate": 1678094434877,
+      "contentHash": "2d4a6acb8d382a501852773583e554c5",
+      "sourceName": "src/lib/Blacklistable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.13",
+      "artifacts": {
+        "Blacklistable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "Blacklistable.sol/Blacklistable.json"
+        }
+      }
+    },
+    "src/lib/Claimable.sol": {
+      "lastModificationDate": 1678094447724,
+      "contentHash": "ae7f2a71c3787f2a7e854b179771e4fc",
+      "sourceName": "src/lib/Claimable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC1155/IERC1155Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/utils/SafeERC20Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/SafeMathUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.13",
+      "artifacts": {
+        "Claimable": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "src/lib/Claimable.sol/Claimable.json"
+        }
+      }
+    },
+    "src/lib/ERC4626.sol": {
+      "lastModificationDate": 1678094459987,
+      "contentHash": "370f2f7da413a3fbd0698587abb5f853",
+      "sourceName": "src/lib/ERC4626.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/IERC20MetadataUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/utils/SafeERC20Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+        "src/lib/IERC4626.sol"
+      ],
+      "versionRequirement": "^0.8.13",
+      "artifacts": {
+        "ERC4626": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "ERC4626.sol/ERC4626.json"
+        }
+      }
+    },
+    "src/lib/Helpers.sol": {
+      "lastModificationDate": 1678092617292,
+      "contentHash": "d29afa3d4d1da01ce2bfd9a9e2b97f29",
+      "sourceName": "src/lib/Helpers.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
       "imports": [],
-      "versionRequirement": "^0.8.0",
+      "versionRequirement": "^0.8.13",
       "artifacts": {
-        "IAccessControlUpgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "IAccessControlUpgradeable.sol/IAccessControlUpgradeable.json"
+        "Helpers": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "src/lib/Helpers.sol/Helpers.json"
         }
       }
     },
-    "node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "403ce8273abde646bff81558ddf512ad",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol",
+    "src/lib/IERC4626.sol": {
+      "lastModificationDate": 1678094473181,
+      "contentHash": "1dfd64eb67eb8c7712d0bca09f32bb43",
+      "sourceName": "src/lib/IERC4626.sol",
       "solcConfig": {
         "settings": {
           "optimizer": {
@@ -1414,25 +3018,70 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
       "imports": [
-        "node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol"
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/IERC20MetadataUpgradeable.sol"
+      ],
+      "versionRequirement": "^0.8.13",
+      "artifacts": {
+        "IERC4626": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "src/lib/IERC4626.sol/IERC4626.json"
+        }
+      }
+    },
+    "src/mock/MockUpOracle.sol": {
+      "lastModificationDate": 1678094478207,
+      "contentHash": "f6efea9a1660abd2e0d38fa6f9ec3c4e",
+      "sourceName": "src/mock/MockUpOracle.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol",
+        "node_modules/@openzeppelin/contracts/access/Ownable.sol",
+        "node_modules/@openzeppelin/contracts/utils/Context.sol"
       ],
       "versionRequirement": "^0.8.0",
       "artifacts": {
-        "OwnableUpgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "OwnableUpgradeable.sol/OwnableUpgradeable.json"
+        "MockUpOracle": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "src/mock/MockUpOracle.sol/MockUpOracle.json"
         }
       }
     },
-    "node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "fc5844e59776a976987884e4d9814c7d",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
+    "test/foundry/BasicTest.t.sol": {
+      "lastModificationDate": 1678787291372,
+      "contentHash": "ea7803a2b0cdd62146432b67ea94fbca",
+      "sourceName": "test/foundry/BasicTest.t.sol",
       "solcConfig": {
         "settings": {
           "optimizer": {
@@ -1458,730 +3107,29 @@
             }
           },
           "evmVersion": "london",
+          "viaIR": true,
           "libraries": {}
         }
       },
       "imports": [
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.2",
-      "artifacts": {
-        "Initializable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "Initializable.sol/Initializable.json"
-        }
-      }
-    },
-    "node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "cbe53d6b803c1102081e00b3a0418ea3",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "PausableUpgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "PausableUpgradeable.sol/PausableUpgradeable.json"
-        }
-      }
-    },
-    "node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "1453fc85149da6598faf08c46b88182d",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "ReentrancyGuardUpgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "ReentrancyGuardUpgradeable.sol/ReentrancyGuardUpgradeable.json"
-        }
-      }
-    },
-    "node_modules/@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "a407c5f8256246823385d0d7f0a83f57",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "IERC1155Upgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "IERC1155Upgradeable.sol/IERC1155Upgradeable.json"
-        }
-      }
-    },
-    "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "3731d62752408e56578b89ac293659c6",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "ERC20Upgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "ERC20Upgradeable.sol/ERC20Upgradeable.json"
-        }
-      }
-    },
-    "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "a9ed3c7bc7d9ebb5e34f20829274f088",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "IERC20Upgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "IERC20Upgradeable.sol/IERC20Upgradeable.json"
-        }
-      }
-    },
-    "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "9efcd5467a7f0bf533910ee8a267adb2",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "IERC20MetadataUpgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "IERC20MetadataUpgradeable.sol/IERC20MetadataUpgradeable.json"
-        }
-      }
-    },
-    "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "afab576c4d1f55fbf293a0daf3826e31",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "IERC20PermitUpgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "draft-IERC20PermitUpgradeable.sol/IERC20PermitUpgradeable.json"
-        }
-      }
-    },
-    "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "9e4e9c050500ddeb54999d91700a1046",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "SafeERC20Upgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "SafeERC20Upgradeable.sol/SafeERC20Upgradeable.json"
-        }
-      }
-    },
-    "node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "407d093831013935f7b2ab603ef3f21c",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "IERC721Upgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "IERC721Upgradeable.sol/IERC721Upgradeable.json"
-        }
-      }
-    },
-    "node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "228f256dbb21393bc9ad02648e222f74",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [],
-      "versionRequirement": "^0.8.1",
-      "artifacts": {
-        "AddressUpgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "AddressUpgradeable.sol/AddressUpgradeable.json"
-        }
-      }
-    },
-    "node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "6200b84950eb05b4a92a39fd1d6e0f9b",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "ContextUpgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "ContextUpgradeable.sol/ContextUpgradeable.json"
-        }
-      }
-    },
-    "node_modules/@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "3805d0267faeda96624b50a67ca89f08",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "StringsUpgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "StringsUpgradeable.sol/StringsUpgradeable.json"
-        }
-      }
-    },
-    "node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "5f2d8b81c0ff5bd2047b4846c20b998d",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol"
-      ],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "ERC165Upgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "ERC165Upgradeable.sol/ERC165Upgradeable.json"
-        }
-      }
-    },
-    "node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "d6ecf203a5e72c845be9bbf2f304a289",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "IERC165Upgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "IERC165Upgradeable.sol/IERC165Upgradeable.json"
-        }
-      }
-    },
-    "node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "469f71655418cc5f328fcc9bfdf10e9a",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "MathUpgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "MathUpgradeable.sol/MathUpgradeable.json"
-        }
-      }
-    },
-    "node_modules/@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol": {
-      "lastModificationDate": 1676895034141,
-      "contentHash": "d4935b19cfe21e88d08fab5f379dd020",
-      "sourceName": "node_modules/@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [],
-      "versionRequirement": "^0.8.0",
-      "artifacts": {
-        "SafeMathUpgradeable": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "SafeMathUpgradeable.sol/SafeMathUpgradeable.json"
-        }
-      }
-    },
-    "test/foundry/BasicFeatures.t.sol": {
-      "lastModificationDate": 1677876164972,
-      "contentHash": "2e92ad421021b0b32936295f9a3291e0",
-      "sourceName": "test/foundry/BasicFeatures.t.sol",
-      "solcConfig": {
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "metadata": {
-            "bytecodeHash": "ipfs",
-            "appendCBOR": true
-          },
-          "outputSelection": {
-            "*": {
-              "": [
-                "ast"
-              ],
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ]
-            }
-          },
-          "evmVersion": "london",
-          "libraries": {}
-        }
-      },
-      "imports": [
-        "contracts/CalculumVault.sol",
-        "contracts/USDC.sol",
-        "contracts/lib/Claimable.sol",
-        "contracts/lib/Helpers.sol",
-        "contracts/lib/IERC4626.sol",
-        "contracts/mock/MockUpOracle.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Proxy.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/interfaces/draft-IERC1822Upgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/src/UpgradeUUPS.sol",
         "lib/forge-std/lib/ds-test/src/test.sol",
         "lib/forge-std/src/Base.sol",
         "lib/forge-std/src/StdAssertions.sol",
@@ -2198,36 +3146,154 @@
         "lib/forge-std/src/console.sol",
         "lib/forge-std/src/console2.sol",
         "lib/forge-std/src/interfaces/IMulticall3.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/access/AccessControlUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/access/IAccessControlUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC1155/IERC1155Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/IERC20MetadataUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/utils/SafeERC20Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StringsUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/ERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/SafeMathUpgradeable.sol",
+        "lib/v2-periphery/contracts/interfaces/IUniswapV2Router01.sol",
+        "lib/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol",
         "node_modules/@openzeppelin/contracts/access/Ownable.sol",
         "node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol",
         "node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol",
         "node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
         "node_modules/@openzeppelin/contracts/utils/Context.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/access/IAccessControlUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol",
-        "node_modules/@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol"
+        "src/CalculumVault.sol",
+        "src/USDC.sol",
+        "src/lib/Claimable.sol",
+        "src/lib/Helpers.sol",
+        "src/lib/IERC4626.sol",
+        "src/mock/MockUpOracle.sol"
       ],
       "versionRequirement": "^0.8.13",
       "artifacts": {
-        "BasicFeaturesTest": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "BasicFeatures.t.sol/BasicFeaturesTest.json"
+        "BasicTest": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "BasicTest.t.sol/BasicTest.json"
+        }
+      }
+    },
+    "test/foundry/WorkFlowTest.t.sol": {
+      "lastModificationDate": 1678787431897,
+      "contentHash": "88d3365b3d79f75f0a9a8ec22677238b",
+      "sourceName": "test/foundry/WorkFlowTest.t.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "viaIR": true,
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/interfaces/draft-IERC1822.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Proxy.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Upgrade.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/Proxy.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/proxy/beacon/IBeacon.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/interfaces/draft-IERC1822Upgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/beacon/IBeaconUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/utils/StorageSlotUpgradeable.sol",
+        "lib/OZ-Upgradeable-Foundry/src/UpgradeUUPS.sol",
+        "lib/forge-std/lib/ds-test/src/test.sol",
+        "lib/forge-std/src/Base.sol",
+        "lib/forge-std/src/StdAssertions.sol",
+        "lib/forge-std/src/StdChains.sol",
+        "lib/forge-std/src/StdCheats.sol",
+        "lib/forge-std/src/StdError.sol",
+        "lib/forge-std/src/StdInvariant.sol",
+        "lib/forge-std/src/StdJson.sol",
+        "lib/forge-std/src/StdMath.sol",
+        "lib/forge-std/src/StdStorage.sol",
+        "lib/forge-std/src/StdUtils.sol",
+        "lib/forge-std/src/Test.sol",
+        "lib/forge-std/src/Vm.sol",
+        "lib/forge-std/src/console.sol",
+        "lib/forge-std/src/console2.sol",
+        "lib/forge-std/src/interfaces/IMulticall3.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/access/AccessControlUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/access/IAccessControlUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC1155/IERC1155Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/IERC20MetadataUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/utils/SafeERC20Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/StringsUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/ERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/introspection/IERC165Upgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol",
+        "lib/openzeppelin-contracts-upgradeable/contracts/utils/math/SafeMathUpgradeable.sol",
+        "lib/v2-periphery/contracts/interfaces/IUniswapV2Router01.sol",
+        "lib/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol",
+        "node_modules/@openzeppelin/contracts/access/Ownable.sol",
+        "node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
+        "node_modules/@openzeppelin/contracts/utils/Context.sol",
+        "src/CalculumVault.sol",
+        "src/USDC.sol",
+        "src/lib/Claimable.sol",
+        "src/lib/Helpers.sol",
+        "src/lib/IERC4626.sol",
+        "src/mock/MockUpOracle.sol",
+        "test/foundry/BasicTest.t.sol"
+      ],
+      "versionRequirement": "^0.8.13",
+      "artifacts": {
+        "WorkFlowTest": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "WorkFlowTest.t.sol/WorkFlowTest.json"
         }
       }
     }
