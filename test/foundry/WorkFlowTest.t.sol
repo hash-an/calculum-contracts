@@ -15,7 +15,6 @@ contract WorkFlowTest is BasicTest {
     );
 
     event Transfer(address indexed from, address indexed to, uint256 amount);
-
     function testEpoch1() public {
         vm.startPrank(deployer);
         // Move to after the Maintenance Time Post Maintenance

@@ -41,7 +41,7 @@ contract BasicTest is Test {
         traderBotAddress = makeAddr("traderBotAddress");
         transferBotAddress = makeAddr("transferBot");
         transferBotRoleAddress = makeAddr("transferBotRole");
-        treasuryWallet = makeAddr("treasury");
+        treasuryWallet = makeAddr("treasury");        
 
         startTime = block.timestamp;
         initialValues[0] = startTime;
