@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.17;
 
 import "openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol";
 import "openzeppelin-contracts-upgradeable/contracts/token/ERC20/utils/SafeERC20Upgradeable.sol";
@@ -7,13 +7,17 @@ import "openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.so
 import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol";
 import "./IERC4626.sol";
 
-
 /**
  * @title ERC4626 Method Implementation
  * @dev Implementation of Methods based on standard ERC4626
  * @custom:a Alfredo Lopez / Calculum
  */
-abstract contract ERC4626 is Initializable, ContextUpgradeable, ERC20Upgradeable, IERC4626 {
+abstract contract ERC4626 is
+    Initializable,
+    ContextUpgradeable,
+    ERC20Upgradeable,
+    IERC4626
+{
     IERC20MetadataUpgradeable internal _asset;
     uint8 private _decimals;
 
@@ -70,41 +74,37 @@ abstract contract ERC4626 is Initializable, ContextUpgradeable, ERC20Upgradeable
      * Will revert if asserts > 0, totalSupply > 0 and totalAssets = 0. That corresponds to a case where any asset
      * would represent an infinite amout of shares.
      */
-    function convertToShares(uint256 assets)
-        public
-        view
-        virtual
-        override
-        returns (uint256 shares)
-    {
+    function convertToShares(
+        uint256 assets
+    ) public view virtual override returns (uint256 shares) {
         uint256 supply = totalSupply();
 
-        return (assets == 0 || supply == 0)
-            ? (assets * 10 ** decimals()) / 10 ** _asset.decimals()
-            : (assets * supply) / totalAssets();
+        return
+            (assets == 0 || supply == 0)
+                ? (assets * 10 ** decimals()) / 10 ** _asset.decimals()
+                : (assets * supply) / totalAssets();
     }
 
     /**
      * @dev See {IERC4262-convertToAssets}
      */
-    function convertToAssets(uint256 shares)
-        public
-        view
-        virtual
-        override
-        returns (uint256 assets)
-    {
+    function convertToAssets(
+        uint256 shares
+    ) public view virtual override returns (uint256 assets) {
         uint256 supply = totalSupply();
 
-        return (supply == 0)
-            ? (shares * 10 ** _asset.decimals()) / 10 ** decimals()
-            : (shares * totalAssets()) / supply;
+        return
+            (supply == 0)
+                ? (shares * 10 ** _asset.decimals()) / 10 ** decimals()
+                : (shares * totalAssets()) / supply;
     }
 
     /**
      * @dev See {IERC4262-maxDeposit}
      */
-    function maxDeposit(address) public view virtual override returns (uint256) {
+    function maxDeposit(
+        address
+    ) public view virtual override returns (uint256) {
         return type(uint256).max;
     }
 
@@ -118,28 +118,36 @@ abstract contract ERC4626 is Initializable, ContextUpgradeable, ERC20Upgradeable
     /**
      * @dev See {IERC4262-maxWithdraw}
      */
-    function maxWithdraw(address owner) public view virtual override returns (uint256) {
+    function maxWithdraw(
+        address owner
+    ) public view virtual override returns (uint256) {
         return convertToAssets(balanceOf(owner));
     }
 
     /**
      * @dev See {IERC4262-maxRedeem}
      */
-    function maxRedeem(address owner) public view virtual override returns (uint256) {
+    function maxRedeem(
+        address owner
+    ) public view virtual override returns (uint256) {
         return balanceOf(owner);
     }
 
     /**
      * @dev See {IERC4262-previewDeposit}
      */
-    function previewDeposit(uint256 assets) public view virtual override returns (uint256) {
+    function previewDeposit(
+        uint256 assets
+    ) public view virtual override returns (uint256) {
         return convertToShares(assets);
     }
 
     /**
      * @dev See {IERC4262-previewMint}
      */
-    function previewMint(uint256 shares) public view virtual override returns (uint256) {
+    function previewMint(
+        uint256 shares
+    ) public view virtual override returns (uint256) {
         uint256 assets = convertToAssets(shares);
         return assets + (convertToShares(assets) < shares ? 1 : 0);
     }
@@ -147,7 +155,9 @@ abstract contract ERC4626 is Initializable, ContextUpgradeable, ERC20Upgradeable
     /**
      * @dev See {IERC4262-previewWithdraw}
      */
-    function previewWithdraw(uint256 assets) public view virtual override returns (uint256) {
+    function previewWithdraw(
+        uint256 assets
+    ) public view virtual override returns (uint256) {
         uint256 shares = convertToShares(assets);
         return shares + (convertToAssets(shares) < assets ? 1 : 0);
     }
@@ -155,22 +165,35 @@ abstract contract ERC4626 is Initializable, ContextUpgradeable, ERC20Upgradeable
     /**
      * @dev See {IERC4262-previewRedeem}
      */
-    function previewRedeem(uint256 shares) public view virtual override returns (uint256) {
+    function previewRedeem(
+        uint256 shares
+    ) public view virtual override returns (uint256) {
         return convertToAssets(shares);
     }
 
     /**
      * @dev See {IERC4262-deposit}
      */
-    function deposit(uint256 assets, address receiver) public virtual override returns (uint256) {
-        require(assets <= maxDeposit(receiver), "ERC4626: deposit more then max");
+    function deposit(
+        uint256 assets,
+        address receiver
+    ) public virtual override returns (uint256) {
+        require(
+            assets <= maxDeposit(receiver),
+            "ERC4626: deposit more then max"
+        );
 
         address caller = _msgSender();
         uint256 shares = previewDeposit(assets);
 
         // if _asset is ERC777, transferFrom can call reenter BEFORE the transfer happens through
         // the tokensToSend hook, so we need to transfer before we mint to keep the invariants.
-        SafeERC20Upgradeable.safeTransferFrom(_asset, caller, address(this), assets);
+        SafeERC20Upgradeable.safeTransferFrom(
+            _asset,
+            caller,
+            address(this),
+            assets
+        );
         _mint(receiver, shares);
 
         emit Deposit(caller, receiver, assets, shares);
@@ -181,7 +204,10 @@ abstract contract ERC4626 is Initializable, ContextUpgradeable, ERC20Upgradeable
     /**
      * @dev See {IERC4262-mint}
      */
-    function mint(uint256 shares, address receiver) public virtual override returns (uint256) {
+    function mint(
+        uint256 shares,
+        address receiver
+    ) public virtual override returns (uint256) {
         require(shares <= maxMint(receiver), "ERC4626: mint more then max");
 
         address caller = _msgSender();
@@ -189,7 +215,12 @@ abstract contract ERC4626 is Initializable, ContextUpgradeable, ERC20Upgradeable
 
         // if _asset is ERC777, transferFrom can call reenter BEFORE the transfer happens through
         // the tokensToSend hook, so we need to transfer before we mint to keep the invariants.
-        SafeERC20Upgradeable.safeTransferFrom(_asset, caller, address(this), assets);
+        SafeERC20Upgradeable.safeTransferFrom(
+            _asset,
+            caller,
+            address(this),
+            assets
+        );
         _mint(receiver, shares);
 
         emit Deposit(caller, receiver, assets, shares);
@@ -200,13 +231,15 @@ abstract contract ERC4626 is Initializable, ContextUpgradeable, ERC20Upgradeable
     /**
      * @dev See {IERC4262-withdraw}
      */
-    function withdraw(uint256 assets, address receiver, address owner)
-        public
-        virtual
-        override
-        returns (uint256)
-    {
-        require(assets <= maxWithdraw(owner), "ERC4626: withdraw more then max");
+    function withdraw(
+        uint256 assets,
+        address receiver,
+        address owner
+    ) public virtual override returns (uint256) {
+        require(
+            assets <= maxWithdraw(owner),
+            "ERC4626: withdraw more then max"
+        );
 
         address caller = _msgSender();
         uint256 shares = previewWithdraw(assets);
@@ -228,12 +261,11 @@ abstract contract ERC4626 is Initializable, ContextUpgradeable, ERC20Upgradeable
     /**
      * @dev See {IERC4262-redeem}
      */
-    function redeem(uint256 shares, address receiver, address owner)
-        public
-        virtual
-        override
-        returns (uint256)
-    {
+    function redeem(
+        uint256 shares,
+        address receiver,
+        address owner
+    ) public virtual override returns (uint256) {
         require(shares <= maxRedeem(owner), "ERC4626: redeem more then max");
 
         address caller = _msgSender();
