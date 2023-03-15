@@ -41,7 +41,7 @@ contract CalculumVault is
     // Flag to Control Start Sales of Shares
     uint256 public EPOCH_START; // start 10 July 2022, Sunday 22:00:00  UTC
     // Trader Bot Wallet in DEX
-    address payable public transferBotWallet;
+    address payable public traderBotWallet;
     // Treasury Wallet of Calculum
     address public treasuryWallet;
     // Management Fee percentage , e.g. 1% = 1 / 100
@@ -104,7 +104,7 @@ contract CalculumVault is
         uint8 decimals_,
         IERC20MetadataUpgradeable _USDCToken,
         address _oracle,
-        address _transferBotWallet,
+        address _traderBotWallet,
         address _treasuryWallet,
         address _transferBotRoleAddress,
         address _router,
@@ -123,7 +123,7 @@ contract CalculumVault is
         _decimals = decimals_;
         oracle = Oracle(_oracle);
         router = IUniswapV2Router02(_router);
-        transferBotWallet = payable(_transferBotWallet);
+        traderBotWallet = payable(_traderBotWallet);
         treasuryWallet = _treasuryWallet;
         EPOCH_START = _initialValue[0];
         MIN_DEPOSIT = _initialValue[1];
@@ -471,9 +471,9 @@ contract CalculumVault is
         if ((totalSupply() == 0) && (CURRENT_EPOCH == 0)) {
             DEX_WALLET_BALANCE = newDeposits();
         } else {
-            DEX_WALLET_BALANCE = oracle.GetAccount(address(transferBotWallet));
+            DEX_WALLET_BALANCE = oracle.GetAccount(address(traderBotWallet));
             if (DEX_WALLET_BALANCE == 0) {
-                revert ActualAssetValueIsZero(address(oracle), address(transferBotWallet));
+                revert ActualAssetValueIsZero(address(oracle), address(traderBotWallet));
             }
         }
     }
@@ -626,10 +626,10 @@ contract CalculumVault is
 
     function _swapDAforETH() private {
         if (
-            (transferBotWallet.balance < MIN_WALLET_BALANCE_ETH_TRANSFER_BOT)
-                && (_asset.balanceOf(transferBotWallet) > MIN_WALLET_BALANCE_USDC_TRANSFER_BOT)
+            (traderBotWallet.balance < MIN_WALLET_BALANCE_ETH_TRANSFER_BOT)
+                && (_asset.balanceOf(traderBotWallet) > MIN_WALLET_BALANCE_USDC_TRANSFER_BOT)
         ) {
-            uint256 swapAmount = _asset.balanceOf(transferBotWallet);
+            uint256 swapAmount = _asset.balanceOf(traderBotWallet);
             _swapTokensForETH(
                 address(_asset),
                 swapAmount,
@@ -700,11 +700,11 @@ contract CalculumVault is
         if (actualTx.pending) {
             if (actualTx.direction) {
                 SafeERC20Upgradeable.safeTransfer(
-                    _asset, address(transferBotWallet), actualTx.amount
+                    _asset, address(traderBotWallet), actualTx.amount
                 );
             } else {
                 SafeERC20Upgradeable.safeTransferFrom(
-                    _asset, address(transferBotWallet), address(this), actualTx.amount
+                    _asset, address(traderBotWallet), address(this), actualTx.amount
                 );
             }
             actualTx.pending = false;
@@ -796,7 +796,7 @@ contract CalculumVault is
      * @dev Setter for the TraderBot Wallet
      */
     function setTransferBotWallet(address _transferBotWallet) external onlyOwner {
-        transferBotWallet = payable(_transferBotWallet);
+        traderBotWallet = payable(_transferBotWallet);
     }
 
     function isDepositWallet(address _wallet) public view returns (bool) {

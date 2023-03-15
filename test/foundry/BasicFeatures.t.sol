@@ -11,6 +11,7 @@ contract BasicFeaturesTest is Test {
     address public traderBot;
     address public treasury;
     address public traderWallet;
+	address public router;
     address[3] public investors;
     USDC public usdc;
     CalculumVault public vault;
@@ -27,6 +28,7 @@ contract BasicFeaturesTest is Test {
         traderBot = makeAddr("traderBot");
         treasury = makeAddr("treasury");
         traderWallet = makeAddr("traderWallet");
+		router = makeAddr("router");
         // investors[0] = _setUpAddress("investor0");
         // investors[1] = _setUpAddress("investor1");
         // investors[2] = _setUpAddress("investor2");
@@ -42,7 +44,7 @@ contract BasicFeaturesTest is Test {
         usdc = new USDC();
         IERC20MetadataUpgradeable iusdc = IERC20MetadataUpgradeable(address(usdc));
         oracle = new MockUpOracle(traderBot, iusdc);
-        vault.initialize(NAME, SYMBOL, DECIMALS, iusdc, address(oracle), traderBot, treasury, traderWallet, initValues);
+        vault.initialize(NAME, SYMBOL, DECIMALS, iusdc, address(oracle), traderBot, treasury, traderWallet, router, initValues);
         vm.stopPrank();
     }
 
