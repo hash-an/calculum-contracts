@@ -1,5 +1,4 @@
 @ensdomains/=node_modules/@ensdomains/
-@openzeppelin/=node_modules/@openzeppelin/
 @oz-upgradeable/=lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts-upgradeable/contracts/
 @oz/=lib/OZ-Upgradeable-Foundry/lib/openzeppelin-contracts/contracts/
 @prb/test/=lib/OZ-Upgradeable-Foundry/lib/prb-test/src/
@@ -8,4 +7,4 @@ OZ-Upgradeable-Foundry/=lib/OZ-Upgradeable-Foundry/
 ds-test/=lib/forge-std/lib/ds-test/src/
 @uniswap/v2-periphery/=lib/v2-periphery/
 @openzeppelin/=lib/openzeppelin-contracts/
-@openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
+@openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/
