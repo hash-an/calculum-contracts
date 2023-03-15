@@ -42,9 +42,7 @@ contract BasicFeaturesTest is Test {
         vm.startPrank(deployer);
         vault = new CalculumVault();
         usdc = new USDC();
-        IERC20MetadataUpgradeable iusdc = IERC20MetadataUpgradeable(
-            address(usdc)
-        );
+        IERC20MetadataUpgradeable iusdc = IERC20MetadataUpgradeable(address(usdc));
         oracle = new MockUpOracle(traderBot, iusdc);
         vault.initialize(
             NAME,
@@ -63,79 +61,31 @@ contract BasicFeaturesTest is Test {
 
     function testInitialValues() public {
         assertEq(vault.owner(), deployer, "init: wrong deployer address");
+        assertEq(abi.encodePacked(vault.name()), abi.encodePacked(NAME), "init: wrong token name");
         assertEq(
-            abi.encodePacked(vault.name()),
-            abi.encodePacked(NAME),
-            "init: wrong token name"
-        );
-        assertEq(
-            abi.encodePacked(vault.symbol()),
-            abi.encodePacked(SYMBOL),
-            "init: wrong token symbol"
+            abi.encodePacked(vault.symbol()), abi.encodePacked(SYMBOL), "init: wrong token symbol"
         );
         assertEq(vault.decimals(), DECIMALS, "init: wrong token symbol");
         assertEq(vault.asset(), address(usdc), "init: wrong asset address");
-        assertEq(
-            vault.treasuryWallet(),
-            treasury,
-            "init: wrong treasury address"
-        );
-        assertEq(
-            address(vault.oracle()),
-            address(oracle),
-            "init: wrong oracle address"
-        );
-        assertEq(
-            vault.traderBotWallet(),
-            traderWallet,
-            "init: wrong trader bot wallet address"
-        );
-        assertEq(
-            vault.MANAGEMENT_FEE_PERCENTAGE(),
-            0.01 ether,
-            "init: wrong management fee"
-        );
-        assertEq(
-            vault.PERFORMANCE_FEE_PERCENTAGE(),
-            0.15 ether,
-            "init: wrong performance fee"
-        );
-        assertEq(
-            vault.EPOCH_START(),
-            startTime,
-            "init: wrong epoch start timestamp"
-        );
+        assertEq(vault.treasuryWallet(), treasury, "init: wrong treasury address");
+        assertEq(address(vault.oracle()), address(oracle), "init: wrong oracle address");
+        assertEq(vault.traderBotWallet(), traderWallet, "init: wrong trader bot wallet address");
+        assertEq(vault.MANAGEMENT_FEE_PERCENTAGE(), 0.01 ether, "init: wrong management fee");
+        assertEq(vault.PERFORMANCE_FEE_PERCENTAGE(), 0.15 ether, "init: wrong performance fee");
+        assertEq(vault.EPOCH_START(), startTime, "init: wrong epoch start timestamp");
         assertEq(vault.EPOCH_DURATION(), 7 days, "init: wrong epoch duration");
         assertEq(
-            vault.MAINTENANCE_PERIOD_PRE_START(),
-            60 minutes,
-            "init: wrong maintenance pre start"
+            vault.MAINTENANCE_PERIOD_PRE_START(), 60 minutes, "init: wrong maintenance pre start"
         );
         assertEq(
-            vault.MAINTENANCE_PERIOD_POST_START(),
-            30 minutes,
-            "init: wrong maintenance post start"
+            vault.MAINTENANCE_PERIOD_POST_START(), 30 minutes, "init: wrong maintenance post start"
         );
-        assertEq(
-            vault.MIN_DEPOSIT(),
-            initValues[1],
-            "init: wrong min deposit amount"
-        );
-        assertEq(
-            vault.MAX_DEPOSIT(),
-            initValues[2],
-            "init: wrong max deposit amount"
-        );
-        assertEq(
-            vault.MAX_TOTAL_SUPPLY(),
-            initValues[3],
-            "init: wrong max total supply"
-        );
+        assertEq(vault.MIN_DEPOSIT(), initValues[1], "init: wrong min deposit amount");
+        assertEq(vault.MAX_DEPOSIT(), initValues[2], "init: wrong max deposit amount");
+        assertEq(vault.MAX_TOTAL_SUPPLY(), initValues[3], "init: wrong max total supply");
     }
 
-    function _setUpAddress(
-        string memory name
-    ) private returns (address account) {
+    function _setUpAddress(string memory name) private returns (address account) {
         account = makeAddr(name);
         uint256 amount = 1_000_000 * 10 ** 6;
         hoax(account);
