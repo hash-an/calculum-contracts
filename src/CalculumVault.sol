@@ -622,7 +622,7 @@ contract CalculumVault is
     /**
      * @dev Method to Calculate the Trabsfer Bot Gas Reserve in USDC in the current epoch
      */
-    // function CalculateTransferBotGasReserveDA() private {}
+    function CalculateTransferBotGasReserveDA() private {}
 
     function _swapDAforETH() private {
         if (
