@@ -119,9 +119,10 @@ module.exports = {
   defaultNetwork: "hardhat",
   docgen: {
     templates: "./templates",
+    path: "./docs",
     pages: (item, file) =>
       file.absolutePath.startsWith("src")
-        ? relative("contracts", file.absolutePath).replace(".sol", ".md")
+        ? relative("src", file.absolutePath).replace(".sol", ".md")
         : undefined,
   },
   mocha: {

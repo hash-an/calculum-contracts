@@ -1,8 +1,8 @@
 # Solidity API
 
 # Contract Helpers
-**Title:** 
-**Author:** 
+**Title:** Helpers Methods
+**Author:** Alfredo Lopez / Calculum
 
 **Description:** 
 

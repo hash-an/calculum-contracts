@@ -1,5 +1,6 @@
 forge-std/=lib/forge-std/src/
 solmate/=lib/solmate/src/
 ds-test/=lib/forge-std/lib/ds-test/src/
+@uniswap/v2-periphery/=lib/v2-periphery/
 @openzeppelin/=lib/openzeppelin-contracts/
 @openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/

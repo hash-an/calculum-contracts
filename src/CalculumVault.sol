@@ -16,6 +16,11 @@ interface Oracle {
     function GetAccount(address _wallet) external view returns (uint256);
 }
 
+/**
+ * @title Calculum Vault
+ * @dev Vault based on ERC-4626
+ * @custom:a Alfredo Lopez / Calculum
+ */
 contract CalculumVault is
     IERC4626,
     ERC20Upgradeable,

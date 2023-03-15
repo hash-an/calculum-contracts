@@ -2,7 +2,7 @@
 
 # Contract Claimable
 **Title:** Claimable Methods
-**Author:** Alfredo Lopez / Marketingcycle / ValiFI
+**Author:** Alfredo Lopez / Calculum
 
 **Description:** 
 

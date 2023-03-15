@@ -25,8 +25,8 @@
 ### Enums
 
 # Contract CalculumVault
-**Title:** 
-**Author:** 
+**Title:** Calculum Vault
+**Author:** Alfredo Lopez / Calculum
 
 **Description:** 
 

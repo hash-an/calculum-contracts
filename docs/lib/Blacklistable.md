@@ -2,7 +2,7 @@
 
 # Contract Blacklistable
 **Title:** Blacklistable Methods
-**Author:** Alfredo Lopez / Marketingcycle / ValiFI
+**Author:** Alfredo Lopez / Calculum
 
 **Description:** 
 
