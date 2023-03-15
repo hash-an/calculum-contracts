@@ -2,9 +2,9 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "../../contracts/CalculumVault.sol";
-import "../../contracts/USDC.sol";
-import "../../contracts/mock/MockUpOracle.sol";
+import "../../src/CalculumVault.sol";
+import "../../src/USDC.sol";
+import "../../src/mock/MockUpOracle.sol";
 
 contract BasicFeaturesTest is Test {
     address public deployer;
