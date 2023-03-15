@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+
+/**
+ * @title Helpers Methods
+ * @dev Events, Errors  and Structs for Vault Contract
+ * @custom:a Alfredo Lopez / Calculum
+ */
 abstract contract Helpers {
     /**
      * @dev Helpers Smart Contract for Events and Errors

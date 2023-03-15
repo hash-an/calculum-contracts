@@ -7,6 +7,12 @@ import "openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.so
 import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol";
 import "./IERC4626.sol";
 
+
+/**
+ * @title ERC4626 Method Implementation
+ * @dev Implementation of Methods based on standard ERC4626
+ * @custom:a Alfredo Lopez / Calculum
+ */
 abstract contract ERC4626 is Initializable, ContextUpgradeable, ERC20Upgradeable, IERC4626 {
     IERC20MetadataUpgradeable internal _asset;
     uint8 private _decimals;

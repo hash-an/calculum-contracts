@@ -13,7 +13,7 @@ import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.s
 /**
  * @title Claimable Methods
  * @dev Implementation of the claiming utils that can be useful for withdrawing accidentally sent tokens that are not used in bridge operations.
- * @custom:a Alfredo Lopez / Marketingcycle / ValiFI
+ * @custom:a Alfredo Lopez / Calculum
  */
 abstract contract Claimable is OwnableUpgradeable {
     using SafeMathUpgradeable for uint256;
@@ -45,7 +45,7 @@ abstract contract Claimable is OwnableUpgradeable {
      * @param _token address of the claimed token or address(0) for native coins.
      * @param _to address of the tokens/coins receiver.
      */
-    function claimValues(address _token, address _to) public onlyOwner validAddress(_to) 
+    function claimValues(address _token, address _to) public onlyOwner validAddress(_to)
     /// /// notBlacklisted(_to)
     {
         if (_token == address(0)) {

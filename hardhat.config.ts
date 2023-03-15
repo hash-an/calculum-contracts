@@ -1,15 +1,15 @@
 /* eslint-disable node/no-unpublished-import */
-import * as dotenv from "dotenv";
-
-import { task } from "hardhat/config";
-import "@nomiclabs/hardhat-etherscan";
-import "@typechain/hardhat";
-import "hardhat-gas-reporter";
-import "solidity-coverage";
-import "@nomiclabs/hardhat-truffle5";
+import "@nomicfoundation/hardhat-toolbox";
+import "@nomicfoundation/hardhat-foundry";
+import "@nomicfoundation/hardhat-chai-matchers";
 import "@nomiclabs/hardhat-ethers";
+import "hardhat-gas-reporter";
 import "hardhat-contract-sizer";
 import "@openzeppelin/hardhat-upgrades";
+import "solidity-docgen";
+import { relative } from "path";
+import * as dotenv from "dotenv";
+import { task } from "hardhat/config";
 
 dotenv.config();
 
@@ -116,6 +116,15 @@ module.exports = {
       // accounts: [PRIVATE_KEY]
     },
   },
+  defaultNetwork: "hardhat",
+  docgen: {
+    templates: "./templates",
+    path: "./docs",
+    pages: (item, file) =>
+      file.absolutePath.startsWith("src")
+        ? relative("src", file.absolutePath).replace(".sol", ".md")
+        : undefined,
+  },
   mocha: {
     timeout: 500000,
   },
@@ -142,13 +151,47 @@ module.exports = {
     // apiKey: SNOWTRACE_API_KEY,
   },
   solidity: {
-    version: "0.8.17",
-    settings: {
-      viaIR: true,
-      optimizer: {
-        enabled: true,
-        runs: 500,
+    compilers: [
+      {
+        version: "0.8.17",
+        settings: {
+          viaIR: true,
+          optimizer: {
+            enabled: true,
+            runs: 999,
+          },
+        },
       },
-    },
+      {
+        version: "0.8.4",
+        settings: {
+          viaIR: true,
+          optimizer: {
+            enabled: true,
+            runs: 999,
+          },
+        },
+      },
+      {
+        version: "0.8.2",
+        settings: {
+          viaIR: true,
+          optimizer: {
+            enabled: true,
+            runs: 999,
+          },
+        },
+      },
+      {
+        version: "0.7.0",
+        settings: {
+          viaIR: true,
+          optimizer: {
+            enabled: true,
+            runs: 999,
+          },
+        },
+      },
+    ],
   },
 };

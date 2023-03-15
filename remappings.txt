@@ -6,11 +6,6 @@
 @std/=lib/OZ-Upgradeable-Foundry/lib/forge-std/src/
 OZ-Upgradeable-Foundry/=lib/OZ-Upgradeable-Foundry/
 ds-test/=lib/forge-std/lib/ds-test/src/
-eth-gas-reporter/=node_modules/eth-gas-reporter/
-forge-std/=lib/forge-std/src/
-hardhat/=node_modules/hardhat/
-openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/
-openzeppelin-contracts/=lib/openzeppelin-contracts/
-prb-test/=lib/OZ-Upgradeable-Foundry/lib/prb-test/src/
-solmate/=lib/solmate/src/
-v2-periphery/=lib/v2-periphery/contracts/
+@uniswap/v2-periphery/=lib/v2-periphery/
+@openzeppelin/=lib/openzeppelin-contracts/
+@openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/

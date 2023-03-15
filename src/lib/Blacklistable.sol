@@ -6,7 +6,7 @@ import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.s
 /**
  * @title Blacklistable Methods
  * @dev Allows accounts to be blacklisted by Owner
- * @custom:a Alfredo Lopez / Marketingcycle / ValiFI
+ * @custom:a Alfredo Lopez / Calculum
  */
 contract Blacklistable is OwnableUpgradeable {
     // Index Address
