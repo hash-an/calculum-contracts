@@ -34,8 +34,12 @@ contract WorkFlowTest is BasicTest {
         depositAmount = MIN_DEPOSIT_PER_ADDR - 1;
         vm.expectRevert(abi.encodeWithSelector(Helpers.DepositAmountTooLow.selector, alice, depositAmount));
         vault.deposit(depositAmount, alice);
-    
-        // before Alice 
+        vm.stopPrank();
+
+        // before Alice
+        hoax(deployer); 
+        oracle.setAssetValue(_usdc(1500));
+        vm.startPrank(alice);
         uint256 balanceBefore = usdc.balanceOf(alice);
         (Helpers.Status statusBefore, , , ) = vault.DEPOSITS(alice);
         assertTrue(statusBefore == Helpers.Status.Inactive, "epoch 0: deposit status should be 0 before deposit");
@@ -58,6 +62,7 @@ contract WorkFlowTest is BasicTest {
         uint256 nextEpochTime = vault.getNextEpoch();
         vm.warp(nextEpochTime - 70 minutes);
         vm.stopPrank();
+
         vm.startPrank(transferBotRoleAddress);
         vm.expectRevert(abi.encodeWithSelector(Helpers.VaultOutMaintenance.selector, transferBotRoleAddress, block.timestamp));
         vault.finalizeEpoch();
@@ -91,7 +96,7 @@ contract WorkFlowTest is BasicTest {
 
     function testEpoch1() public {
         testEpoch0();
-        assertEq(vault.CURRENT_EPOCH(), 1, "epoch 1: already in epoch 1 after updating epoch");
+        assertEq(vault.CURRENT_EPOCH(), 1, "epoch 1: already in epoch 1");
 
         address alice = investors[0];
         address bob = investors[1];
@@ -145,4 +150,63 @@ contract WorkFlowTest is BasicTest {
         hoax(deployer);
         vault.CurrentEpoch();
     }
+
+    function testEpoch2() public {
+        testEpoch1();
+        assertEq(vault.CURRENT_EPOCH(), 2, "epoch 2: already in epoch 2");
+
+        address alice = investors[0];
+        address bob = investors[1];
+        uint256 depositAmount = _usdc(500);
+        uint256 expectShares = 555.67965734569609435 ether;
+
+        vm.startPrank(bob);
+        vm.expectRevert(abi.encodeWithSelector(Helpers.VaultInMaintenance.selector, bob, block.timestamp));
+        vault.deposit(depositAmount, bob);
+
+        vm.warp(vault.getCurrentEpoch() + MAINT_TIME_AFTER + MAINT_TIME_BEFORE);
+        vm.expectEmit(true, true, false, true, address(usdc));
+        emit Transfer(bob, address(vault), depositAmount);
+        vm.expectEmit(true, true, false, true, address(vault));
+        emit PendingDeposit(bob, bob, depositAmount, expectShares);
+        vault.deposit(depositAmount, bob);
+        vm.stopPrank();
+
+        (Helpers.Status status, uint256 amountAssets, uint256 amountShares, uint256 finalAmount) = vault.DEPOSITS(bob);
+        assertTrue(status == Helpers.Status.Pending, "epoch 2: deposit status should be 0 before deposit");
+        assertEq(amountAssets, _usdc(500), "epoch 2: wrong asset amount in vault");
+        assertEq(amountShares, expectShares, "epoch 2: wrong shares amount in vault");
+        assertEq(finalAmount, 0, "epoch 2: wrong shares amount in vault");
+
+        hoax(deployer);
+        oracle.setAssetValue(1282226400);
+        vm.warp(vault.getNextEpoch() + MAINT_TIME_AFTER - 43 minutes);
+        hoax(transferBotRoleAddress);
+        vault.finalizeEpoch();
+
+        (status, amountAssets, amountShares, finalAmount) = vault.DEPOSITS(bob);
+        assertEq(amountShares, 585038232248477438001, "epoch 2: wrong shares amount after finalize");
+
+        (,, uint256 transferAmount) = vault.netTransfer(vault.CURRENT_EPOCH());
+
+        vm.startPrank(transferBotRoleAddress);
+        vm.expectEmit(true, true, false, true, address(usdc));
+        emit Transfer(address(vault), transferBotAddress, transferAmount);
+        vault.dexTransfer();
+
+        vm.expectEmit(true, true, false, true, address(usdc));
+        emit Transfer(address(vault), treasuryWallet, 259500);
+        vault.feesTransfer();
+        vm.stopPrank();
+
+        vm.warp(vault.getNextEpoch() + 1);
+        hoax(deployer);
+        vault.CurrentEpoch();
+    }
+
+    // function testEpoch3() public {
+    //     testEpoch2();
+    //     assertEq(vault.CURRENT_EPOCH(), 3, "epoch 3: already in epoch 3");
+
+    // }
 }
