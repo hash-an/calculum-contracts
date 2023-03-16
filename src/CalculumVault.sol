@@ -40,8 +40,8 @@ contract CalculumVault is
     uint8 private _decimals;
     // Flag to Control Start Sales of Shares
     uint256 public EPOCH_START; // start 10 July 2022, Sunday 22:00:00  UTC
-    // Trader Bot Wallet in DEX
-    address payable public traderBotWallet;
+    // Transfer Bot Wallet in DEX
+    address payable public transferBotWallet;
     // Treasury Wallet of Calculum
     address public treasuryWallet;
     // Management Fee percentage , e.g. 1% = 1 / 100
@@ -104,7 +104,7 @@ contract CalculumVault is
         uint8 decimals_,
         IERC20MetadataUpgradeable _USDCToken,
         address _oracle,
-        address _traderBotWallet,
+        address _transferBotWallet,
         address _treasuryWallet,
         address _transferBotRoleAddress,
         address _router,
@@ -123,7 +123,7 @@ contract CalculumVault is
         _decimals = decimals_;
         oracle = Oracle(_oracle);
         router = IUniswapV2Router02(_router);
-        traderBotWallet = payable(_traderBotWallet);
+        transferBotWallet = payable(_transferBotWallet);
         treasuryWallet = _treasuryWallet;
         EPOCH_START = _initialValue[0];
         MIN_DEPOSIT = _initialValue[1];
@@ -471,9 +471,9 @@ contract CalculumVault is
         if ((totalSupply() == 0) && (CURRENT_EPOCH == 0)) {
             DEX_WALLET_BALANCE = newDeposits();
         } else {
-            DEX_WALLET_BALANCE = oracle.GetAccount(address(traderBotWallet));
+            DEX_WALLET_BALANCE = oracle.GetAccount(address(transferBotWallet));
             if (DEX_WALLET_BALANCE == 0) {
-                revert ActualAssetValueIsZero(address(oracle), address(traderBotWallet));
+                revert ActualAssetValueIsZero(address(oracle), address(transferBotWallet));
             }
         }
     }
@@ -620,16 +620,35 @@ contract CalculumVault is
     }
 
     /**
-     * @dev Method to Calculate the Trabsfer Bot Gas Reserve in USDC in the current epoch
+     * @dev Method to Calculate the Transfer Bot Gas Reserve in USDC in the current epoch
      */
-    function CalculateTransferBotGasReserveDA() private {}
+    function CalculateTransferBotGasReserveDA() private view returns (uint256) {
+        uint256 targetBalance = TARGET_WALLET_BALANCE_USDC_TRANSFER_BOT;
+        uint256 currentBalance = _asset.balanceOf(transferBotWallet);
+
+        // Calculate the missing USDC amount to reach the target balance
+        uint256 missingAmount = targetBalance > currentBalance ? targetBalance - currentBalance : 0;
+
+        // Calculate the total fees to be collected for the current epoch
+        uint256 totalFees = getPnLPerVaultToken()
+            ? (MgtFeePerVaultToken().add(PerfFeePerVaultToken())).mul(
+                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)].mulDiv(1, 10 ** decimals())
+            )
+            : MgtFeePerVaultToken().mul(
+                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)].mulDiv(1, 10 ** decimals())
+            );
+
+        // Take the smallest amount between the missing USDC and the total fees
+        // Deduct the amount from the fees sent to the protocol Treasury Wallet
+        return missingAmount < totalFees ? missingAmount : totalFees;
+    }
 
     function _swapDAforETH() private {
         if (
-            (traderBotWallet.balance < MIN_WALLET_BALANCE_ETH_TRANSFER_BOT)
-                && (_asset.balanceOf(traderBotWallet) > MIN_WALLET_BALANCE_USDC_TRANSFER_BOT)
+            (transferBotWallet.balance < MIN_WALLET_BALANCE_ETH_TRANSFER_BOT)
+                && (_asset.balanceOf(transferBotWallet) > MIN_WALLET_BALANCE_USDC_TRANSFER_BOT)
         ) {
-            uint256 swapAmount = _asset.balanceOf(traderBotWallet);
+            uint256 swapAmount = _asset.balanceOf(transferBotWallet);
             _swapTokensForETH(
                 address(_asset),
                 swapAmount,
@@ -699,10 +718,12 @@ contract CalculumVault is
         _checkVaultOutMaintenance();
         if (actualTx.pending) {
             if (actualTx.direction) {
-                SafeERC20Upgradeable.safeTransfer(_asset, address(traderBotWallet), actualTx.amount);
+                SafeERC20Upgradeable.safeTransfer(
+                    _asset, address(transferBotWallet), actualTx.amount
+                );
             } else {
                 SafeERC20Upgradeable.safeTransferFrom(
-                    _asset, address(traderBotWallet), address(this), actualTx.amount
+                    _asset, address(transferBotWallet), address(this), actualTx.amount
                 );
             }
             actualTx.pending = false;
@@ -716,13 +737,7 @@ contract CalculumVault is
     function feesTransfer() external onlyRole(TRANSFER_BOT_ROLE) nonReentrant {
         _checkVaultOutMaintenance();
         if (CURRENT_EPOCH == 0) revert FirstEpochNoFeeTransfer();
-        uint256 feeTransfer = getPnLPerVaultToken()
-            ? (MgtFeePerVaultToken().add(PerfFeePerVaultToken())).mul(
-                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)].mulDiv(1, 10 ** decimals())
-            )
-            : MgtFeePerVaultToken().mul(
-                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)].mulDiv(1, 10 ** decimals())
-            );
+        uint256 feeTransfer = CalculateTransferBotGasReserveDA();
         if (_asset.balanceOf(address(this)) < feeTransfer) {
             revert NotEnoughBalance(feeTransfer, _asset.balanceOf(address(this)));
         }
@@ -794,7 +809,7 @@ contract CalculumVault is
      * @dev Setter for the TraderBot Wallet
      */
     function setTransferBotWallet(address _transferBotWallet) external onlyOwner {
-        traderBotWallet = payable(_transferBotWallet);
+        transferBotWallet = payable(_transferBotWallet);
     }
 
     function isDepositWallet(address _wallet) public view returns (bool) {

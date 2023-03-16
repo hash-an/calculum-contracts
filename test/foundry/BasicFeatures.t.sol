@@ -69,7 +69,7 @@ contract BasicFeaturesTest is Test {
         assertEq(vault.asset(), address(usdc), "init: wrong asset address");
         assertEq(vault.treasuryWallet(), treasury, "init: wrong treasury address");
         assertEq(address(vault.oracle()), address(oracle), "init: wrong oracle address");
-        assertEq(vault.traderBotWallet(), traderWallet, "init: wrong trader bot wallet address");
+        assertEq(vault.transferBotWallet(), traderWallet, "init: wrong trader bot wallet address");
         assertEq(vault.MANAGEMENT_FEE_PERCENTAGE(), 0.01 ether, "init: wrong management fee");
         assertEq(vault.PERFORMANCE_FEE_PERCENTAGE(), 0.15 ether, "init: wrong performance fee");
         assertEq(vault.EPOCH_START(), startTime, "init: wrong epoch start timestamp");

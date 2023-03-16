@@ -22,7 +22,7 @@ contract BasicTest is Test {
 
     address public deployer;
     address public traderBotAddress;
-    address public traderBotWallet;
+    address public transferBotWallet;
     address public transferBotRoleAddress;
     address public treasuryWallet;
     address[3] public investors;
@@ -43,7 +43,7 @@ contract BasicTest is Test {
     function setUp() public {
         deployer = makeAddr("deployer");
         traderBotAddress = makeAddr("traderBotAddress");
-        traderBotWallet = makeAddr("transferBot");
+        transferBotWallet = makeAddr("transferBot");
         transferBotRoleAddress = makeAddr("transferBotRole");
         treasuryWallet = makeAddr("treasury");
 
@@ -66,7 +66,7 @@ contract BasicTest is Test {
             TOKEN_DECIMALS,
             iusdc,
             address(oracle),
-            traderBotWallet,
+            transferBotWallet,
             treasuryWallet,
             transferBotRoleAddress,
             address(router),
@@ -77,7 +77,7 @@ contract BasicTest is Test {
         hoax(transferBotRoleAddress);
         usdc.approve(address(vault), _usdc(1000_000));
 
-        hoax(traderBotWallet);
+        hoax(transferBotWallet);
         usdc.approve(address(vault), _usdc(1000_000));
 
         investors[0] = _setUpAccount("investor0");
@@ -93,7 +93,7 @@ contract BasicTest is Test {
         assertEq(vault.asset(), address(usdc), "init: wrong asset");
         assertEq(vault.treasuryWallet(), treasuryWallet, "init: wrong treasury wallet");
         assertEq(address(vault.oracle()), address(oracle), "init: wrong oracle address");
-        assertEq(vault.traderBotWallet(), traderBotWallet, "init: wrong transfer bot address");
+        assertEq(vault.transferBotWallet(), transferBotWallet, "init: wrong transfer bot address");
         assertEq(
             vault.MANAGEMENT_FEE_PERCENTAGE(), 0.01 ether, "init: wrong management fee percentage"
         );
