@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 import {Helpers, CalculumVault, IUniswapV2Router02, IERC20MetadataUpgradeable} from "../../src/CalculumVault.sol";
 import {USDC} from "../../src/USDC.sol";
 import {MockUpOracle} from "../../src/mock/MockUpOracle.sol";
-import {UUPSProxy} from "OZ-Upgradeable-Foundry/src/UpgradeUUPS.sol";
+import {UUPSProxy} from "OZ-Upgradeable-Foundry/UpgradeUUPS.sol";
 
 contract BasicTest is Test {
 
@@ -17,7 +17,6 @@ contract BasicTest is Test {
     UUPSProxy public proxy;
     
     address public deployer;
-    address public traderBotAddress;
     address public transferBotAddress;
     address public transferBotRoleAddress;
     address public treasuryWallet;
@@ -38,10 +37,9 @@ contract BasicTest is Test {
 
     function setUp() public {
         deployer = makeAddr("deployer");
-        traderBotAddress = makeAddr("traderBotAddress");
-        transferBotAddress = makeAddr("transferBot");
-        transferBotRoleAddress = makeAddr("transferBotRole");
         treasuryWallet = makeAddr("treasury");        
+        transferBotRoleAddress = makeAddr("transferBotRole");
+        transferBotAddress = makeAddr("transferBot");
 
         startTime = block.timestamp;
         initialValues[0] = startTime;
@@ -52,7 +50,7 @@ contract BasicTest is Test {
         vm.startPrank(deployer);        
         usdc = new USDC();
         IERC20MetadataUpgradeable iusdc = IERC20MetadataUpgradeable(address(usdc));
-        oracle = new MockUpOracle(traderBotAddress, iusdc);
+        oracle = new MockUpOracle(transferBotAddress, iusdc);
         implementation = new CalculumVault();
         proxy = new UUPSProxy(address(implementation), "");
         vault = CalculumVault(payable(address(proxy)));
@@ -71,10 +69,10 @@ contract BasicTest is Test {
         vm.stopPrank();
 
         hoax(transferBotRoleAddress);
-        usdc.approve(address(vault), _usdc(1000_000));
+        usdc.approve(address(vault), _usdc(100_000_000));
 
         hoax(transferBotAddress);
-        usdc.approve(address(vault), _usdc(1000_000));
+        usdc.approve(address(vault), _usdc(100_000_000));
 
         investors[0] = _setUpAccount("investor0");
         investors[1] = _setUpAccount("investor1");
@@ -169,11 +167,11 @@ contract BasicTest is Test {
 
     function _setUpAccount(string memory accountName) internal returns (address account) {
         account = makeAddr(accountName);
-        uint256 amount = _usdc(1000_000);
+        uint256 amount = _usdc(1_000_000);
         hoax(deployer);
         usdc.mint(account, amount);
         hoax(account);
-        usdc.approve(address(vault), amount);
+        usdc.approve(address(vault), amount*100);
     }
 
     function _usdc(uint256 amount) internal pure returns (uint256) {
