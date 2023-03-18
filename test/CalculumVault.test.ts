@@ -187,7 +187,9 @@ describe("Verification of Basic Value and Features", function () {
     // Verify Oracle Address
     expect(await Calculum.oracle()).to.equal(Oracle.address);
     // Verify Trader Bot Address
-    expect(await Calculum.transferBotWallet()).to.equal(transferBotWallet.address);
+    expect(await Calculum.transferBotWallet()).to.equal(
+      transferBotWallet.address
+    );
     // Verify Initial Value of Percentage Maintenance Fee
     expect(await Calculum.MANAGEMENT_FEE_PERCENTAGE()).to.equal(
       ethers.utils.parseEther("0.01")
@@ -213,7 +215,7 @@ describe("Verification of Basic Value and Features", function () {
     // Verify Max Deposit
     expect(await Calculum.MAX_DEPOSIT()).to.equal(10000 * 10 ** 6);
     // Verify Max Total Vaul
-    expect(await Calculum.MAX_TOTAL_SUPPLY()).to.equal(
+    expect(await Calculum.MAX_TOTAL_DEPOSIT()).to.equal(
       ethers.utils.parseEther("50000")
     );
   });
@@ -560,7 +562,9 @@ describe("Check Standard Work Flow of the Value Based on Excel", function () {
     // Verify Oracle Address
     expect(await Calculum.oracle()).to.equal(Oracle.address);
     // Verify Trader Bot Address
-    expect(await Calculum.transferBotWallet()).to.equal(transferBotWallet.address);
+    expect(await Calculum.transferBotWallet()).to.equal(
+      transferBotWallet.address
+    );
     // Verify Initial Value of Percentage Maintenance Fee
     expect(await Calculum.MANAGEMENT_FEE_PERCENTAGE()).to.equal(
       ethers.utils.parseEther("0.01")

@@ -314,7 +314,7 @@
             "src": "contracts/CalculumVault.sol:63"
           },
           {
-            "label": "MAX_TOTAL_SUPPLY",
+            "label": "MAX_TOTAL_DEPOSIT",
             "offset": 0,
             "slot": "367",
             "type": "t_uint256",
@@ -401,12 +401,7 @@
           },
           "t_enum(Status)8119": {
             "label": "enum Helpers.Status",
-            "members": [
-              "Inactive",
-              "Pending",
-              "Claimet",
-              "Completed"
-            ],
+            "members": ["Inactive", "Pending", "Claimet", "Completed"],
             "numberOfBytes": "1"
           },
           "t_mapping(t_address,t_bool)": {

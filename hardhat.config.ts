@@ -51,7 +51,7 @@ module.exports = {
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
       forking: {
-        url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
+        url: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
         accounts: {
           mnemonic: process.env.MNEMONIC,
           balance: 1000,

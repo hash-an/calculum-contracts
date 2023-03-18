@@ -70,8 +70,8 @@ contract CalculumVault is
     uint256 public MAX_DEPOSIT;
     // Min Deposit
     uint256 public MIN_DEPOSIT;
-    // Max Total Supply
-    uint256 public MAX_TOTAL_SUPPLY;
+    // Max Total Assets
+    uint256 public MAX_TOTAL_DEPOSIT;
     // Minimal Wallet Ballance USDC in Transfer Bot
     uint256 public MIN_WALLET_BALANCE_USDC_TRANSFER_BOT;
     // Wallet Target Balance USDC in Transfer Bot
@@ -128,7 +128,7 @@ contract CalculumVault is
         EPOCH_START = _initialValue[0];
         MIN_DEPOSIT = _initialValue[1];
         MAX_DEPOSIT = _initialValue[2];
-        MAX_TOTAL_SUPPLY = _initialValue[3];
+        MAX_TOTAL_DEPOSIT = _initialValue[3];
         EPOCH_DURATION = 1 weeks; // 604800 seconds = 1 week
         MAINTENANCE_PERIOD_PRE_START = 60 minutes; // 60 minutes
         MAINTENANCE_PERIOD_POST_START = 30 minutes; // 30 minutes
@@ -227,9 +227,9 @@ contract CalculumVault is
                 maxDeposit(_receiver).sub(depositor.finalAmount.add(depositor.amountAssets))
             );
         }
-        if (totalAssets().add(_assets) > MAX_DEPOSIT.mul(5)) {
+        if (totalAssets().add(_assets) > MAX_TOTAL_DEPOSIT) {
             revert DepositExceedTotalVaultMax(
-                _receiver, totalAssets().add(_assets), MAX_DEPOSIT.mul(5)
+                _receiver, totalAssets().add(_assets), MAX_TOTAL_DEPOSIT
             );
         }
 
@@ -911,7 +911,7 @@ contract CalculumVault is
     function setInitialValue(uint256[3] memory _initialValue) external onlyOwner {
         MIN_DEPOSIT = _initialValue[0];
         MAX_DEPOSIT = _initialValue[1];
-        MAX_TOTAL_SUPPLY = _initialValue[2];
+        MAX_TOTAL_DEPOSIT = _initialValue[2];
     }
 
     /**

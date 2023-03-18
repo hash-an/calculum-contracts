@@ -2,12 +2,7 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import {
-    Helpers,
-    CalculumVault,
-    IUniswapV2Router02,
-    IERC20MetadataUpgradeable
-} from "../../src/CalculumVault.sol";
+import {Helpers, CalculumVault, IUniswapV2Router02, IERC20MetadataUpgradeable} from "../../src/CalculumVault.sol";
 import {USDC} from "../../src/USDC.sol";
 import {MockUpOracle} from "../../src/mock/MockUpOracle.sol";
 import {UUPSProxy} from "OZ-Upgradeable-Foundry/src/UpgradeUUPS.sol";
@@ -36,7 +31,7 @@ contract BasicTest is Test {
     uint256 public constant MAINT_TIME_AFTER = 30 minutes;
     uint256 public constant MIN_DEPOSIT_PER_ADDR = 300 * 10 ** 6;
     uint256 public constant MAX_DEPOSIT_PER_ADDR = 10000 * 10 ** 6;
-    uint256 public constant TOKEN_MAX_TOTAL_SUPPLY = 50000 ether;
+    uint256 public constant TOKEN_MAX_TOTAL_DEPOSIT = 50000 ether;
 
     uint256[4] public initialValues;
 
@@ -51,11 +46,13 @@ contract BasicTest is Test {
         initialValues[0] = startTime;
         initialValues[1] = MIN_DEPOSIT_PER_ADDR;
         initialValues[2] = MAX_DEPOSIT_PER_ADDR;
-        initialValues[3] = TOKEN_MAX_TOTAL_SUPPLY;
+        initialValues[3] = TOKEN_MAX_TOTAL_DEPOSIT;
 
         vm.startPrank(deployer);
         usdc = new USDC();
-        IERC20MetadataUpgradeable iusdc = IERC20MetadataUpgradeable(address(usdc));
+        IERC20MetadataUpgradeable iusdc = IERC20MetadataUpgradeable(
+            address(usdc)
+        );
         oracle = new MockUpOracle(traderBotAddress, iusdc);
         implementation = new CalculumVault();
         proxy = new UUPSProxy(address(implementation), "");
@@ -89,19 +86,47 @@ contract BasicTest is Test {
         assertEq(vault.owner(), deployer, "init: wrong deployer");
         assertEq(vault.name(), TOKEN_NAME, "init: wrong token name");
         assertEq(vault.symbol(), TOKEN_SYMBOL, "init: wrong token symbol");
-        assertEq(vault.decimals(), TOKEN_DECIMALS, "init: wrong token decimals");
+        assertEq(
+            vault.decimals(),
+            TOKEN_DECIMALS,
+            "init: wrong token decimals"
+        );
         assertEq(vault.asset(), address(usdc), "init: wrong asset");
-        assertEq(vault.treasuryWallet(), treasuryWallet, "init: wrong treasury wallet");
-        assertEq(address(vault.oracle()), address(oracle), "init: wrong oracle address");
-        assertEq(vault.transferBotWallet(), transferBotWallet, "init: wrong transfer bot address");
         assertEq(
-            vault.MANAGEMENT_FEE_PERCENTAGE(), 0.01 ether, "init: wrong management fee percentage"
+            vault.treasuryWallet(),
+            treasuryWallet,
+            "init: wrong treasury wallet"
         );
         assertEq(
-            vault.PERFORMANCE_FEE_PERCENTAGE(), 0.15 ether, "init: wrong performance fee percentage"
+            address(vault.oracle()),
+            address(oracle),
+            "init: wrong oracle address"
         );
-        assertEq(vault.EPOCH_START(), startTime, "init: wrong epoch start time");
-        assertEq(vault.EPOCH_DURATION(), EPOCH_DURATION, "init: wrong epoch duration");
+        assertEq(
+            vault.transferBotWallet(),
+            transferBotWallet,
+            "init: wrong transfer bot address"
+        );
+        assertEq(
+            vault.MANAGEMENT_FEE_PERCENTAGE(),
+            0.01 ether,
+            "init: wrong management fee percentage"
+        );
+        assertEq(
+            vault.PERFORMANCE_FEE_PERCENTAGE(),
+            0.15 ether,
+            "init: wrong performance fee percentage"
+        );
+        assertEq(
+            vault.EPOCH_START(),
+            startTime,
+            "init: wrong epoch start time"
+        );
+        assertEq(
+            vault.EPOCH_DURATION(),
+            EPOCH_DURATION,
+            "init: wrong epoch duration"
+        );
         assertEq(
             vault.MAINTENANCE_PERIOD_PRE_START(),
             MAINT_TIME_BEFORE,
@@ -112,10 +137,20 @@ contract BasicTest is Test {
             MAINT_TIME_AFTER,
             "init: wrong post maintenance period"
         );
-        assertEq(vault.MIN_DEPOSIT(), MIN_DEPOSIT_PER_ADDR, "init: wrong minimal deposit");
-        assertEq(vault.MAX_DEPOSIT(), MAX_DEPOSIT_PER_ADDR, "init: wrong maximum deposit");
         assertEq(
-            vault.MAX_TOTAL_SUPPLY(), TOKEN_MAX_TOTAL_SUPPLY, "init: wrong maximum total supply"
+            vault.MIN_DEPOSIT(),
+            MIN_DEPOSIT_PER_ADDR,
+            "init: wrong minimal deposit"
+        );
+        assertEq(
+            vault.MAX_DEPOSIT(),
+            MAX_DEPOSIT_PER_ADDR,
+            "init: wrong maximum deposit"
+        );
+        assertEq(
+            vault.MAX_TOTAL_DEPOSIT(),
+            TOKEN_MAX_TOTAL_DEPOSIT,
+            "init: wrong maximum total supply"
         );
     }
 
@@ -125,12 +160,24 @@ contract BasicTest is Test {
         uint256 currentEpoch;
         vm.startPrank(deployer);
         vm.expectRevert(
-            abi.encodeWithSelector(Helpers.VaultInMaintenance.selector, deployer, timestamp)
+            abi.encodeWithSelector(
+                Helpers.VaultInMaintenance.selector,
+                deployer,
+                timestamp
+            )
         );
-        vault.setEpochDuration(EPOCH_DURATION, MAINT_TIME_AFTER, MAINT_TIME_BEFORE);
+        vault.setEpochDuration(
+            EPOCH_DURATION,
+            MAINT_TIME_AFTER,
+            MAINT_TIME_BEFORE
+        );
         // Move to after the Maintenance Time Post Maintenance
         vm.warp(timestamp + MAINT_TIME_AFTER);
-        vault.setEpochDuration(EPOCH_DURATION, MAINT_TIME_AFTER, MAINT_TIME_BEFORE);
+        vault.setEpochDuration(
+            EPOCH_DURATION,
+            MAINT_TIME_AFTER,
+            MAINT_TIME_BEFORE
+        );
 
         // Move to after Finalize the Next Epoch (1st Epoch)
         vm.warp(timestamp + EPOCH_DURATION);
@@ -181,13 +228,23 @@ contract BasicTest is Test {
         vm.assume(otherDeveloper != address(0));
         hoax(deployer);
         vault.transferOwnership(otherDeveloper);
-        assertEq(vault.owner(), otherDeveloper, "owner: wrong owner after transfer ownership");
+        assertEq(
+            vault.owner(),
+            otherDeveloper,
+            "owner: wrong owner after transfer ownership"
+        );
         hoax(otherDeveloper);
         vault.renounceOwnership();
-        assertEq(vault.owner(), address(0), "owner: wrong owner after renounce ownership");
+        assertEq(
+            vault.owner(),
+            address(0),
+            "owner: wrong owner after renounce ownership"
+        );
     }
 
-    function _setUpAccount(string memory accountName) internal returns (address account) {
+    function _setUpAccount(
+        string memory accountName
+    ) internal returns (address account) {
         account = makeAddr(accountName);
         uint256 amount = _usdc(1000_000);
         hoax(deployer);
