@@ -169,25 +169,25 @@ contract CalculumVault is
      * Method to Update Next Epoch starting timestamp
      */
     function NextEpoch() internal returns (uint256) {
-        if (block.timestamp > EPOCH_START.add(EPOCH_DURATION.mul(CURRENT_EPOCH.add(1)))) {
+        if (block.timestamp >EPOCH_START + (EPOCH_DURATION * (CURRENT_EPOCH + 1))) {
             ++CURRENT_EPOCH;
         }
-        return EPOCH_START.add(EPOCH_DURATION.mul(CURRENT_EPOCH.add(1)));
+        return EPOCH_START + (EPOCH_DURATION * (CURRENT_EPOCH + 1));
     }
 
     /**
      * @dev Method to Update Current Epoch starting timestamp
      */
     function CurrentEpoch() public onlyOwner returns (uint256) {
-        return NextEpoch().sub(EPOCH_DURATION);
+        return NextEpoch() - EPOCH_DURATION;
     }
 
     function getCurrentEpoch() public view returns (uint256) {
-        return getNextEpoch().sub(EPOCH_DURATION);
+        return getNextEpoch() - EPOCH_DURATION;
     }
 
     function getNextEpoch() public view returns (uint256) {
-        return EPOCH_START.add(EPOCH_DURATION.mul(CURRENT_EPOCH.add(1)));
+        return EPOCH_START + (EPOCH_DURATION * (CURRENT_EPOCH + 1));
     }
 
     /**

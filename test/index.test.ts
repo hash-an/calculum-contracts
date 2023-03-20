@@ -157,7 +157,6 @@ describe("Verification of Basic Value and Features", function () {
   });
 
   beforeEach(async () => {
-    await network.provider.send("evm_mine", []);
     const time = Math.floor(
       (await ethers.provider.getBlock("latest")).timestamp
     );
@@ -437,8 +436,9 @@ describe("Verification of Basic Value and Features", function () {
 });
 
 describe("Verification of Basic Value and Features", function () {
-  const EPOCH_TIME: moment.Moment = moment();
-  const EPOCH_START = EPOCH_TIME.utc(false).unix();
+  let EPOCH_START: number;
+  let EPOCH_TIME: moment.Moment;
+  let CURRENT_EPOCH: number = 0;
   let currentEpoch: moment.Moment;
   let nextEpoch: moment.Moment;
   before(async () => {
@@ -453,6 +453,11 @@ describe("Verification of Basic Value and Features", function () {
       lastdeployer,
     ] = await ethers.getSigners();
     await run("compile");
+    // get satrt time
+    EPOCH_START = Math.floor(
+      (await ethers.provider.getBlock("latest")).timestamp
+    );
+    EPOCH_TIME = moment(EPOCH_START * 1000);
     // Getting from command Line de Contract Name
     const contractName: string = "CalculumVault";
 
@@ -543,7 +548,6 @@ describe("Verification of Basic Value and Features", function () {
   });
 
   beforeEach(async () => {
-    await network.provider.send("evm_mine", []);
     const time = Math.floor(
       (await ethers.provider.getBlock("latest")).timestamp
     );
@@ -562,6 +566,7 @@ describe("Verification of Basic Value and Features", function () {
     nextEpoch = moment(
       parseInt((await Calculum.getNextEpoch()).toString()) * 1000
     );
+    console.log("TimeStamp Next Epoch: ", nextEpoch.utc(false));
   });
 
   //   ** Validate Initial Value */
@@ -660,9 +665,9 @@ describe("Verification of Basic Value and Features", function () {
     );
     // Getting Current Epoch and Next Epoch
     await Calculum.CurrentEpoch();
-    const CURRECT_EPOCH = parseInt((await Calculum.CURRENT_EPOCH()).toString());
-    console.log(`Number of Current Epoch: ${CURRECT_EPOCH}`);
-    expect(2).to.equal(CURRECT_EPOCH);
+    const Current_Epoch = parseInt((await Calculum.CURRENT_EPOCH()).toString());
+    console.log(`Number of Current Epoch: ${Current_Epoch}`);
+    expect(CURRENT_EPOCH).to.equal(Current_Epoch);
     let currentEpoch: moment.Moment = moment(
       parseInt((await Calculum.getCurrentEpoch()).toString()) * 1000
     );
@@ -674,7 +679,7 @@ describe("Verification of Basic Value and Features", function () {
     );
     expect(currentEpoch.utc(false).unix()).to.equal(
       (await Calculum.EPOCH_START()).add(
-        (await Calculum.EPOCH_DURATION()).mul(2)
+        (await Calculum.EPOCH_DURATION()).mul(0)
       )
     );
     let nextEpoch: moment.Moment = moment(
@@ -709,6 +714,64 @@ describe("Verification of Basic Value and Features", function () {
       maintTimeAfter
     );
     // start Real Test of Epoch
+    // Verify the maximal setting of deposit
+    await expect(
+      Calculum.connect(alice).deposit(150001 * 10 ** 6, alice.address)
+    )
+      .to.revertedWithCustomError(Calculum, "DepositExceededMax")
+      .withArgs(alice.address, MAX_DEPOSIT);
+    // Verify the minimal setting of deposit
+    await expect(
+      Calculum.connect(alice).deposit(29999 * 10 ** 6, alice.address)
+    )
+      .to.revertedWithCustomError(Calculum, "DepositAmountTooLow")
+      .withArgs(alice.address, 29999 * 10 ** 6);
+    // Alice Introduces the Asset to the Vault
+    const balanceAliceBefore =
+      parseInt((await USDc.balanceOf(alice.address)).toString()) / 10 ** 6;
+    console.log(
+      "Balance of Alice Before to Deposit in the Vault: ",
+      balanceAliceBefore
+    );
+    expect((await Calculum.DEPOSITS(alice.address)).status).to.equal(0);
+    // Validate all Event Fire after Alice Deposit in the Vault
+    expect(
+      await Calculum.connect(alice).deposit(150000 * 10 ** 6, alice.address)
+    )
+      .to.emit(Calculum, "PendingDeposit")
+      .withArgs(
+        alice.address,
+        alice.address,
+        150000 * 10 ** 6,
+        150000 * 10 ** 18
+      )
+      .to.emit(USDc, "Transfer")
+      .withArgs(alice.address, Calculum.address, 150000 * 10 ** 6);
+    console.log(`Alice deposits ${150000} tokens os USDc`);
+    // Validate Deposit in the Vault
+    expect((await Calculum.DEPOSITS(alice.address)).status).to.equal(1);
+    expect(
+      parseInt((await Calculum.DEPOSITS(alice.address)).amountAssets.toString())
+    ).to.equal(150000 * 10 ** 6);
+    expect((await Calculum.DEPOSITS(alice.address)).amountShares).to.equal(
+      ethers.utils.parseEther("150000")
+    );
+    expect(
+      parseInt((await Calculum.DEPOSITS(alice.address)).finalAmount.toString())
+    ).to.equal(0);
+    const balanceAliceVault =
+      parseInt((await Calculum.balanceOf(alice.address)).toString()) / 10 ** 6;
+    console.log("Verify of Balance of Alice in the Vault: ", balanceAliceVault);
+    // Verify Alice don;t have any Vault token in your wallet
+    expect(balanceAliceVault).to.equal(0);
+    const balanceAliceAfter =
+      parseInt((await USDc.balanceOf(alice.address)).toString()) / 10 ** 6;
+    console.log(
+      "Balance of Alice After to Deposit in the Vault: ",
+      balanceAliceAfter
+    );
+    // Validate the Amount transferred from Alice to the Vault
+    expect(balanceAliceBefore - balanceAliceAfter).to.equal(150000);
   });
 
   afterEach(async () => {

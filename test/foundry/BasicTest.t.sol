@@ -128,6 +128,13 @@ contract BasicTest is Test {
             abi.encodeWithSelector(Helpers.VaultInMaintenance.selector, deployer, timestamp)
         );
         vault.setEpochDuration(EPOCH_DURATION, MAINT_TIME_AFTER, MAINT_TIME_BEFORE);
+        // check Epoch
+        currentTime = vault.CurrentEpoch();
+        emit log_uint(timestamp);
+        emit log_uint(currentEpoch);
+        emit log_uint(currentTime);
+        assertEq(currentTime, vault.CurrentEpoch());
+        assertEq(currentEpoch, vault.CURRENT_EPOCH());
         // Move to after the Maintenance Time Post Maintenance
         vm.warp(timestamp + MAINT_TIME_AFTER);
         vault.setEpochDuration(EPOCH_DURATION, MAINT_TIME_AFTER, MAINT_TIME_BEFORE);
@@ -135,8 +142,8 @@ contract BasicTest is Test {
         // Move to after Finalize the Next Epoch (1st Epoch)
         vm.warp(timestamp + EPOCH_DURATION);
         timestamp = block.timestamp;
-        currentEpoch = 1;
         currentTime = vault.CurrentEpoch();
+        currentEpoch = 1;
         emit log_uint(timestamp);
         emit log_uint(currentEpoch);
         emit log_uint(currentTime);
@@ -149,8 +156,8 @@ contract BasicTest is Test {
         // Move to after Finalize the Next Epoch (2nd Epoch)
         vm.warp(timestamp + EPOCH_DURATION);
         timestamp = block.timestamp;
-        currentEpoch = 2;
         currentTime = vault.CurrentEpoch();
+        currentEpoch = 2;
         emit log_uint(timestamp);
         emit log_uint(currentEpoch);
         emit log_uint(currentTime);
@@ -163,8 +170,8 @@ contract BasicTest is Test {
         // Move to after Finalize the Next Epoch (3rd Epoch)
         vm.warp(timestamp + EPOCH_DURATION);
         timestamp = block.timestamp;
-        currentEpoch = 3;
         currentTime = vault.CurrentEpoch();
+        currentEpoch = 3;
         emit log_uint(timestamp);
         emit log_uint(currentEpoch);
         emit log_uint(currentTime);
