@@ -65,7 +65,11 @@ abstract contract Helpers {
     /**
      * @dev Fees Transfer
      */
-    event FeesTranfer(uint256 indexed epoch, uint256 Amount);
+    event FeesTransfer(uint256 indexed epoch, uint256 Amount);
+	/**
+     * @dev Dex Transfer
+     */
+    event DexTransfer(uint256 indexed epoch, uint256 Amount);
 
     /// Errors
     /// The User `_claimer` is not allowed to claim this deposit

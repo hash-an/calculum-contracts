@@ -731,7 +731,7 @@ contract CalculumVault is
     /**
      * @dev Method to Calculate the Transfer Bot Gas Reserve in USDC in the current epoch
      */
-    function CalculateTransferBotGasReserveDA() private view returns (uint256) {
+    function CalculateTransferBotGasReserveDA() public view returns (uint256) {
         uint256 targetBalance = TARGET_WALLET_BALANCE_USDC_TRANSFER_BOT;
         uint256 currentBalance = _asset.balanceOf(transferBotWallet);
 
@@ -865,7 +865,7 @@ contract CalculumVault is
             }
             actualTx.pending = false;
         }
-        // add event
+        emit DexTransfer(CURRENT_EPOCH, actualTx.amount);
     }
 
     /**
@@ -882,7 +882,7 @@ contract CalculumVault is
             );
         }
         SafeERC20Upgradeable.safeTransfer(_asset, treasuryWallet, feeTransfer);
-        emit FeesTranfer(CURRENT_EPOCH, feeTransfer);
+        emit FeesTransfer(CURRENT_EPOCH, feeTransfer);
     }
 
 	/**
