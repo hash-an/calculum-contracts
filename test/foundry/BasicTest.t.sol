@@ -21,7 +21,7 @@ contract BasicTest is Test {
     UUPSProxy public proxy;
 
     address public deployer;
-    address public transferBotAddress;
+    address public transferBotWallet;
     address public transferBotRoleAddress;
     address public treasuryWallet;
     address[3] public investors;
@@ -43,7 +43,7 @@ contract BasicTest is Test {
         deployer = makeAddr("deployer");
         treasuryWallet = makeAddr("treasury");
         transferBotRoleAddress = makeAddr("transferBotRole");
-        transferBotAddress = makeAddr("transferBot");
+        transferBotWallet = makeAddr("transferBot");
 
         startTime = block.timestamp;
         initialValues[0] = startTime;
@@ -54,7 +54,7 @@ contract BasicTest is Test {
         vm.startPrank(deployer);
         usdc = new USDC();
         IERC20MetadataUpgradeable iusdc = IERC20MetadataUpgradeable(address(usdc));
-        oracle = new MockUpOracle(transferBotAddress, iusdc);
+        oracle = new MockUpOracle(transferBotWallet, iusdc);
         implementation = new CalculumVault();
         proxy = new UUPSProxy(address(implementation), "");
         vault = CalculumVault(payable(address(proxy)));
@@ -64,7 +64,7 @@ contract BasicTest is Test {
             TOKEN_DECIMALS,
             iusdc,
             address(oracle),
-            transferBotAddress,
+            transferBotWallet,
             treasuryWallet,
             transferBotRoleAddress,
             address(router),
@@ -75,7 +75,7 @@ contract BasicTest is Test {
         hoax(transferBotRoleAddress);
         usdc.approve(address(vault), _usdc(100_000_000));
 
-        hoax(transferBotAddress);
+        hoax(transferBotWallet);
         usdc.approve(address(vault), _usdc(100_000_000));
 
         investors[0] = _setUpAccount("investor0");
@@ -97,7 +97,7 @@ contract BasicTest is Test {
         assertEq(vault.asset(), address(usdc), "init: wrong asset");
         assertEq(vault.treasuryWallet(), treasuryWallet, "init: wrong treasury wallet");
         assertEq(address(vault.oracle()), address(oracle), "init: wrong oracle address");
-        assertEq(vault.transferBotWallet(), transferBotAddress, "init: wrong transfer bot address");
+        assertEq(vault.transferBotWallet(), transferBotWallet, "init: wrong transfer bot address");
         assertEq(
             vault.MANAGEMENT_FEE_PERCENTAGE(), 0.01 ether, "init: wrong management fee percentage"
         );

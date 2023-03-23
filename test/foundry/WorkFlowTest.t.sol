@@ -15,6 +15,8 @@ contract WorkFlowTest is BasicTest {
 
     event Transfer(address indexed from, address indexed to, uint256 amount);
 
+    event FeesTranfer(uint256 indexed epoch, uint256 Amount);
+
     function testEpoch0() public {
         vm.startPrank(deployer);
         // Move to after the Maintenance Time Post Maintenance
@@ -90,11 +92,12 @@ contract WorkFlowTest is BasicTest {
         assertEq(finalAmount, _usdc(1500), "epoch 0: wrong final amount in vault");
         uint256 vaultBalanceBefore = usdc.balanceOf(address(vault));
         vm.expectEmit(true, true, false, true, address(usdc));
-        emit Transfer(address(vault), transferBotAddress, _usdc(1500));
+        emit Transfer(address(vault), transferBotWallet, _usdc(1500));
         vault.dexTransfer();
         uint256 vaultBalanceAfter = usdc.balanceOf(address(vault));
         assertEq(vaultBalanceAfter + _usdc(1500), vaultBalanceBefore, "epoch 0: wrong USDC balance change of vault");
         assertEq(vaultBalanceAfter, 0, "epoch 0: USDC balance in vault should be 0");
+        assertEq(usdc.balanceOf(transferBotWallet), _usdc(1500), "epoch 0: wrong USDC balance of tranfer bot");
 
         vm.expectRevert(Helpers.FirstEpochNoFeeTransfer.selector);
         vault.feesTransfer();
@@ -106,7 +109,7 @@ contract WorkFlowTest is BasicTest {
         vault.CurrentEpoch();
     }
 
-    function testEpoch1() public {
+    function testEpoch1() public returns (uint256, uint256) {
         testEpoch0();
         assertEq(vault.CURRENT_EPOCH(), 1, "epoch 1: already in epoch 1");
 
@@ -149,25 +152,33 @@ contract WorkFlowTest is BasicTest {
 
         (,, uint256 transferAmount) = vault.netTransfer(vault.CURRENT_EPOCH());
 
+        assertEq(usdc.balanceOf(address(vault)), 0, "epoch 1: wrong vault balance before dex transfer");
+
         vm.expectEmit(true, true, false, true, address(usdc));
-        emit Transfer(transferBotAddress, address(vault), transferAmount);
+        emit Transfer(transferBotWallet, address(vault), transferAmount);
         vault.dexTransfer();
+
+        assertEq(usdc.balanceOf(address(vault)), transferAmount, "epoch 1: wrong vault balance after dex transfer");
+        assertEq(usdc.balanceOf(transferBotWallet), _usdc(1500) - transferAmount, "epoch 1: wrong transfer bot balance after dex transfer");
 
         vm.expectEmit(true, true, false, true, address(usdc));
         emit Transfer(address(vault), treasuryWallet, 0);
+        vm.expectEmit(true, false, false, true, address(vault));
+        emit FeesTranfer(vault.CURRENT_EPOCH(), 0);
         vault.feesTransfer();
         vm.stopPrank();
 
         vm.warp(vault.getNextEpoch() + 1);
         hoax(deployer);
         vault.CurrentEpoch();
+
+        return (usdc.balanceOf(address(vault)), usdc.balanceOf(transferBotWallet));
     }
 
-    function testEpoch2() public {
-        testEpoch1();
+    function testEpoch2() public returns (uint256, uint256) {
+        (uint256 vaultBalance, uint256 transferBotBalance) = testEpoch1();
         assertEq(vault.CURRENT_EPOCH(), 2, "epoch 2: already in epoch 2");
 
-        address alice = investors[0];
         address bob = investors[1];
         uint256 depositAmount = _usdc(500);
         uint256 expectShares = 555.67965734569609435 ether;
@@ -190,6 +201,8 @@ contract WorkFlowTest is BasicTest {
         assertEq(amountShares, expectShares, "epoch 2: wrong shares amount in vault");
         assertEq(finalAmount, 0, "epoch 2: wrong shares amount in vault");
 
+        assertEq(usdc.balanceOf(address(vault)), vaultBalance + _usdc(500), "epoch 2: wrong vault balance after deposit");
+
         hoax(deployer);
         oracle.setAssetValue(1282226400);
         vm.warp(vault.getNextEpoch() + MAINT_TIME_AFTER - 43 minutes);
@@ -203,16 +216,23 @@ contract WorkFlowTest is BasicTest {
 
         vm.startPrank(transferBotRoleAddress);
         vm.expectEmit(true, true, false, true, address(usdc));
-        emit Transfer(address(vault), transferBotAddress, transferAmount);
+        emit Transfer(address(vault), transferBotWallet, transferAmount);
         vault.dexTransfer();
+
+        assertEq(usdc.balanceOf(address(vault)), vaultBalance + _usdc(500) - transferAmount, "epoch 2: wrong vault balance after dex transfer");
+        assertEq(usdc.balanceOf(transferBotWallet), transferBotBalance + transferAmount, "epoch 2: wrong transfer bot balance after dex transfer");
 
         vm.expectEmit(true, true, false, true, address(usdc));
         emit Transfer(address(vault), treasuryWallet, 0);
+        vm.expectEmit(true, false, false, true, address(vault));
+        emit FeesTranfer(vault.CURRENT_EPOCH(), 0);
         vault.feesTransfer();
         vm.stopPrank();
 
         vm.warp(vault.getNextEpoch() + 1);
         hoax(deployer);
         vault.CurrentEpoch();
+
+        return (usdc.balanceOf(address(vault)), usdc.balanceOf(transferBotWallet));
     }
 }
