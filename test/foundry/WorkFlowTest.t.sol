@@ -215,10 +215,4 @@ contract WorkFlowTest is BasicTest {
         hoax(deployer);
         vault.CurrentEpoch();
     }
-
-    // function testEpoch3() public {
-    //     testEpoch2();
-    //     assertEq(vault.CURRENT_EPOCH(), 3, "epoch 3: already in epoch 3");
-
-    // }
 }
