@@ -1,21 +1,25 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import {Helpers, CalculumVault, IUniswapV2Router02, IERC20MetadataUpgradeable} from "../../src/CalculumVault.sol";
+import {
+    Helpers,
+    CalculumVault,
+    IUniswapV2Router02,
+    IERC20MetadataUpgradeable
+} from "../../src/CalculumVault.sol";
 import {USDC} from "../../src/USDC.sol";
 import {MockUpOracle} from "../../src/mock/MockUpOracle.sol";
 import {UUPSProxy} from "OZ-Upgradeable-Foundry/UpgradeUUPS.sol";
 
 contract BasicTest is Test {
-
     CalculumVault public implementation;
     CalculumVault public vault;
     USDC public usdc;
     MockUpOracle public oracle;
     IUniswapV2Router02 public router;
     UUPSProxy public proxy;
-    
+
     address public deployer;
     address public transferBotAddress;
     address public transferBotRoleAddress;
@@ -23,21 +27,21 @@ contract BasicTest is Test {
     address[3] public investors;
     uint256 public startTime;
 
-    string constant public TOKEN_NAME = "CalculumUSDC1";
-    string constant public TOKEN_SYMBOL = "calcUSDC1";
-    uint8 constant public TOKEN_DECIMALS = 18;
-    uint256 constant public EPOCH_DURATION = 1 weeks;
-    uint256 constant public MAINT_TIME_BEFORE = 60 minutes;
-    uint256 constant public MAINT_TIME_AFTER = 30 minutes;
-    uint256 constant public MIN_DEPOSIT_PER_ADDR = 300 * 10**6;
-    uint256 constant public MAX_DEPOSIT_PER_ADDR = 10000 * 10**6;
-    uint256 constant public TOKEN_MAX_TOTAL_SUPPLY = 50000 ether;
+    string public constant TOKEN_NAME = "CalculumUSDC1";
+    string public constant TOKEN_SYMBOL = "calcUSDC1";
+    uint8 public constant TOKEN_DECIMALS = 18;
+    uint256 public constant EPOCH_DURATION = 1 weeks;
+    uint256 public constant MAINT_TIME_BEFORE = 60 minutes;
+    uint256 public constant MAINT_TIME_AFTER = 30 minutes;
+    uint256 public constant MIN_DEPOSIT_PER_ADDR = 300 * 10 ** 6;
+    uint256 public constant MAX_DEPOSIT_PER_ADDR = 10000 * 10 ** 6;
+    uint256 public constant TOKEN_MAX_TOTAL_DEPOSIT = 50000 ether;
 
     uint256[4] public initialValues;
 
     function setUp() public {
         deployer = makeAddr("deployer");
-        treasuryWallet = makeAddr("treasury");        
+        treasuryWallet = makeAddr("treasury");
         transferBotRoleAddress = makeAddr("transferBotRole");
         transferBotAddress = makeAddr("transferBot");
 
@@ -45,9 +49,9 @@ contract BasicTest is Test {
         initialValues[0] = startTime;
         initialValues[1] = MIN_DEPOSIT_PER_ADDR;
         initialValues[2] = MAX_DEPOSIT_PER_ADDR;
-        initialValues[3] = TOKEN_MAX_TOTAL_SUPPLY;
+        initialValues[3] = TOKEN_MAX_TOTAL_DEPOSIT;
 
-        vm.startPrank(deployer);        
+        vm.startPrank(deployer);
         usdc = new USDC();
         IERC20MetadataUpgradeable iusdc = IERC20MetadataUpgradeable(address(usdc));
         oracle = new MockUpOracle(transferBotAddress, iusdc);
@@ -77,6 +81,12 @@ contract BasicTest is Test {
         investors[0] = _setUpAccount("investor0");
         investors[1] = _setUpAccount("investor1");
         investors[2] = _setUpAccount("investor2");
+
+        vm.startPrank(deployer);
+        vault.addDropWhitelist(investors[0], true);
+        vault.addDropWhitelist(investors[1], true);
+        vault.addDropWhitelist(investors[2], true);
+        vm.stopPrank();
     }
 
     function testBasicValues() public {
@@ -88,67 +98,86 @@ contract BasicTest is Test {
         assertEq(vault.treasuryWallet(), treasuryWallet, "init: wrong treasury wallet");
         assertEq(address(vault.oracle()), address(oracle), "init: wrong oracle address");
         assertEq(vault.transferBotWallet(), transferBotAddress, "init: wrong transfer bot address");
-        assertEq(vault.MANAGEMENT_FEE_PERCENTAGE(), 0.01 ether, "init: wrong management fee percentage");
-        assertEq(vault.PERFORMANCE_FEE_PERCENTAGE(), 0.15 ether, "init: wrong performance fee percentage");
+        assertEq(
+            vault.MANAGEMENT_FEE_PERCENTAGE(), 0.01 ether, "init: wrong management fee percentage"
+        );
+        assertEq(
+            vault.PERFORMANCE_FEE_PERCENTAGE(), 0.15 ether, "init: wrong performance fee percentage"
+        );
         assertEq(vault.EPOCH_START(), startTime, "init: wrong epoch start time");
         assertEq(vault.EPOCH_DURATION(), EPOCH_DURATION, "init: wrong epoch duration");
-        assertEq(vault.MAINTENANCE_PERIOD_PRE_START(), MAINT_TIME_BEFORE, "init: wrong pre maintenance period");
-        assertEq(vault.MAINTENANCE_PERIOD_POST_START(), MAINT_TIME_AFTER, "init: wrong post maintenance period");
+        assertEq(
+            vault.MAINTENANCE_PERIOD_PRE_START(),
+            MAINT_TIME_BEFORE,
+            "init: wrong pre maintenance period"
+        );
+        assertEq(
+            vault.MAINTENANCE_PERIOD_POST_START(),
+            MAINT_TIME_AFTER,
+            "init: wrong post maintenance period"
+        );
         assertEq(vault.MIN_DEPOSIT(), MIN_DEPOSIT_PER_ADDR, "init: wrong minimal deposit");
         assertEq(vault.MAX_DEPOSIT(), MAX_DEPOSIT_PER_ADDR, "init: wrong maximum deposit");
-        assertEq(vault.MAX_TOTAL_SUPPLY(), TOKEN_MAX_TOTAL_SUPPLY, "init: wrong maximum total supply");
+        assertEq(
+            vault.MAX_TOTAL_DEPOSIT(), TOKEN_MAX_TOTAL_DEPOSIT, "init: wrong maximum total supply"
+        );
     }
 
     function testEpochSequence() public {
-        uint256 timestamp = block.timestamp;
         uint256 currentTime;
         uint256 currentEpoch;
         vm.startPrank(deployer);
-        vm.expectRevert(abi.encodeWithSelector(Helpers.VaultInMaintenance.selector, deployer, timestamp));
+        vm.expectRevert(
+            abi.encodeWithSelector(Helpers.VaultInMaintenance.selector, deployer, block.timestamp)
+        );
         vault.setEpochDuration(EPOCH_DURATION, MAINT_TIME_AFTER, MAINT_TIME_BEFORE);
+        // check Epoch
+        currentTime = vault.CurrentEpoch();
+        emit log_uint(currentEpoch);
+        emit log_uint(currentTime);
+        emit log_uint(block.timestamp);
+        assertEq(currentTime, vault.CurrentEpoch());
+        assertEq(currentEpoch, vault.CURRENT_EPOCH());
         // Move to after the Maintenance Time Post Maintenance
-        vm.warp(timestamp + MAINT_TIME_AFTER);
+        vm.warp(block.timestamp + MAINT_TIME_AFTER);
         vault.setEpochDuration(EPOCH_DURATION, MAINT_TIME_AFTER, MAINT_TIME_BEFORE);
 
         // Move to after Finalize the Next Epoch (1st Epoch)
-        vm.warp(timestamp + EPOCH_DURATION);
-        timestamp = block.timestamp;
+        vm.warp(vault.getNextEpoch() + 1);
+        currentTime = vault.CurrentEpoch();
         currentEpoch = 1;
-        currentTime = vault.CurrentEpoch();
-        emit log_uint(timestamp);
         emit log_uint(currentEpoch);
         emit log_uint(currentTime);
+        emit log_uint(block.timestamp);
         assertEq(currentTime, vault.CurrentEpoch());
         assertEq(currentEpoch, vault.CURRENT_EPOCH());
-        vm.warp(timestamp + EPOCH_DURATION / 4);
+        vm.warp(block.timestamp + EPOCH_DURATION / 4);
         assertEq(currentTime, vault.CurrentEpoch());
         assertEq(currentEpoch, vault.CURRENT_EPOCH());
-
+//
         // Move to after Finalize the Next Epoch (2nd Epoch)
-        vm.warp(timestamp + EPOCH_DURATION);
-        timestamp = block.timestamp;
-        currentEpoch = 2;
+        vm.warp(vault.getNextEpoch() + 1);
         currentTime = vault.CurrentEpoch();
-        emit log_uint(timestamp);
+        currentEpoch = 2;
         emit log_uint(currentEpoch);
         emit log_uint(currentTime);
+        emit log_uint(block.timestamp);
         assertEq(currentTime, vault.CurrentEpoch());
         assertEq(currentEpoch, vault.CURRENT_EPOCH());
-        vm.warp(timestamp + EPOCH_DURATION / 2);
+        vm.warp(block.timestamp + EPOCH_DURATION / 2);
         assertEq(currentTime, vault.CurrentEpoch());
         assertEq(currentEpoch, vault.CURRENT_EPOCH());
 
         // Move to after Finalize the Next Epoch (3rd Epoch)
-        vm.warp(timestamp + EPOCH_DURATION);
-        timestamp = block.timestamp;
-        currentEpoch = 3;
+        vm.warp(vault.getNextEpoch() + 1);
         currentTime = vault.CurrentEpoch();
-        emit log_uint(timestamp);
+        currentEpoch = 3;
         emit log_uint(currentEpoch);
         emit log_uint(currentTime);
+        emit log_uint(block.timestamp);
         assertEq(currentTime, vault.CurrentEpoch());
         assertEq(currentEpoch, vault.CURRENT_EPOCH());
-        vm.warp(timestamp + EPOCH_DURATION / 5);
+        vm.warp(block.timestamp + EPOCH_DURATION * 3 / 4);
         assertEq(currentTime, vault.CurrentEpoch());
         assertEq(currentEpoch, vault.CURRENT_EPOCH());
 
@@ -175,6 +204,6 @@ contract BasicTest is Test {
     }
 
     function _usdc(uint256 amount) internal pure returns (uint256) {
-        return amount * 10**6;
+        return amount * 10 ** 6;
     }
 }

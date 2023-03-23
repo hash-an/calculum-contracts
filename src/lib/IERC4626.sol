@@ -1,9 +1,15 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.17;
 
-import "openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
-import "openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
+import "@openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
+import
+    "@openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 
+/**
+ * @title ERC4626 Interface
+ * @dev Interface of Methods based on standard ERC4626
+ * @custom:a Alfredo Lopez / Calculum
+ */
 interface IERC4626 is IERC20Upgradeable, IERC20MetadataUpgradeable {
     /**
      * @dev Event emitted execute when the user executed the Claim of Vault Token (Shares).

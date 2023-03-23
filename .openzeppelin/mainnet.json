@@ -622,7 +622,7 @@
             "src": "contracts/CalculumVault.sol:65"
           },
           {
-            "label": "MAX_TOTAL_SUPPLY",
+            "label": "MAX_TOTAL_DEPOSIT",
             "offset": 0,
             "slot": "367",
             "type": "t_uint256",

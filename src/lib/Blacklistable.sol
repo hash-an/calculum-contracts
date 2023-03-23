@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.17;
 
-import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
+import "@openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 
 /**
  * @title Blacklistable Methods
  * @dev Allows accounts to be blacklisted by Owner
- * @custom:a Alfredo Lopez / Marketingcycle / ValiFI
+ * @custom:a Alfredo Lopez / Calculum
  */
 contract Blacklistable is OwnableUpgradeable {
     // Index Address

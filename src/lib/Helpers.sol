@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.17;
 
+/**
+ * @title Helpers Methods
+ * @dev Events, Errors  and Structs for Vault Contract
+ * @custom:a Alfredo Lopez / Calculum
+ */
 abstract contract Helpers {
     /**
      * @dev Helpers Smart Contract for Events and Errors
@@ -99,4 +104,6 @@ abstract contract Helpers {
     error FirstEpochNoFeeTransfer();
     /// The User `_caller` try to deposit a value `_amount`, under the Minimal Permitted
     error DepositAmountTooLow(address _caller, uint256 _amount);
+	/// The Wallet not whitelisted
+	error NotWhitelisted(address _wallet);
 }
