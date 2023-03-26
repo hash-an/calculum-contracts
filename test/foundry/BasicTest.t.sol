@@ -78,14 +78,14 @@ contract BasicTest is Test {
         hoax(transferBotWallet);
         usdc.approve(address(vault), _usdc(100_000_000));
 
-        investors[0] = _setUpAccount("investor0");
-        investors[1] = _setUpAccount("investor1");
-        investors[2] = _setUpAccount("investor2");
+        for (uint256 i = 0; i < investors.length; ++i) {
+            investors[i] = _setUpAccount(string.concat("investor", string(abi.encode(i))));
+        }
 
         vm.startPrank(deployer);
-        vault.addDropWhitelist(investors[0], true);
-        vault.addDropWhitelist(investors[1], true);
-        vault.addDropWhitelist(investors[2], true);
+        for (uint256 i = 0; i < investors.length; ++i) {
+            vault.addDropWhitelist(investors[i], true);
+        }
         vm.stopPrank();
     }
 
