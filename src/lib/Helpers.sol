@@ -14,7 +14,7 @@ abstract contract Helpers {
         Inactive, // 0
         Pending, // 1
         Claimet, // 2
-        Completed // 4
+        Completed // 3
     }
     /// Struct of Basics
 

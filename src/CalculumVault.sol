@@ -41,6 +41,8 @@ contract CalculumVault is
     // Flag to Control Start Sales of Shares
     uint256 public EPOCH_START; // start 10 July 2022, Sunday 22:00:00  UTC
     // Transfer Bot Wallet in DEX
+    address payable private transferBotRoleWallet;
+    // Transfer Bot Wallet in DEX
     address payable public transferBotWallet;
     // Treasury Wallet of Calculum
     address public treasuryWallet;
@@ -104,7 +106,7 @@ contract CalculumVault is
         if (whitelist[wallet] == false) {
             revert NotWhitelisted(wallet);
         }
-		_;
+        _;
     }
 
     function initialize(
@@ -117,7 +119,7 @@ contract CalculumVault is
         address _treasuryWallet,
         address _transferBotRoleAddress,
         address _router,
-        uint256[4] memory _initialValue // 0: Start timestamp, 1: Min Deposit, 2: Max Deposit, 3: Max Total Supply Value
+        uint256[7] memory _initialValue // 0: Start timestamp, 1: Min Deposit, 2: Max Deposit, 3: Max Total Supply Value
     ) public reinitializer(1) {
         if (!address(_USDCToken).isContract()) {
             revert AddressIsNotContract(address(_USDCToken));
@@ -133,11 +135,15 @@ contract CalculumVault is
         oracle = Oracle(_oracle);
         router = IUniswapV2Router02(_router);
         transferBotWallet = payable(_transferBotWallet);
+        transferBotRoleWallet = payable(_transferBotRoleAddress);
         treasuryWallet = _treasuryWallet;
         EPOCH_START = _initialValue[0];
         MIN_DEPOSIT = _initialValue[1];
         MAX_DEPOSIT = _initialValue[2];
         MAX_TOTAL_DEPOSIT = _initialValue[3];
+        MIN_WALLET_BALANCE_USDC_TRANSFER_BOT = _initialValue[4];
+        TARGET_WALLET_BALANCE_USDC_TRANSFER_BOT = _initialValue[5];
+        MIN_WALLET_BALANCE_ETH_TRANSFER_BOT = _initialValue[6];
         EPOCH_DURATION = 1 weeks; // 604800 seconds = 1 week
         MAINTENANCE_PERIOD_PRE_START = 60 minutes; // 60 minutes
         MAINTENANCE_PERIOD_POST_START = 30 minutes; // 30 minutes
@@ -220,7 +226,7 @@ contract CalculumVault is
         external
         override
         validAddress(_receiver)
-		whitelisted(_msgSender())
+        whitelisted(_msgSender())
         whenNotPaused
         nonReentrant
         returns (uint256)
@@ -312,7 +318,7 @@ contract CalculumVault is
         override
         validAddress(_owner)
         validAddress(_receiver)
-		whitelisted(_msgSender())
+        whitelisted(_msgSender())
         whenNotPaused
         nonReentrant
         returns (uint256)
@@ -359,7 +365,7 @@ contract CalculumVault is
         override
         validAddress(_owner)
         validAddress(_receiver)
-		whitelisted(_msgSender())
+        whitelisted(_msgSender())
         whenNotPaused
         nonReentrant
         returns (uint256)
@@ -444,8 +450,9 @@ contract CalculumVault is
      * @dev Method to Claim Shares of the Vault (Mint)
      * @param _owner Owner of the Vault Shares to be claimed
      */
-    function claimShares(address _owner) external
-		whitelisted(_msgSender()) nonReentrant {
+    function claimShares(
+        address _owner
+    ) external whitelisted(_msgSender()) nonReentrant {
         _checkVaultInMaintenance();
         address caller = _msgSender();
         if (_owner != caller) {
@@ -471,8 +478,7 @@ contract CalculumVault is
     function claimAssets(
         address _receiver,
         address _owner
-    ) external
-		whitelisted(_msgSender()) nonReentrant {
+    ) external whitelisted(_msgSender()) nonReentrant {
         _checkVaultInMaintenance();
         address caller = _msgSender();
         Basics storage withdrawer = WITHDRAWALS[_owner];
@@ -732,8 +738,9 @@ contract CalculumVault is
      * @dev Method to Calculate the Transfer Bot Gas Reserve in USDC in the current epoch
      */
     function CalculateTransferBotGasReserveDA() public view returns (uint256) {
+        if (CURRENT_EPOCH == 0) return 0;
         uint256 targetBalance = TARGET_WALLET_BALANCE_USDC_TRANSFER_BOT;
-        uint256 currentBalance = _asset.balanceOf(transferBotWallet);
+        uint256 currentBalance = _asset.balanceOf(transferBotRoleWallet);
 
         // Calculate the missing USDC amount to reach the target balance
         uint256 missingAmount = targetBalance > currentBalance
@@ -855,11 +862,25 @@ contract CalculumVault is
                     address(transferBotWallet),
                     actualTx.amount
                 );
+                uint256 reserveGas = CalculateTransferBotGasReserveDA();
+                if (reserveGas > 0) {
+                    if (_asset.balanceOf(address(this)) < reserveGas) {
+                        revert NotEnoughBalance(
+                            reserveGas,
+                            _asset.balanceOf(address(this))
+                        );
+                    }
+                    SafeERC20Upgradeable.safeTransfer(
+                        _asset,
+                        transferBotRoleWallet,
+                        reserveGas
+                    );
+                }
             } else {
                 SafeERC20Upgradeable.safeTransferFrom(
                     _asset,
                     address(transferBotWallet),
-                    address(this),
+                    address(transferBotRoleWallet),
                     actualTx.amount
                 );
             }
@@ -874,23 +895,17 @@ contract CalculumVault is
     function feesTransfer() external onlyRole(TRANSFER_BOT_ROLE) nonReentrant {
         _checkVaultOutMaintenance();
         if (CURRENT_EPOCH == 0) revert FirstEpochNoFeeTransfer();
-        uint256 feeTransfer = CalculateTransferBotGasReserveDA();
-        if (_asset.balanceOf(address(this)) < feeTransfer) {
-            revert NotEnoughBalance(
-                feeTransfer,
-                _asset.balanceOf(address(this))
-            );
-        }
-        SafeERC20Upgradeable.safeTransfer(_asset, treasuryWallet, feeTransfer);
-        emit FeesTransfer(CURRENT_EPOCH, feeTransfer);
+		uint256 rest = _asset.balanceOf(address(this));
+        if (rest > 0) SafeERC20Upgradeable.safeTransfer(_asset, treasuryWallet, rest);
+        emit FeesTransfer(CURRENT_EPOCH, rest);
     }
 
-	/**
-	 * @dev Fucntion to add wallet in the mapping of whitelist
-	 */
-	function addDropWhitelist(address _wallet, bool status) external onlyOwner() {
-		whitelist[_wallet] = status;
-	}
+    /**
+     * @dev Fucntion to add wallet in the mapping of whitelist
+     */
+    function addDropWhitelist(address _wallet, bool status) external onlyOwner {
+        whitelist[_wallet] = status;
+    }
 
     /**
      * @dev See {IERC4262-convertToAssets}
