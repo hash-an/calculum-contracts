@@ -9,8 +9,13 @@ import {UUPSProxy} from "OZ-Upgradeable-Foundry/UpgradeUUPS.sol";
 import {BasicTest} from "./BasicTest.t.sol";
 
 contract WorkFlowTest is BasicTest {
+
     event PendingDeposit(
         address indexed caller, address indexed receiver, uint256 assets, uint256 estimationOfShares
+    );
+
+    event PendingWithdraw(
+        address indexed receiver, address indexed owner, uint256 assets, uint256 estimationOfShares
     );
 
     event Transfer(address indexed from, address indexed to, uint256 amount);
@@ -444,6 +449,64 @@ contract WorkFlowTest is BasicTest {
     function testEpoch5() public returns (uint256, uint256) {
         (uint256 vaultBalance, uint256 transferBotBalance) = testEpoch4();
         assertEq(vault.CURRENT_EPOCH(), 5, "epoch 5: already in epoch 5");
+
+        address alice = investors[0];
+        uint256 withdrawAmount = _usdc(1269);
+        uint256 aliceExpectedShares = 1358.471660504122517230 ether;
+
+        vm.warp(vault.getCurrentEpoch() + MAINT_TIME_AFTER + MAINT_TIME_BEFORE);
+
+        vm.expectEmit(true, true, false, true, address(vault));
+        emit PendingWithdraw(address(alice), address(alice), withdrawAmount, aliceExpectedShares);
+        hoax(alice);
+        vault.withdraw(withdrawAmount, alice, alice);
+
+        (Helpers.Status status, uint256 amountAssets, uint256 amountShares, uint256 finalAmount) = vault.WITHDRAWALS(alice);
+        assertTrue(status == Helpers.Status.Pending, "epoch 5: wrong status of alice's withdrawal");
+        assertEq(amountAssets, withdrawAmount, "epoch 5: wrong assets of alice after withdrawal");
+        assertEq(amountShares, aliceExpectedShares, "epoch 5: wrong shares of alice after withdrawal");
+        assertEq(finalAmount, 0, "epoch 5: wrong final amount of alice after withdrawal");
+
+        hoax(deployer);
+        oracle.setAssetValue(3455486910);
+
+        vm.warp(vault.getNextEpoch() + MAINT_TIME_AFTER - 43 minutes);
+        hoax(transferBotRoleAddress);
+        vault.finalizeEpoch();
+
+        (status, amountAssets, amountShares, finalAmount) = vault.WITHDRAWALS(alice);
+        assertTrue(status == Helpers.Status.Claimet, "epoch 5: wrong status of alice's withdrawal after finalizing");
+        assertEq(amountAssets, 0, "epoch 5: wrong assets of alice after finalizing");
+        assertEq(amountShares, 1311.256553699520755879 ether, "epoch 5: wrong shares of alice after finalizing");
+        assertEq(finalAmount, withdrawAmount, "epoch 5: wrong final amount of alice after finalizing");
+
+        (,, uint256 transferAmount) = vault.netTransfer(vault.CURRENT_EPOCH());
+
+        vm.startPrank(transferBotRoleAddress);
+        vm.expectEmit(true, true, false, true, address(usdc));
+        emit Transfer(transferBotWallet, address(vault), transferAmount);
+        vault.dexTransfer();
+
+        assertEq(usdc.balanceOf(address(vault)), vaultBalance + transferAmount, "epoch 3: wrong vault balance after dex transfer");
+        assertEq(usdc.balanceOf(transferBotWallet), transferBotBalance - transferAmount, "epoch 3: wrong transfer bot balance after dex transfer");
+
+        vm.expectEmit(true, true, false, true, address(usdc));
+        emit Transfer(address(vault), treasuryWallet, 0);
+        vm.expectEmit(true, false, false, true, address(vault));
+        emit FeesTranfer(vault.CURRENT_EPOCH(), 0);
+        vault.feesTransfer();
+        vm.stopPrank();
+
+        vm.warp(vault.getNextEpoch() + 1);
+        hoax(deployer);
+        vault.CurrentEpoch();
+
+        return (usdc.balanceOf(address(vault)), usdc.balanceOf(transferBotWallet));
+    }
+
+    function testEpoch6() public returns (uint256, uint256) {
+        (uint256 vaultBalance, uint256 transferBotBalance) = testEpoch5();
+        assertEq(vault.CURRENT_EPOCH(), 6, "epoch 5: already in epoch 6");
 
         return (usdc.balanceOf(address(vault)), usdc.balanceOf(transferBotWallet));
     }
