@@ -862,29 +862,29 @@ contract CalculumVault is
                     address(transferBotWallet),
                     actualTx.amount
                 );
-                uint256 reserveGas = CalculateTransferBotGasReserveDA();
-                if (reserveGas > 0) {
-                    if (_asset.balanceOf(address(this)) < reserveGas) {
-                        revert NotEnoughBalance(
-                            reserveGas,
-                            _asset.balanceOf(address(this))
-                        );
-                    }
-                    SafeERC20Upgradeable.safeTransfer(
-                        _asset,
-                        transferBotRoleWallet,
-                        reserveGas
-                    );
-                }
             } else {
                 SafeERC20Upgradeable.safeTransferFrom(
                     _asset,
                     address(transferBotWallet),
-                    address(transferBotRoleWallet),
+                    address(this),
                     actualTx.amount
                 );
             }
             actualTx.pending = false;
+        }
+		uint256 reserveGas = CalculateTransferBotGasReserveDA();
+        if (reserveGas > 0) {
+            if (_asset.balanceOf(address(this)) < reserveGas) {
+                revert NotEnoughBalance(
+                    reserveGas,
+                    _asset.balanceOf(address(this))
+                );
+            }
+            SafeERC20Upgradeable.safeTransfer(
+                _asset,
+                transferBotRoleWallet,
+                reserveGas
+            );
         }
         emit DexTransfer(CURRENT_EPOCH, actualTx.amount);
     }
@@ -895,8 +895,9 @@ contract CalculumVault is
     function feesTransfer() external onlyRole(TRANSFER_BOT_ROLE) nonReentrant {
         _checkVaultOutMaintenance();
         if (CURRENT_EPOCH == 0) revert FirstEpochNoFeeTransfer();
-		uint256 rest = _asset.balanceOf(address(this));
-        if (rest > 0) SafeERC20Upgradeable.safeTransfer(_asset, treasuryWallet, rest);
+        uint256 rest = _asset.balanceOf(address(this));
+        if (rest > 0)
+            SafeERC20Upgradeable.safeTransfer(_asset, treasuryWallet, rest);
         emit FeesTransfer(CURRENT_EPOCH, rest);
     }
 
