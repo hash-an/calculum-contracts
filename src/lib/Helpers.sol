@@ -110,4 +110,7 @@ abstract contract Helpers {
     error DepositAmountTooLow(address _caller, uint256 _amount);
 	/// The Wallet not whitelisted
 	error NotWhitelisted(address _wallet);
+	///  Transfer Faild
+	error TransferFailed(address _to, uint256 _amount);
+
 }

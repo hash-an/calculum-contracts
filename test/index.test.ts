@@ -2,6 +2,10 @@
 /* eslint-disable camelcase */
 import { ethers, run, network, upgrades } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import {
+  setBalance,
+  impersonateAccount,
+} from "@nomicfoundation/hardhat-network-helpers";
 import fetch from "node-fetch";
 import dotenv from "dotenv";
 import moment from "moment";
@@ -15,6 +19,7 @@ import {
   MockUpOracle__factory,
   // eslint-disable-next-line node/no-missing-import
 } from "../typechain-types";
+import { USDC_ABI } from "../files/USDC.json";
 
 dotenv.config();
 
@@ -31,8 +36,7 @@ let carla: SignerWithAddress;
 let lastdeployer: SignerWithAddress;
 let OracleFactory: MockUpOracle__factory;
 let Oracle: MockUpOracle;
-let USDCFactory: USDC__factory;
-let USDc: USDC;
+let USDc: any;
 let CalculumFactory: CalculumVault__factory;
 let Calculum: CalculumVault;
 // eslint-disable-next-line prefer-const
@@ -49,8 +53,9 @@ const MIN_WALLET_BALANCE_USDC_TRANSFER_BOT = 500 * 10 ** 6;
 const TARGET_WALLET_BALANCE_USDC_TRANSFER_BOT = 1000 * 10 ** 6;
 const MIN_WALLET_BALANCE_ETH_TRANSFER_BOT = ethers.utils.parseEther("0.5");
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-const USDC_Contract = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
+const USDC_ADDRESS = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
 const UNISWAP_ROUTER2 = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+const POLYGON_BRIDGE = "0x40ec5B33f54e0E8A33A975908C5BA1c14e5BbbDf";
 
 const snooze = (ms: any) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -77,21 +82,46 @@ describe("Verification of Basic Value and Features", function () {
     console.log(`Contract Name: ${contractName}`);
     const accounts = await ethers.getSigners();
 
-    // USD Local Testnet Deployer
-    USDCFactory = (await ethers.getContractFactory(
-      "USDC",
-      deployer
-    )) as USDC__factory;
-    // Deploy Stable coin Mockup
-    USDc = (await USDCFactory.deploy()) as USDC;
+    // Deploy USDC in real World
+    // Impersonate USDC Account of Polygon Bridge and Transfer USDC to Owner
+    await impersonateAccount(POLYGON_BRIDGE);
+    const polygonBridge: SignerWithAddress = await ethers.getSigner(
+      POLYGON_BRIDGE
+    );
+    await setBalance(POLYGON_BRIDGE, "0x56bc75e2d63100000");
+
+    // Create Instance of USDC
+    USDc = await ethers.getContractAt(USDC_ABI, USDC_ADDRESS);
+    expect(USDc.address).to.be.properAddress;
+    expect(USDc.address).to.be.equal(USDC_ADDRESS);
+    expect(await USDc.decimals()).to.be.equal(6);
+    console.log("Deployer Address: ", deployer.address);
+    const initialBalance = await USDc.balanceOf(deployer.address);
+
+    // Transfer USDC to Owner
+    await expect(
+      USDc.connect(polygonBridge).transfer(
+        deployer.address,
+        ethers.utils.parseUnits("1000000000000", "wei")
+      )
+    )
+      .to.emit(USDc, "Transfer")
+      .withArgs(
+        POLYGON_BRIDGE,
+        deployer.address,
+        ethers.utils.parseUnits("1000000000000", "wei")
+      );
+    expect(await USDc.balanceOf(deployer.address)).to.be.equal(
+      ethers.utils.parseUnits("1000000000000", "wei").add(initialBalance)
+    );
+
     // eslint-disable-next-line no-unused-expressions
     expect(USDc.address).to.properAddress;
     console.log(`USDC Address: ${USDc.address}`);
     // Mint 100 K Stable coin to deployer, user1, user2, user3
-    await USDc.mint(deployer.address, 100000 * 10 ** 6);
-    await USDc.mint(alice.address, 250000 * 10 ** 6);
-    await USDc.mint(bob.address, 100000 * 10 ** 6);
-    await USDc.mint(carla.address, 30000 * 10 ** 6);
+    await USDc.transfer(alice.address, 250000 * 10 ** 6);
+    await USDc.transfer(bob.address, 100000 * 10 ** 6);
+    await USDc.transfer(carla.address, 30000 * 10 ** 6);
     // Deploy Mockup Oracle
     OracleFactory = (await ethers.getContractFactory(
       "MockUpOracle",
@@ -261,6 +291,12 @@ describe("Verification of Basic Value and Features", function () {
     expect(await USDc.balanceOf(transferBotRoleAddress.address)).to.equal(
       200 * 10 ** 6
     );
+    // Verify Balance in USDc of alice
+    expect(await USDc.balanceOf(alice.address)).to.equal(250000 * 10 ** 6);
+    // Verify Balance in USDc of bob
+    expect(await USDc.balanceOf(bob.address)).to.equal(100000 * 10 ** 6);
+    // Verify Balance in USDc of carla
+    expect(await USDc.balanceOf(carla.address)).to.equal(30000 * 10 ** 6);
     // Verify Balance of 0.5 ETH in ethereum of Contract Vault
     expect(
       await ethers.provider.getBalance(transferBotRoleAddress.address)
@@ -496,21 +532,42 @@ describe("Verification of Basic Value and Features", function () {
     console.log(`Contract Name: ${contractName}`);
     const accounts = await ethers.getSigners();
 
-    // USD Local Testnet Deployer
-    USDCFactory = (await ethers.getContractFactory(
-      "USDC",
-      deployer
-    )) as USDC__factory;
-    // Deploy Stable coin Mockup
-    USDc = (await USDCFactory.deploy()) as USDC;
+    // Deploy USDC in real World
+    // Impersonate USDC Account of Polygon Bridge and Transfer USDC to Owner
+    await impersonateAccount(POLYGON_BRIDGE);
+    const polygonBridge: SignerWithAddress = await ethers.getSigner(
+      POLYGON_BRIDGE
+    );
+    await setBalance(POLYGON_BRIDGE, "0x56bc75e2d63100000");
+
+    // Create Instance of USDC
+    USDc = await ethers.getContractAt(USDC_ABI, USDC_ADDRESS);
+    expect(USDc.address).to.be.properAddress;
+    expect(USDc.address).to.be.equal(USDC_ADDRESS);
+    expect(await USDc.decimals()).to.be.equal(6);
+    console.log("Deployer Address: ", deployer.address);
+    const initialBalance = await USDc.balanceOf(deployer.address);
+
+    // Transfer USDC to Owner
+    await expect(
+      USDc.connect(polygonBridge).transfer(
+        deployer.address,
+        ethers.utils.parseUnits("1000000000000", "wei")
+      )
+    )
+      .to.emit(USDc, "Transfer")
+      .withArgs(
+        POLYGON_BRIDGE,
+        deployer.address,
+        ethers.utils.parseUnits("1000000000000", "wei")
+      );
+    expect(await USDc.balanceOf(deployer.address)).to.be.equal(
+      ethers.utils.parseUnits("1000000000000", "wei").add(initialBalance)
+    );
+
     // eslint-disable-next-line no-unused-expressions
     expect(USDc.address).to.properAddress;
     console.log(`USDC Address: ${USDc.address}`);
-    // Mint 100 K Stable coin to deployer, user1, user2, user3
-    await USDc.mint(deployer.address, 100000 * 10 ** 6);
-    await USDc.mint(alice.address, 250000 * 10 ** 6);
-    await USDc.mint(bob.address, 100000 * 10 ** 6);
-    await USDc.mint(carla.address, 30000 * 10 ** 6);
     // Deploy Mockup Oracle
     OracleFactory = (await ethers.getContractFactory(
       "MockUpOracle",
@@ -688,6 +745,12 @@ describe("Verification of Basic Value and Features", function () {
     expect(await USDc.balanceOf(transferBotRoleAddress.address)).to.equal(
       200 * 10 ** 6
     );
+    // Verify Balance in USDc of alice
+    expect(await USDc.balanceOf(alice.address)).to.equal(250000 * 10 ** 6);
+    // Verify Balance in USDc of bob
+    expect(await USDc.balanceOf(bob.address)).to.equal(100000 * 10 ** 6);
+    // Verify Balance in USDc of carla
+    expect(await USDc.balanceOf(carla.address)).to.equal(30000 * 10 ** 6);
     // Verify Balance of 0.5 ETH in ethereum of Contract Vault
     expect(
       await ethers.provider.getBalance(transferBotRoleAddress.address)
@@ -1809,11 +1872,27 @@ describe("Verification of Basic Value and Features", function () {
     const time = Math.floor(
       (await ethers.provider.getBlock("latest")).timestamp
     );
-    const asset:string = (await Calculum.asset()).toString();
+    const asset: string = (await Calculum.asset()).toString();
     console.log("Address of ERC20 Asset: ", asset);
+    const getPriceInPaymentToken = (
+      await Calculum.getPriceInPaymentToken(asset)
+    ).toString();
     console.log(
       "Value of getPriceInPaymentToken: ",
-      parseInt((await Calculum.getPriceInPaymentToken(asset)).toString()) / 10 ** 18
+      parseInt(getPriceInPaymentToken) / 10 ** 18
+    );
+    const balancetransferBotRoleWallet = (
+      await USDc.balanceOf(transferBotRoleAddress.address)
+    ).toString();
+    console.log(
+      "balancetransferBotRoleWallet: ",
+      balancetransferBotRoleWallet / 10 ** 6
+    );
+    console.log(
+      "Expected Amount: ",
+      ((parseInt(balancetransferBotRoleWallet) / 10 ** 6) *
+        parseInt(getPriceInPaymentToken)) /
+        10 ** 18
     );
     await expect(Calculum.connect(transferBotRoleAddress).finalizeEpoch())
       .to.revertedWithCustomError(Calculum, "VaultOutMaintenance")
@@ -1828,6 +1907,26 @@ describe("Verification of Basic Value and Features", function () {
     // Finalize the Epoch
     await Calculum.connect(transferBotRoleAddress).finalizeEpoch();
     console.log("Finalize the Fourth Epoch Successfully");
+    // Verify the Balance of Transfer Bot Role Address in USDc
+    expect(
+      (await USDc.balanceOf(transferBotRoleAddress.address)).toString()
+    ).to.equal("0");
+    // Verify the Balance of Transfer Bot Role Address in Eth
+    expect(
+      parseInt(
+        (
+          await ethers.provider.getBalance(transferBotRoleAddress.address)
+        ).toString()
+      )
+    ).to.greaterThanOrEqual(parseInt(ethers.utils.parseEther("1").toString()));
+    console.log(
+      "Transfer Bot Role Address Balance in Eth: ",
+      parseInt(
+        (
+          await ethers.provider.getBalance(transferBotRoleAddress.address)
+        ).toString()
+      ) / 10 ** 18
+    );
     // Getting netTransfer Object
     const netTransfer: any = await Calculum.netTransfer(
       await Calculum.CURRENT_EPOCH()
@@ -1874,12 +1973,12 @@ describe("Verification of Basic Value and Features", function () {
     // Call FeeTransfer to transfer the amount of USDc to the Fee Address
     await expect(Calculum.connect(transferBotRoleAddress).feesTransfer())
       .to.emit(Calculum, "FeesTransfer")
-      .withArgs(await Calculum.CURRENT_EPOCH(), 1547783261);
+      .withArgs(await Calculum.CURRENT_EPOCH(), 547783261);
     // Verify the Balance of USDc of treasury in the Vault
     expect(
       parseInt((await USDc.balanceOf(treasuryWallet.address)).toString()) /
         10 ** 6
-    ).to.equal(547783261 / 1000000);
+    ).to.equal(1001528271 / 1000000);
     console.log(
       "Transfer USDc to the Treasury Successfully Fees Transfer: ",
       parseInt((await USDc.balanceOf(treasuryWallet.address)).toString()) /
