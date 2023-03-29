@@ -1081,7 +1081,7 @@ describe("Verification of Basic Value and Features", function () {
         ethers.utils.parseEther("150000")
       );
     console.log("Alice Claimed her Shares Successfully");
-    // Verify all Storege Correctly in the Smart Contract
+    // Verify all Storage Correctly in the Smart Contract
     expect(await Calculum.balanceOf(alice.address)).to.equal(
       ethers.utils.parseEther("150000")
     );
@@ -1090,8 +1090,12 @@ describe("Verification of Basic Value and Features", function () {
     ).to.equal(150000 * 10 ** 6);
     expect(
       parseInt((await Calculum.DEPOSITS(alice.address)).amountShares.toString())
-    ).to.equal(0);
-    expect((await Calculum.DEPOSITS(alice.address)).status).to.equal(3);
+	).to.equal(0);
+	expect((await Calculum.DEPOSITS(alice.address)).status).to.equal(3);
+    expect(
+      parseInt((await Calculum.DEPOSITS(alice.address)).amountAssets.toString())
+	).to.equal(0);
+	expect((await Calculum.balanceOf(alice.address)).toString()).to.equal( ethers.utils.parseEther("150000").toString());
     // Try to Finalize the Epoch before the Finalization Time
     const time = Math.floor(
       (await ethers.provider.getBlock("latest")).timestamp
@@ -1121,10 +1125,16 @@ describe("Verification of Basic Value and Features", function () {
       288 / 10
     );
     // Call dexTransfer to transfer the amount of USDc to the Vault
-    await expect(Calculum.connect(transferBotRoleAddress).dexTransfer())
+	  await expect(Calculum.connect(transferBotRoleAddress).dexTransfer())
       .to.emit(USDc, "Transfer")
       .withArgs(
         transferBotWallet.address,
+        Calculum.address,
+        parseInt(netTransfer.amount.toString())
+      )
+      .to.emit(USDc, "Transfer")
+      .withArgs(
+        Calculum.address,
         transferBotRoleAddress.address,
         parseInt(netTransfer.amount.toString())
       )
@@ -1503,7 +1513,8 @@ describe("Verification of Basic Value and Features", function () {
     expect((await Calculum.DEPOSITS(bob.address)).amountShares).to.equal(0);
     expect((await Calculum.DEPOSITS(bob.address)).finalAmount).to.equal(
       50000 * 10 ** 6
-    );
+	);
+	expect((await Calculum.balanceOf(bob.address)).toString()).to.equal(ethers.utils.parseUnits("52349114148290382630146", "wei").toString());
     // Verify status of carla in DEPOSITS before deposit
     expect((await Calculum.DEPOSITS(carla.address)).status).to.equal(0); // 0 = Inactive
     // Add deposit to the Vault from alice
@@ -1630,11 +1641,172 @@ describe("Verification of Basic Value and Features", function () {
     );
   });
 
+  //   ** Verification of Sequence of Epoch based on Excel */
+  //   ** 6. Verification of Sequence of Epoch */
+  //   ** t1. Thrid Epoch / Epoch 4 */
+  it("6.- Verification of Sequence of Epoch 4", async () => {
+    const timestamp: number = Math.floor(
+      (await ethers.provider.getBlock("latest")).timestamp
+    );
+    await expect(
+      Calculum.connect(deployer).setEpochDuration(
+        epochDuration,
+        maintTimeBefore,
+        maintTimeAfter
+      )
+    )
+      .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
+      .withArgs(deployer.address, `${timestamp + 1}`);
+    // Revert if alice Try to Claim Her Shares in the Vault Maintenance Window
+    await expect(
+      Calculum.connect(alice).deposit(100000 * 10 ** 6, alice.address)
+    )
+      .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
+      .withArgs(alice.address, `${timestamp + 2}`);
+    // Move to after the Maintenance Time Post Maintenance
+    const move1: moment.Moment = moment(
+      parseInt((await Calculum.getNextEpoch()).toString()) * 1000
+    );
+    console.log("Actual TimeStamp: ", move1.utc(false).unix());
+    await network.provider.send("evm_setNextBlockTimestamp", [
+      parseInt(move1.add(maintTimeAfter, "s").format("X")),
+    ]);
+    await network.provider.send("evm_mine", []);
+    console.log(
+      `Verify TimeStamp after Add ${maintTimeAfter} seconds for Maintenance Window: `,
+      moment(move1.unix() * 1000)
+        .utc(false)
+        .unix(),
+      " Full Date: ",
+      moment(move1.unix() * 1000)
+        .utc(false)
+        .format("dddd, MMMM Do YYYY, h:mm:ss a")
+    );
+    // Getting Current Epoch and Next Epoch
+    await Calculum.connect(deployer).CurrentEpoch();
+    CURRENT_EPOCH = 4;
+    const Current_Epoch = parseInt((await Calculum.CURRENT_EPOCH()).toString());
+    console.log(`Number of Current Epoch: ${Current_Epoch}`);
+    expect(CURRENT_EPOCH).to.equal(Current_Epoch);
+    let currentEpoch: moment.Moment = moment(
+      parseInt((await Calculum.getCurrentEpoch()).toString()) * 1000
+    );
+    console.log(
+      "TimeStamp Current Epoch: ",
+      currentEpoch.utc(false),
+      " TiemStamp Format: ",
+      currentEpoch.utc(false).unix()
+    );
+    expect(currentEpoch.utc(false).unix()).to.equal(
+      (await Calculum.EPOCH_START()).add(
+        (await Calculum.EPOCH_DURATION()).mul(4)
+      )
+    );
+    let nextEpoch: moment.Moment = moment(
+      parseInt((await Calculum.getNextEpoch()).toString()) * 1000
+    );
+    expect(nextEpoch.utc(false).unix()).to.equal(
+      currentEpoch.add(epochDuration, "s").utc(false).unix()
+    );
+    console.log("TimeStamp Next Epoch: ", nextEpoch.utc(false));
+    // time before to set Epoch Duration
+    const move2: moment.Moment = moment(
+      Math.floor((await ethers.provider.getBlock("latest")).timestamp) * 1000
+    );
+    console.log(
+      "TimeStamp Before to Set Epoch Duration: ",
+      move2.utc(false).unix()
+    );
+    // Setting the Value of Epoch Duration and Maintenance Time Before and After
+    await Calculum.connect(deployer).setEpochDuration(
+      epochDuration,
+      maintTimeBefore,
+      maintTimeAfter
+    );
+    // Verify Epoch Duration
+    expect(await Calculum.EPOCH_DURATION()).to.equal(epochDuration);
+    // Verify Maint Time Before
+    expect(await Calculum.MAINTENANCE_PERIOD_PRE_START()).to.equal(
+      maintTimeBefore
+    );
+    // Verify Maint Time After
+    expect(await Calculum.MAINTENANCE_PERIOD_POST_START()).to.equal(
+      maintTimeAfter
+    );
+    // Verify status of alice in DEPOSITS before claim her shares
+    expect((await Calculum.DEPOSITS(alice.address)).status).to.equal(2); // 2 = Claimet
+    expect((await Calculum.DEPOSITS(alice.address)).amountAssets).to.equal(0);
+    expect((await Calculum.DEPOSITS(alice.address)).amountShares).to.equal(
+      ethers.utils.parseUnits("101274437521774004067182", "wei")
+    );
+    expect((await Calculum.DEPOSITS(alice.address)).finalAmount).to.equal(
+      250000 * 10 ** 6
+    );
+    // Verify status of carla in DEPOSITS before claim her shares
+    expect((await Calculum.DEPOSITS(carla.address)).status).to.equal(2); // 2 = Claimet
+    expect((await Calculum.DEPOSITS(carla.address)).amountAssets).to.equal(0);
+    expect((await Calculum.DEPOSITS(carla.address)).amountShares).to.equal(
+      ethers.utils.parseUnits("30382331256532201220155", "wei")
+    );
+    expect((await Calculum.DEPOSITS(carla.address)).finalAmount).to.equal(
+      30000 * 10 ** 6
+    );
+    // Claim Shares of Alice
+    await expect(Calculum.connect(alice).claimShares(alice.address))
+      .to.emit(Calculum, "Transfer")
+      .withArgs(
+        ZERO_ADDRESS,
+        alice.address,
+        ethers.utils.parseUnits("101274437521774004067182", "wei")
+      )
+      .to.emit(Calculum, "Deposit")
+      .withArgs(
+        alice.address,
+        alice.address,
+        250000 * 10 ** 6,
+        ethers.utils.parseUnits("101274437521774004067182", "wei")
+      );
+    // Claim Shares of Carla
+    await expect(Calculum.connect(carla).claimShares(carla.address))
+      .to.emit(Calculum, "Transfer")
+      .withArgs(
+        ZERO_ADDRESS,
+        carla.address,
+        ethers.utils.parseUnits("30382331256532201220155", "wei")
+      )
+      .to.emit(Calculum, "Deposit")
+      .withArgs(
+        carla.address,
+        carla.address,
+        30000 * 10 ** 6,
+        ethers.utils.parseUnits("30382331256532201220155", "wei")
+      );
+    // Verify status of alice in DEPOSITS after claim her shares
+    expect((await Calculum.DEPOSITS(alice.address)).status).to.equal(3); // 3 = Completed
+    expect((await Calculum.DEPOSITS(alice.address)).amountAssets).to.equal(0);
+    expect((await Calculum.DEPOSITS(alice.address)).amountShares).to.equal(0);
+    expect((await Calculum.DEPOSITS(alice.address)).finalAmount).to.equal(
+      250000 * 10 ** 6
+	);
+	expect((await Calculum.balanceOf(alice.address)).toString()).to.equal(ethers.utils.parseUnits("251274437521774004067182", "wei").toString());
+    // Verify status of carla in DEPOSITS after claim her shares
+    expect((await Calculum.DEPOSITS(carla.address)).status).to.equal(3); // 3 = Completed
+    expect((await Calculum.DEPOSITS(carla.address)).amountAssets).to.equal(0);
+    expect((await Calculum.DEPOSITS(carla.address)).amountShares).to.equal(0);
+    expect((await Calculum.DEPOSITS(carla.address)).finalAmount).to.equal(
+      30000 * 10 ** 6
+	);
+	expect((await Calculum.balanceOf(carla.address)).toString()).to.equal(ethers.utils.parseUnits("30382331256532201220155", "wei").toString());
+  });
+
   afterEach(async () => {
     expect(
       parseInt((await USDc.balanceOf(Calculum.address)).toString()) / 10 ** 6
-	).to.equal(0);
-	console.log("Balance of Vault in USDc after each test: ", parseInt((await USDc.balanceOf(Calculum.address)).toString()) / 10 ** 6);
+    ).to.equal(0);
+    console.log(
+      "Balance of Vault in USDc after each test: ",
+      parseInt((await USDc.balanceOf(Calculum.address)).toString()) / 10 ** 6
+    );
     const time = Math.floor(
       (await ethers.provider.getBlock("latest")).timestamp
     );
