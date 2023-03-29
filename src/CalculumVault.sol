@@ -769,8 +769,8 @@ contract CalculumVault is
 
     function _swapDAforETH() private {
         if (
-            (transferBotWallet.balance < MIN_WALLET_BALANCE_ETH_TRANSFER_BOT) &&
-            (_asset.balanceOf(transferBotWallet) >
+            (transferBotRoleWallet.balance < MIN_WALLET_BALANCE_ETH_TRANSFER_BOT) &&
+            (_asset.balanceOf(transferBotRoleWallet) >
                 MIN_WALLET_BALANCE_USDC_TRANSFER_BOT)
         ) {
             uint256 swapAmount = _asset.balanceOf(transferBotWallet);

@@ -1567,8 +1567,6 @@ describe("Verification of Basic Value and Features", function () {
     const time = Math.floor(
       (await ethers.provider.getBlock("latest")).timestamp
     );
-    // Store the Value of assets in Mockup Oracle Smart Contract
-    // with initial value
     await expect(Calculum.connect(transferBotRoleAddress).finalizeEpoch())
       .to.revertedWithCustomError(Calculum, "VaultOutMaintenance")
       .withArgs(transferBotRoleAddress.address, `${time + 1}`);
@@ -1577,7 +1575,7 @@ describe("Verification of Basic Value and Features", function () {
       parseInt(move1.add(epochDuration - maintTimeBefore, "s").format("X")),
     ]);
     await network.provider.send("evm_mine", []);
-    // Setting actual value of Assets
+    // Setting actual value of Assets through Mockup Oracle
     await Oracle.connect(deployer).setAssetValue(2009995 * 10 ** 5);
     // Finalize the Epoch
     await Calculum.connect(transferBotRoleAddress).finalizeEpoch();
@@ -1787,16 +1785,94 @@ describe("Verification of Basic Value and Features", function () {
     expect((await Calculum.DEPOSITS(alice.address)).amountShares).to.equal(0);
     expect((await Calculum.DEPOSITS(alice.address)).finalAmount).to.equal(
       250000 * 10 ** 6
-	);
-	expect((await Calculum.balanceOf(alice.address)).toString()).to.equal(ethers.utils.parseUnits("251274437521774004067182", "wei").toString());
+    );
+    expect((await Calculum.balanceOf(alice.address)).toString()).to.equal(
+      ethers.utils.parseUnits("251274437521774004067182", "wei").toString()
+    );
     // Verify status of carla in DEPOSITS after claim her shares
     expect((await Calculum.DEPOSITS(carla.address)).status).to.equal(3); // 3 = Completed
     expect((await Calculum.DEPOSITS(carla.address)).amountAssets).to.equal(0);
     expect((await Calculum.DEPOSITS(carla.address)).amountShares).to.equal(0);
     expect((await Calculum.DEPOSITS(carla.address)).finalAmount).to.equal(
       30000 * 10 ** 6
-	);
-	expect((await Calculum.balanceOf(carla.address)).toString()).to.equal(ethers.utils.parseUnits("30382331256532201220155", "wei").toString());
+    );
+    expect((await Calculum.balanceOf(carla.address)).toString()).to.equal(
+      ethers.utils.parseUnits("30382331256532201220155", "wei").toString()
+    );
+    // Try to Finalize the Epoch before the Finalization Time
+    const time = Math.floor(
+      (await ethers.provider.getBlock("latest")).timestamp
+    );
+    await expect(Calculum.connect(transferBotRoleAddress).finalizeEpoch())
+      .to.revertedWithCustomError(Calculum, "VaultOutMaintenance")
+      .withArgs(transferBotRoleAddress.address, `${time + 1}`);
+    // Move before to Maintenance Windows Pre Start
+    await network.provider.send("evm_setNextBlockTimestamp", [
+      parseInt(move1.add(epochDuration - maintTimeBefore, "s").format("X")),
+    ]);
+    await network.provider.send("evm_mine", []);
+    // Setting actual value of Assets through Mockup Oracle
+    await Oracle.connect(deployer).setAssetValue(3396969 * 10 ** 5);
+    // Finalize the Epoch
+    await Calculum.connect(transferBotRoleAddress).finalizeEpoch();
+    console.log("Finalize the Fourth Epoch Successfully");
+    // Getting netTransfer Object
+    const netTransfer: any = await Calculum.netTransfer(
+      await Calculum.CURRENT_EPOCH()
+    );
+    expect(netTransfer.pending).to.be.true;
+    expect(netTransfer.direction).to.be.false;
+    expect(parseInt(netTransfer.amount.toString()) / 10 ** 6).to.equal(
+      1547783261 / 1000000
+    );
+    // Verify the Transfer Bot Gas Reserve in USD is Zero
+    expect(
+      parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString()) /
+        10 ** 6
+    ).to.equal(0);
+    // Call dexTransfer to transfer the amount of USDc to the Vault
+    await expect(Calculum.connect(transferBotRoleAddress).dexTransfer())
+      .to.emit(USDc, "Transfer")
+      .withArgs(
+        transferBotWallet.address,
+        Calculum.address,
+        parseInt(netTransfer.amount.toString())
+      )
+      .to.emit(Calculum, "DexTransfer")
+      .withArgs(
+        await Calculum.CURRENT_EPOCH(),
+        parseInt(netTransfer.amount.toString())
+      );
+    console.log(
+      "Transfer USDc from Transfer Bot Wallet to the Vault Successfully Dex Transfer: ",
+      parseInt(netTransfer.amount.toString()) / 10 ** 6
+    );
+    // Validate Last Balance of Vault in USDc, compare with value in the Excel Spread Sheet
+    console.log(
+      "Last Balance of Contract in USDc before Fees Transfer: ",
+      parseInt((await USDc.balanceOf(Calculum.address)).toString()) / 10 ** 6
+    );
+    expect(
+      parseInt((await USDc.balanceOf(Calculum.address)).toString()) / 10 ** 6
+    ).to.equal(1547783261 / 1000000);
+    expect(
+      parseInt((await USDc.balanceOf(transferBotWallet.address)).toString())
+      // The Amount of USDc in the Transfer Bot Wallet is 327198.471729 USDc minus the last fee
+    ).to.equal(327198471729);
+    // Call FeeTransfer to transfer the amount of USDc to the Fee Address
+    await expect(Calculum.connect(transferBotRoleAddress).feesTransfer())
+      .to.emit(Calculum, "FeesTransfer")
+      .withArgs(await Calculum.CURRENT_EPOCH(), 1547783261);
+    // Verify the Balance of USDc of treasury in the Vault
+    expect(
+      parseInt((await USDc.balanceOf(treasuryWallet.address)).toString()) /
+        10 ** 6
+    ).to.equal(2001528271 / 10 ** 6);
+    console.log(
+      "Transfer USDc to the Treasury Successfully Fees Transfer: ",
+      parseInt((await USDc.balanceOf(treasuryWallet.address)).toString()) /
+        10 ** 6
+    );
   });
 
   afterEach(async () => {
