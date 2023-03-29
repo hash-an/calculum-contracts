@@ -623,7 +623,7 @@ contract CalculumVault is
                 delete WITHDRAWALS[withdrawWallets[i]].amountAssets;
             }
         }
-		_swapDAforETH();
+        _swapDAforETH();
     }
 
     function MgtFeePerVaultToken() public view returns (uint256) {
@@ -710,10 +710,10 @@ contract CalculumVault is
 
         address[] memory path = new address[](2);
         uint256[] memory amounts = new uint256[](2);
-        path[0] = address(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
+        path[0] = tokenAddress;
         path[1] = address(router.WETH());
         amounts = router.getAmountsOut(
-            1 * 10 ** 6,
+            1 * 10 ** IERC20MetadataUpgradeable(tokenAddress).decimals(),
             path
         );
 
@@ -768,17 +768,25 @@ contract CalculumVault is
 
     function _swapDAforETH() private {
         if (
-            (transferBotRoleWallet.balance < MIN_WALLET_BALANCE_ETH_TRANSFER_BOT) &&
+            (transferBotRoleWallet.balance <
+                MIN_WALLET_BALANCE_ETH_TRANSFER_BOT) &&
             (_asset.balanceOf(transferBotRoleWallet) >
                 MIN_WALLET_BALANCE_USDC_TRANSFER_BOT)
         ) {
             uint256 swapAmount = _asset.balanceOf(transferBotRoleWallet);
+            SafeERC20Upgradeable.safeTransferFrom(
+                _asset,
+                address(transferBotRoleWallet),
+                address(this),
+                swapAmount
+            );
+			_asset.approve(address(router), swapAmount);
             _swapTokensForETH(
                 address(_asset),
                 swapAmount,
                 swapAmount.mulDiv(
                     getPriceInPaymentToken(address(_asset)),
-                    1 ether
+                    1 * 10 ** _asset.decimals()
                 )
             );
         }
@@ -795,13 +803,12 @@ contract CalculumVault is
         address[] memory path = new address[](2);
         path[0] = address(tokenAddress);
         path[1] = address(router.WETH());
-
         /// do the swap
         router.swapExactTokensForETHSupportingFeeOnTransferTokens(
             tokenAmount,
             expectedAmount.mulDiv(0.9 ether, 1 ether), // Allow for up to 10% max slippage
             path,
-            address(this),
+            address(transferBotRoleWallet),
             block.timestamp
         );
     }
@@ -871,7 +878,7 @@ contract CalculumVault is
             }
             actualTx.pending = false;
         }
-		uint256 reserveGas = CalculateTransferBotGasReserveDA();
+        uint256 reserveGas = CalculateTransferBotGasReserveDA();
         if (reserveGas > 0) {
             if (_asset.balanceOf(address(this)) < reserveGas) {
                 revert NotEnoughBalance(
