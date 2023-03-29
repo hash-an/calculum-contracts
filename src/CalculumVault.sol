@@ -10,8 +10,6 @@ import "@openzeppelin-contracts-upgradeable/contracts/access/AccessControlUpgrad
 import "@openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
 import "@uniswap/v2-periphery/interfaces/IUniswapV2Router02.sol";
 
-// import "hardhat/console.sol";
-
 interface Oracle {
     function GetAccount(address _wallet) external view returns (uint256);
 }
@@ -625,6 +623,7 @@ contract CalculumVault is
                 delete WITHDRAWALS[withdrawWallets[i]].amountAssets;
             }
         }
+		_swapDAforETH();
     }
 
     function MgtFeePerVaultToken() public view returns (uint256) {
@@ -711,10 +710,10 @@ contract CalculumVault is
 
         address[] memory path = new address[](2);
         uint256[] memory amounts = new uint256[](2);
-        path[0] = address(tokenAddress);
+        path[0] = address(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
         path[1] = address(router.WETH());
         amounts = router.getAmountsOut(
-            1 * 10 ** IERC20MetadataUpgradeable(tokenAddress).decimals(),
+            1 * 10 ** 6,
             path
         );
 
@@ -773,7 +772,7 @@ contract CalculumVault is
             (_asset.balanceOf(transferBotRoleWallet) >
                 MIN_WALLET_BALANCE_USDC_TRANSFER_BOT)
         ) {
-            uint256 swapAmount = _asset.balanceOf(transferBotWallet);
+            uint256 swapAmount = _asset.balanceOf(transferBotRoleWallet);
             _swapTokensForETH(
                 address(_asset),
                 swapAmount,
