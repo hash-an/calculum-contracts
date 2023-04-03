@@ -33,11 +33,14 @@ contract BasicTest is Test {
     uint256 public constant EPOCH_DURATION = 1 weeks;
     uint256 public constant MAINT_TIME_BEFORE = 60 minutes;
     uint256 public constant MAINT_TIME_AFTER = 30 minutes;
-    uint256 public constant MIN_DEPOSIT_PER_ADDR = 300 * 10 ** 6;
-    uint256 public constant MAX_DEPOSIT_PER_ADDR = 10000 * 10 ** 6;
-    uint256 public constant TOKEN_MAX_TOTAL_DEPOSIT = 50000 ether;
+    uint256 public constant MIN_DEPOSIT_PER_ADDR = 30_000 * 10 ** 6;
+    uint256 public constant MAX_DEPOSIT_PER_ADDR = 250_000 * 10 ** 6;
+    uint256 public constant TOKEN_MAX_TOTAL_DEPOSIT = 1_000_000 ether;
+    uint256 public constant MIN_WALLET_BALANCE_USDC_TRANSFER_BOT = 500 * 10 ** 6;
+    uint256 public constant TARGET_WALLET_BALANCE_USDC_TRANSFER_BOT = 1000 * 10 ** 6;
+    uint256 public constant MIN_WALLET_BALANCE_ETH_TRANSFER_BOT = 0.5 ether;
 
-    uint256[4] public initialValues;
+    uint256[7] public initialValues;
 
     function setUp() public {
         deployer = makeAddr("deployer");
@@ -50,6 +53,9 @@ contract BasicTest is Test {
         initialValues[1] = MIN_DEPOSIT_PER_ADDR;
         initialValues[2] = MAX_DEPOSIT_PER_ADDR;
         initialValues[3] = TOKEN_MAX_TOTAL_DEPOSIT;
+        initialValues[4] = MIN_WALLET_BALANCE_ETH_TRANSFER_BOT;
+        initialValues[5] = TARGET_WALLET_BALANCE_USDC_TRANSFER_BOT;
+        initialValues[6] = MIN_WALLET_BALANCE_USDC_TRANSFER_BOT;
 
         vm.startPrank(deployer);
         usdc = new USDC();
@@ -74,6 +80,9 @@ contract BasicTest is Test {
 
         hoax(transferBotRoleAddress);
         usdc.approve(address(vault), _usdc(100_000_000));
+
+        hoax(deployer);
+        usdc.mint(transferBotRoleAddress, _usdc(200));
 
         hoax(transferBotWallet);
         usdc.approve(address(vault), _usdc(100_000_000));
@@ -205,5 +214,17 @@ contract BasicTest is Test {
 
     function _usdc(uint256 amount) internal pure returns (uint256) {
         return amount * 10 ** 6;
+    }
+
+    function goToNextEpoch() public returns (uint256) {
+        vm.warp(vault.getNextEpoch() + 1);
+        hoax(deployer);
+        vault.CurrentEpoch();
+        return vault.CURRENT_EPOCH();
+    }
+
+    function goToActiveEpochTime() public returns (uint256) {
+        vm.warp(vault.getCurrentEpoch() + MAINT_TIME_BEFORE + MAINT_TIME_AFTER);
+        return block.timestamp;
     }
 }

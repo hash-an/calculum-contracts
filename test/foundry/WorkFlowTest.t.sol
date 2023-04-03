@@ -26,9 +26,11 @@ contract WorkFlowTest is BasicTest {
 
     event Transfer(address indexed from, address indexed to, uint256 amount);
 
-    event FeesTranfer(uint256 indexed epoch, uint256 Amount);
+    event FeesTransfer(uint256 indexed epoch, uint256 Amount);
 
-    function testEpoch0() public {
+    event DexTransfer(uint256 indexed epoch, uint256 Amount);
+
+    function testEpoch0() public returns (uint256, uint256) {
         vm.startPrank(deployer);
         // Move to after the Maintenance Time Post Maintenance
         vm.warp(block.timestamp + MAINT_TIME_AFTER + MAINT_TIME_BEFORE);
@@ -51,9 +53,6 @@ contract WorkFlowTest is BasicTest {
         vault.deposit(depositAmount, alice);
         vm.stopPrank();
 
-        // before Alice
-        hoax(deployer); 
-        oracle.setAssetValue(_usdc(1500));
         vm.startPrank(alice);
         uint256 balanceBefore = usdc.balanceOf(alice);
         (Helpers.Status statusBefore,,,) = vault.DEPOSITS(alice);
@@ -61,20 +60,21 @@ contract WorkFlowTest is BasicTest {
             statusBefore == Helpers.Status.Inactive,
             "epoch 0: deposit status should be 0 before deposit"
         );
-        depositAmount = _usdc(1500);
+        depositAmount = _usdc(150_000);
         vm.expectEmit(true, true, false, true, address(usdc));
         emit Transfer(alice, address(vault), depositAmount);
         vm.expectEmit(true, true, false, true, address(vault));
-        emit PendingDeposit(alice, alice, depositAmount, 1500 ether);
+        emit PendingDeposit(alice, alice, depositAmount, 150_000 ether);
         vault.deposit(depositAmount, alice);
+        vm.stopPrank();
 
         (Helpers.Status status, uint256 amountAssets, uint256 amountShares, uint256 finalAmount) =
             vault.DEPOSITS(alice);
         assertTrue(
             status == Helpers.Status.Pending, "epoch 0: deposit status should be 1 when pending"
         );
-        assertEq(amountAssets, _usdc(1500), "epoch 0: wrong assets amount in vault");
-        assertEq(amountShares, 1500 ether, "epoch 0: wrong shares amount in vault");
+        assertEq(amountAssets, _usdc(150_000), "epoch 0: wrong assets amount in vault");
+        assertEq(amountShares, 150_000 ether, "epoch 0: wrong shares amount in vault");
         assertEq(finalAmount, 0, "epoch 0: wrong final amount in vault");
         assertEq(vault.balanceOf(alice), 0, "epoch 0: wrong token balance when pending");
         assertEq(vault.balanceOf(alice), 0, "epoch 0: wrong token balance");
@@ -84,14 +84,13 @@ contract WorkFlowTest is BasicTest {
             "epoch 0: wrong balance of usdc after deposit"
         );
 
-        uint256 nextEpochTime = vault.getNextEpoch();
-        vm.warp(nextEpochTime - 70 minutes);
-        vm.stopPrank();
+        hoax(deployer);
+        oracle.setAssetValue(_usdc(150_000));
 
         vm.startPrank(transferBotRoleAddress);
         vm.expectRevert(abi.encodeWithSelector(Helpers.VaultOutMaintenance.selector, transferBotRoleAddress, block.timestamp));
         vault.finalizeEpoch();
-        vm.warp(block.timestamp + 55 minutes);
+        vm.warp(vault.getNextEpoch() + MAINT_TIME_AFTER - 43 minutes);
         vault.finalizeEpoch();
 
         (status, amountAssets , amountShares, finalAmount) = vault.DEPOSITS(alice);
@@ -99,29 +98,30 @@ contract WorkFlowTest is BasicTest {
         uint256 currentEpoch = vault.CURRENT_EPOCH();
         assertEq(currentEpoch, 0, "epoch 0: should be epoch 0");
         assertEq(amountAssets, 0, "epoch 0: wrong assets amount in vault");
-        assertEq(amountShares, 1500 ether, "epoch 0: wrong shares amount in vault");
-        assertEq(finalAmount, _usdc(1500), "epoch 0: wrong final amount in vault");
+        assertEq(amountShares, 150_000 ether, "epoch 0: wrong shares amount in vault");
+        assertEq(finalAmount, _usdc(150_000), "epoch 0: wrong final amount in vault");
         uint256 vaultBalanceBefore = usdc.balanceOf(address(vault));
         vm.expectEmit(true, true, false, true, address(usdc));
-        emit Transfer(address(vault), transferBotWallet, _usdc(1500));
+        emit Transfer(address(vault), transferBotWallet, _usdc(150_000));
         vault.dexTransfer();
         uint256 vaultBalanceAfter = usdc.balanceOf(address(vault));
-        assertEq(vaultBalanceAfter + _usdc(1500), vaultBalanceBefore, "epoch 0: wrong USDC balance change of vault");
+        assertEq(vaultBalanceAfter + _usdc(150_000), vaultBalanceBefore, "epoch 0: wrong USDC balance change of vault");
         assertEq(vaultBalanceAfter, 0, "epoch 0: USDC balance in vault should be 0");
-        assertEq(usdc.balanceOf(transferBotWallet), _usdc(1500), "epoch 0: wrong USDC balance of tranfer bot");
+        assertEq(usdc.balanceOf(transferBotWallet), _usdc(150_000), "epoch 0: wrong USDC balance of tranfer bot");
 
         vm.expectRevert(Helpers.FirstEpochNoFeeTransfer.selector);
         vault.feesTransfer();
         vm.stopPrank();
 
-        nextEpochTime = vault.getNextEpoch();
-        vm.warp(nextEpochTime + 1);
+        vm.warp(vault.getNextEpoch() + 1);
         hoax(deployer);
         vault.CurrentEpoch();
+
+        return (usdc.balanceOf(address(vault)), usdc.balanceOf(transferBotWallet));
     }
 
     function testEpoch1() public returns (uint256, uint256) {
-        testEpoch0();
+        (, uint256 transferBotBalance) = testEpoch0();
         assertEq(vault.CURRENT_EPOCH(), 1, "epoch 1: already in epoch 1");
 
         address alice = investors[0];
@@ -144,17 +144,17 @@ contract WorkFlowTest is BasicTest {
         vm.stopPrank();
 
         vm.expectEmit(true, true, false, true, address(vault));
-        emit Transfer(address(0), alice, 1500 ether);
+        emit Transfer(address(0), alice, 150_000 ether);
         hoax(alice);
         vault.claimShares(alice);
-        assertEq(vault.balanceOf(alice), 1500 ether, "epoch 1: wrong balance of shares");
+        assertEq(vault.balanceOf(alice), 150_000 ether, "epoch 1: wrong balance of shares");
         (Helpers.Status status,, uint256 amountShares, uint256 finalAmount) = vault.DEPOSITS(alice);
         assertTrue(uint8(status) == 3, "epoch 1: deposit status should be 3");
         assertEq(amountShares, 0, "epoch 1: wrong balance of shares in vault");
-        assertEq(finalAmount, _usdc(1500), "epoch 1: wrong balance of final shares");
+        assertEq(finalAmount, _usdc(150_000), "epoch 1: wrong balance of final shares");
     
         hoax(deployer);
-        oracle.setAssetValue(1350000000);
+        oracle.setAssetValue(146_250_000_000);
         vm.startPrank(transferBotRoleAddress);
         vm.expectRevert(abi.encodeWithSelector(Helpers.VaultOutMaintenance.selector, transferBotRoleAddress, block.timestamp));
         vault.finalizeEpoch();
@@ -163,19 +163,24 @@ contract WorkFlowTest is BasicTest {
 
         (,, uint256 transferAmount) = vault.netTransfer(vault.CURRENT_EPOCH());
 
+        uint256 expectedGasReserve = 28_800_000;
         assertEq(usdc.balanceOf(address(vault)), 0, "epoch 1: wrong vault balance before dex transfer");
+        assertEq(transferAmount, expectedGasReserve, "epoch 1: wrong dex transfer amount");
 
         vm.expectEmit(true, true, false, true, address(usdc));
         emit Transfer(transferBotWallet, address(vault), transferAmount);
+        vm.expectEmit(true, true, false, true, address(usdc));
+        emit Transfer(address(vault), transferBotRoleAddress, transferAmount);
+        vm.expectEmit(true, false, false, true, address(vault));
+        emit DexTransfer(vault.CURRENT_EPOCH(), transferAmount);
         vault.dexTransfer();
 
-        assertEq(usdc.balanceOf(address(vault)), transferAmount, "epoch 1: wrong vault balance after dex transfer");
-        assertEq(usdc.balanceOf(transferBotWallet), _usdc(1500) - transferAmount, "epoch 1: wrong transfer bot balance after dex transfer");
+        assertEq(usdc.balanceOf(address(vault)), 0, "epoch 1: wrong vault balance after dex transfer");
+        assertEq(usdc.balanceOf(transferBotWallet), transferBotBalance - transferAmount, "epoch 1: wrong transfer bot balance after dex transfer");
+        assertEq(vault.CalculateTransferBotGasReserveDA(), expectedGasReserve, "epoch 1: wrong gas reserve");
 
-        vm.expectEmit(true, true, false, true, address(usdc));
-        emit Transfer(address(vault), treasuryWallet, 0);
         vm.expectEmit(true, false, false, true, address(vault));
-        emit FeesTranfer(vault.CURRENT_EPOCH(), 0);
+        emit FeesTransfer(vault.CURRENT_EPOCH(), 0);
         vault.feesTransfer();
         vm.stopPrank();
 
@@ -191,8 +196,8 @@ contract WorkFlowTest is BasicTest {
         assertEq(vault.CURRENT_EPOCH(), 2, "epoch 2: already in epoch 2");
 
         address bob = investors[1];
-        uint256 depositAmount = _usdc(500);
-        uint256 expectShares = 555.67965734569609435 ether;
+        uint256 depositAmount = _usdc(50_000);
+        uint256 expectedShares = 51_293.362126007273398750 ether;
 
         vm.startPrank(bob);
         vm.expectRevert(abi.encodeWithSelector(Helpers.VaultInMaintenance.selector, bob, block.timestamp));
@@ -202,43 +207,52 @@ contract WorkFlowTest is BasicTest {
         vm.expectEmit(true, true, false, true, address(usdc));
         emit Transfer(bob, address(vault), depositAmount);
         vm.expectEmit(true, true, false, true, address(vault));
-        emit PendingDeposit(bob, bob, depositAmount, expectShares);
+        emit PendingDeposit(bob, bob, depositAmount, expectedShares);
         vault.deposit(depositAmount, bob);
         vm.stopPrank();
 
         (Helpers.Status status, uint256 amountAssets, uint256 amountShares, uint256 finalAmount) = vault.DEPOSITS(bob);
         assertTrue(status == Helpers.Status.Pending, "epoch 2: deposit status should be 0 before deposit");
-        assertEq(amountAssets, _usdc(500), "epoch 2: wrong asset amount in vault");
-        assertEq(amountShares, expectShares, "epoch 2: wrong shares amount in vault");
+        assertEq(amountAssets, _usdc(50_000), "epoch 2: wrong asset amount in vault");
+        assertEq(amountShares, expectedShares, "epoch 2: wrong shares amount in vault");
         assertEq(finalAmount, 0, "epoch 2: wrong shares amount in vault");
 
-        assertEq(usdc.balanceOf(address(vault)), vaultBalance + _usdc(500), "epoch 2: wrong vault balance after deposit");
+        assertEq(usdc.balanceOf(address(vault)), vaultBalance + _usdc(50_000), "epoch 2: wrong vault balance after deposit");
 
         hoax(deployer);
-        oracle.setAssetValue(1282226400);
+        oracle.setAssetValue(143_296_800_000);
         vm.warp(vault.getNextEpoch() + MAINT_TIME_AFTER - 43 minutes);
         hoax(transferBotRoleAddress);
         vault.finalizeEpoch();
 
+        expectedShares = 52_349.114148290382630146 ether;
         (status, amountAssets, amountShares, finalAmount) = vault.DEPOSITS(bob);
-        assertEq(amountShares, 585.038232248477438001 ether, "epoch 2: wrong shares amount after finalize");
+        assertEq(amountShares, expectedShares, "epoch 2: wrong shares amount after finalize");
 
         (,, uint256 transferAmount) = vault.netTransfer(vault.CURRENT_EPOCH());
+
+        uint256 expectedTransferAmount = 499_719_500_00;
+        assertEq(transferAmount, expectedTransferAmount, "epoch 2: wrong net transfer amount");
+
+        uint256 expectedGasReserve = 28_050_000;
+        assertEq(vault.CalculateTransferBotGasReserveDA(), expectedGasReserve, "epoch 2: wrong gas reserve");
 
         vm.startPrank(transferBotRoleAddress);
         vm.expectEmit(true, true, false, true, address(usdc));
         emit Transfer(address(vault), transferBotWallet, transferAmount);
+        vm.expectEmit(true, false, false, true, address(vault));
+        emit DexTransfer(vault.CURRENT_EPOCH(), transferAmount);
         vault.dexTransfer();
 
-        assertEq(usdc.balanceOf(address(vault)), vaultBalance + _usdc(500) - transferAmount, "epoch 2: wrong vault balance after dex transfer");
-        assertEq(usdc.balanceOf(transferBotWallet), transferBotBalance + transferAmount, "epoch 2: wrong transfer bot balance after dex transfer");
+        assertEq(usdc.balanceOf(address(vault)), 0, "epoch 2: wrong vault balance after dex transfer");
+        assertEq(usdc.balanceOf(transferBotWallet), transferBotBalance + expectedTransferAmount, "epoch 2: wrong transfer bot balance after dex transfer");
 
-        vm.expectEmit(true, true, false, true, address(usdc));
-        emit Transfer(address(vault), treasuryWallet, 0);
         vm.expectEmit(true, false, false, true, address(vault));
-        emit FeesTranfer(vault.CURRENT_EPOCH(), 0);
+        emit FeesTransfer(vault.CURRENT_EPOCH(), 0);
         vault.feesTransfer();
         vm.stopPrank();
+
+        assertEq(usdc.balanceOf(treasuryWallet), 0, "epoch 2: wrong treasury balance");
 
         vm.warp(vault.getNextEpoch() + 1);
         hoax(deployer);
@@ -254,14 +268,15 @@ contract WorkFlowTest is BasicTest {
         address alice = investors[0];
         address bob = investors[1];
         address carla = investors[2];
-        uint256 depositAmount = _usdc(1000);
-        uint256 bobExpectedShares = 585.038232248477438001 ether;
-        uint256 aliceExpectedShares = 1626.539926675580105465 ether;
-        uint256 carlaExpectedShares = 487.961978002674031640 ether;
+        uint256 aliceDepositAmount = _usdc(100_000);
+        uint256 carlaDepositAmount = _usdc(30_000);
+        uint256 bobExpectedShares = 52_349.114148290382630146 ether;
+        uint256 aliceExpectedShares = 141_246.329361015730603701 ether;
+        uint256 carlaExpectedShares = 42_373.898808304719181111 ether;
 
         vm.startPrank(carla);
         vm.expectRevert(abi.encodeWithSelector(Helpers.VaultInMaintenance.selector, carla, block.timestamp));
-        vault.deposit(depositAmount, carla);
+        vault.deposit(carlaDepositAmount, carla);
 
         vm.warp(vault.getCurrentEpoch() + MAINT_TIME_AFTER + MAINT_TIME_BEFORE);
 
@@ -277,7 +292,7 @@ contract WorkFlowTest is BasicTest {
         vm.startPrank(bob);
         (Helpers.Status status, uint256 amountAssets, uint256 amountShares, uint256 finalAmount) = vault.DEPOSITS(bob);
         assertTrue(status == Helpers.Status.Claimet, "epoch 3: wrong status of bob's deposit before claiming");
-        assertEq(finalAmount, _usdc(500), "epoch 3: wrong amount of assets for bob before claiming");
+        assertEq(finalAmount, _usdc(50_000), "epoch 3: wrong amount of assets for bob before claiming");
         assertEq(bobExpectedShares, amountShares, "epoch 3: wrong amount of shares for bob before claiming");
 
         vm.expectEmit(true, true, false, true, address(vault));
@@ -287,7 +302,7 @@ contract WorkFlowTest is BasicTest {
 
         (status,, amountShares, finalAmount) = vault.DEPOSITS(bob);
         assertEq(uint8(status), 3, "epoch 3: wrong status of bob's deposit after claiming");
-        assertEq(finalAmount, _usdc(500), "epoch 3: wrong amount of assets for bob after claiming");
+        assertEq(finalAmount, _usdc(50_000), "epoch 3: wrong amount of assets for bob after claiming");
         assertEq(amountShares, 0 ether, "epoch 3: wrong amount of shares for bob after claiming");
         vm.stopPrank();
 
@@ -304,18 +319,18 @@ contract WorkFlowTest is BasicTest {
 
         vm.startPrank(alice);
         vm.expectEmit(true, true, false, true, address(usdc));
-        emit Transfer(alice, address(vault), depositAmount);
+        emit Transfer(alice, address(vault), aliceDepositAmount);
         vm.expectEmit(true, true, false, true, address(vault));
-        emit PendingDeposit(alice, alice, depositAmount, aliceExpectedShares);
-        vault.deposit(depositAmount, alice);
+        emit PendingDeposit(alice, alice, aliceDepositAmount, aliceExpectedShares);
+        vault.deposit(aliceDepositAmount, alice);
         vm.stopPrank();
 
         (status, amountAssets, amountShares, finalAmount) = vault.DEPOSITS(alice);
         assertTrue(status == Helpers.Status.Pending, "epoch 3: wrong status of alice's deposit after depositing");
-        assertEq(amountAssets, depositAmount, "epoch 3: wrong alice's assets in vault after depositing");
+        assertEq(amountAssets, aliceDepositAmount, "epoch 3: wrong alice's assets in vault after depositing");
         assertEq(amountShares, aliceExpectedShares, "epoch 3: wrong alice's shares in vault after depositing");
-        assertEq(finalAmount, _usdc(1500), "epoch 3: wrong alice's final amount after depositing");
-        assertEq(aliceUsdcBalanceBefore - usdc.balanceOf(alice), _usdc(1000), "epoch 3: wrong change of alice's USDC balance");
+        assertEq(finalAmount, _usdc(150_000), "epoch 3: wrong alice's final amount after depositing");
+        assertEq(aliceUsdcBalanceBefore - usdc.balanceOf(alice), aliceDepositAmount, "epoch 3: wrong change of alice's USDC balance");
 
         // Carla
         uint256 carlaUsdcBalanceBefore = usdc.balanceOf(carla);
@@ -323,30 +338,29 @@ contract WorkFlowTest is BasicTest {
         assertTrue(status == Helpers.Status.Inactive, "epoch 3: wrong status of carla's deposit before depositing");
 
         vm.startPrank(carla);
-        depositAmount = _usdc(300);
         vm.expectEmit(true, true, false, true, address(usdc));
-        emit Transfer(carla, address(vault), depositAmount);
+        emit Transfer(carla, address(vault), carlaDepositAmount);
         vm.expectEmit(true, true, false, true, address(vault));
-        emit PendingDeposit(carla, carla, depositAmount, carlaExpectedShares);
-        vault.deposit(depositAmount, carla);
+        emit PendingDeposit(carla, carla, carlaDepositAmount, carlaExpectedShares);
+        vault.deposit(carlaDepositAmount, carla);
         vm.stopPrank();
 
         (status, amountAssets, amountShares, finalAmount) = vault.DEPOSITS(carla);
         assertTrue(status == Helpers.Status.Pending, "epoch 3: wrong status of carla's deposit after depositing");
-        assertEq(amountAssets, depositAmount, "epoch 3: wrong carla's assets in vault after depositing");
+        assertEq(amountAssets, carlaDepositAmount, "epoch 3: wrong carla's assets in vault after depositing");
         assertEq(amountShares, carlaExpectedShares, "epoch 3: wrong carla's shares in vault after depositing");
         assertEq(finalAmount, 0 ether, "epoch 3: wrong carla's final amount after depositing");
-        assertEq(carlaUsdcBalanceBefore - usdc.balanceOf(carla), _usdc(300), "epoch 3: wrong change of carla's USDC balance");
+        assertEq(carlaUsdcBalanceBefore - usdc.balanceOf(carla), carlaDepositAmount, "epoch 3: wrong change of carla's USDC balance");
 
         hoax(deployer);
-        oracle.setAssetValue(1871065245);
+        oracle.setAssetValue(200_999_500_000);
 
         vm.warp(vault.getNextEpoch() + MAINT_TIME_AFTER - 43 minutes);
         hoax(transferBotRoleAddress);
         vault.finalizeEpoch();
 
-        aliceExpectedShares = 1122.582658567606979321 ether;
-        carlaExpectedShares = 336.774797570282093797 ether;
+        aliceExpectedShares = 101_274.437521774004067182 ether;
+        carlaExpectedShares = 30_382.331256532201220155 ether;
 
         (,amountAssets, amountShares,) = vault.DEPOSITS(alice);
         assertEq(amountAssets, 0, "epoch 3: wrong alice's assets in vault after finalize");
@@ -358,18 +372,34 @@ contract WorkFlowTest is BasicTest {
 
         (,, uint256 transferAmount) = vault.netTransfer(vault.CURRENT_EPOCH());
 
+        uint256 expectedTransferAmount = 128_803_104_990;
+        assertEq(transferAmount, expectedTransferAmount, "epoch 3: wrong net transfer amount");
+
+        uint256 expectedGasReserve = 743_150_000;
+        assertEq(vault.CalculateTransferBotGasReserveDA(), expectedGasReserve, "epoch 3: wrong gas reserve");
+
         vm.startPrank(transferBotRoleAddress);
         vm.expectEmit(true, true, false, true, address(usdc));
         emit Transfer(address(vault), transferBotWallet, transferAmount);
+        vm.expectEmit(true, false, false, true, address(vault));
+        emit DexTransfer(vault.CURRENT_EPOCH(), transferAmount);
         vault.dexTransfer();
 
-        assertEq(usdc.balanceOf(address(vault)), vaultBalance + _usdc(1300) - transferAmount, "epoch 3: wrong vault balance after dex transfer");
+        assertEq(
+            usdc.balanceOf(address(vault)),
+                vaultBalance + aliceDepositAmount + carlaDepositAmount - transferAmount - expectedGasReserve,
+                "epoch 3: wrong vault balance after dex transfer"
+        );
         assertEq(usdc.balanceOf(transferBotWallet), transferBotBalance + transferAmount, "epoch 3: wrong transfer bot balance after dex transfer");
 
+        // Mock swap USDC to ETH for gas
+        usdc.transfer(makeAddr("uniswap v2"), usdc.balanceOf(transferBotRoleAddress));
+
+        uint256 expectedFeeAmount = 453_745_010;
         vm.expectEmit(true, true, false, true, address(usdc));
-        emit Transfer(address(vault), treasuryWallet, 0);
+        emit Transfer(address(vault), treasuryWallet, expectedFeeAmount);
         vm.expectEmit(true, false, false, true, address(vault));
-        emit FeesTranfer(vault.CURRENT_EPOCH(), 0);
+        emit FeesTransfer(vault.CURRENT_EPOCH(), expectedFeeAmount);
         vault.feesTransfer();
         vm.stopPrank();
 
@@ -386,20 +416,23 @@ contract WorkFlowTest is BasicTest {
 
         address alice = investors[0];
         address carla = investors[2];
-        uint256 aliceExpectedShares = 1122.582658567606979321 ether;
-        uint256 carlaExpectedShares = 336.774797570282093797 ether;
+        uint256 aliceExpectedShares = 101_274.437521774004067182 ether;
+        uint256 carlaExpectedShares = 30_382.331256532201220155 ether;
+
+        uint256 aliceShareBalanceBefore = vault.balanceOf(alice);
+        uint256 carlaShareBalanceBefore = vault.balanceOf(carla);
 
         vm.warp(vault.getCurrentEpoch() + MAINT_TIME_AFTER + MAINT_TIME_BEFORE);
 
         (Helpers.Status status, uint256 amountAssets, uint256 amountShares, uint256 finalAmount) = vault.DEPOSITS(alice);
         assertTrue(status == Helpers.Status.Claimet, "epoch 4: wrong status of alice's deposit");
         assertEq(amountShares, aliceExpectedShares, "epoch 4: wrong amount of alice's shares");
-        assertEq(finalAmount, _usdc(2500), "epoch 4: wrong final amount of alice");
+        assertEq(finalAmount, _usdc(250_000), "epoch 4: wrong final amount of alice");
 
         (status,, amountShares, finalAmount) = vault.DEPOSITS(carla);
         assertTrue(status == Helpers.Status.Claimet, "epoch 4: wrong status of carla's deposit");
         assertEq(amountShares, carlaExpectedShares, "epoch 4: wrong amount of carla's shares");
-        assertEq(finalAmount, _usdc(300), "epoch 4: wrong final amount of carla");
+        assertEq(finalAmount, _usdc(30_000), "epoch 4: wrong final amount of carla");
 
         vm.startPrank(alice);
         vm.expectEmit(true, true, false, true, address(vault));
@@ -408,7 +441,8 @@ contract WorkFlowTest is BasicTest {
         (status, amountAssets, amountShares, finalAmount) = vault.DEPOSITS(alice);
         assertTrue(uint8(status) == 3, "epoch 4: wrong status of alice desposit after claiming");
         assertEq(amountShares, 0, "epoch 4: wrong amount of alice shares after claiming");
-        assertEq(finalAmount, _usdc(2500), "epoch 4: wrong final amount of alice after claiming");
+        assertEq(finalAmount, _usdc(250_000), "epoch 4: wrong final amount of alice after claiming");
+        assertEq(aliceShareBalanceBefore + aliceExpectedShares, vault.balanceOf(alice), "epoch 4: wrong alice balance of vault token");
         vm.stopPrank();
 
         vm.startPrank(carla);
@@ -418,11 +452,12 @@ contract WorkFlowTest is BasicTest {
         (status, amountAssets, amountShares, finalAmount) = vault.DEPOSITS(carla);
         assertTrue(uint8(status) == 3, "epoch 4: wrong status of carla desposit after claiming");
         assertEq(amountShares, 0, "epoch 4: wrong amount of carla shares after claiming");
-        assertEq(finalAmount, _usdc(300), "epoch 4: wrong final amount of carla after claiming");
+        assertEq(finalAmount, _usdc(30_000), "epoch 4: wrong final amount of carla after claiming");
+        assertEq(carlaShareBalanceBefore + carlaExpectedShares, vault.balanceOf(carla), "epoch 4: wrong carla balance of vault token");
         vm.stopPrank();
 
         hoax(deployer);
-        oracle.setAssetValue(3315226114);
+        oracle.setAssetValue(339_696_900_000);
 
         vm.warp(vault.getNextEpoch() + MAINT_TIME_AFTER - 43 minutes);
         hoax(transferBotRoleAddress);
@@ -430,18 +465,28 @@ contract WorkFlowTest is BasicTest {
 
         (,, uint256 transferAmount) = vault.netTransfer(vault.CURRENT_EPOCH());
 
+        uint256 expectedTransferAmount = 1_547_783_261;
+        assertEq(transferAmount, expectedTransferAmount, "epoch 4: wrong net transfer amount");
+
+        uint256 expectedGasReserve = 1_000_000_000;
+        assertEq(vault.CalculateTransferBotGasReserveDA(), expectedGasReserve, "epoch 4: wrong gas reserve");
+
         vm.startPrank(transferBotRoleAddress);
         vm.expectEmit(true, true, false, true, address(usdc));
         emit Transfer(transferBotWallet, address(vault), transferAmount);
+        vm.expectEmit(true, false, false, true, address(vault));
+        emit DexTransfer(vault.CURRENT_EPOCH(), transferAmount);
         vault.dexTransfer();
 
-        assertEq(usdc.balanceOf(address(vault)), vaultBalance + transferAmount, "epoch 3: wrong vault balance after dex transfer");
-        assertEq(usdc.balanceOf(transferBotWallet), transferBotBalance - transferAmount, "epoch 3: wrong transfer bot balance after dex transfer");
+        assertEq(usdc.balanceOf(address(vault)), vaultBalance + expectedTransferAmount - expectedGasReserve, "epoch 4: wrong vault balance after dex transfer");
+        assertEq(usdc.balanceOf(transferBotWallet), transferBotBalance - transferAmount, "epoch 4: wrong transfer bot balance after dex transfer");
+        assertEq(usdc.balanceOf(transferBotRoleAddress), expectedGasReserve, "epoch 4: wrong usdc balance of bot role");
 
+        uint256 feeAmount = 547_783_261;
         vm.expectEmit(true, true, false, true, address(usdc));
-        emit Transfer(address(vault), treasuryWallet, 0);
+        emit Transfer(address(vault), treasuryWallet, feeAmount);
         vm.expectEmit(true, false, false, true, address(vault));
-        emit FeesTranfer(vault.CURRENT_EPOCH(), 0);
+        emit FeesTransfer(vault.CURRENT_EPOCH(), feeAmount);
         vault.feesTransfer();
         vm.stopPrank();
 
@@ -457,15 +502,15 @@ contract WorkFlowTest is BasicTest {
         assertEq(vault.CURRENT_EPOCH(), 5, "epoch 5: already in epoch 5");
 
         address alice = investors[0];
-        uint256 withdrawAmount = _usdc(1269);
-        uint256 aliceExpectedShares = 1358.471660504122517230 ether;
+        uint256 withdrawAmount = _usdc(130_000);
+        uint256 aliceExpectedShares = 127_933.993931992257041045 ether;
 
         vm.warp(vault.getCurrentEpoch() + MAINT_TIME_AFTER + MAINT_TIME_BEFORE);
 
         vm.expectEmit(true, true, false, true, address(vault));
         emit PendingWithdraw(alice, alice, withdrawAmount, aliceExpectedShares);
         hoax(alice);
-        vault.withdraw(withdrawAmount, alice, alice);
+        emit log_uint(vault.withdraw(withdrawAmount, alice, alice));
 
         (Helpers.Status status, uint256 amountAssets, uint256 amountShares, uint256 finalAmount) = vault.WITHDRAWALS(alice);
         assertTrue(status == Helpers.Status.Pending, "epoch 5: wrong status of alice's withdrawal");
@@ -474,23 +519,29 @@ contract WorkFlowTest is BasicTest {
         assertEq(finalAmount, 0, "epoch 5: wrong final amount of alice after withdrawal");
 
         hoax(deployer);
-        oracle.setAssetValue(3455486910);
+        oracle.setAssetValue(346_603_500_000);
 
         vm.warp(vault.getNextEpoch() + MAINT_TIME_AFTER - 43 minutes);
         hoax(transferBotRoleAddress);
         vault.finalizeEpoch();
 
+        aliceExpectedShares = 125_758.784976662071634139 ether;
         (status, amountAssets, amountShares, finalAmount) = vault.WITHDRAWALS(alice);
         assertTrue(status == Helpers.Status.Claimet, "epoch 5: wrong status of alice's withdrawal after finalizing");
         assertEq(amountAssets, 0, "epoch 5: wrong assets of alice after finalizing");
-        assertEq(amountShares, 1311.256553699520755879 ether, "epoch 5: wrong shares of alice after finalizing");
+        assertEq(amountShares, aliceExpectedShares, "epoch 5: wrong shares of alice after finalizing");
         assertEq(finalAmount, withdrawAmount, "epoch 5: wrong final amount of alice after finalizing");
 
         (,, uint256 transferAmount) = vault.netTransfer(vault.CURRENT_EPOCH());
 
+        uint256 expectedTransferAmount = 0;
+        assertEq(transferAmount, expectedTransferAmount, "epoch 5: wrong net transfer amount");
+
         vm.startPrank(transferBotRoleAddress);
         vm.expectEmit(true, true, false, true, address(usdc));
         emit Transfer(transferBotWallet, address(vault), transferAmount);
+        vm.expectEmit(true, false, false, true, address(vault));
+        emit DexTransfer(vault.CURRENT_EPOCH(), transferAmount);
         vault.dexTransfer();
 
         assertEq(usdc.balanceOf(address(vault)), vaultBalance + transferAmount, "epoch 5: wrong vault balance after dex transfer");
@@ -499,7 +550,7 @@ contract WorkFlowTest is BasicTest {
         vm.expectEmit(true, true, false, true, address(usdc));
         emit Transfer(address(vault), treasuryWallet, 0);
         vm.expectEmit(true, false, false, true, address(vault));
-        emit FeesTranfer(vault.CURRENT_EPOCH(), 0);
+        emit FeesTransfer(vault.CURRENT_EPOCH(), 0);
         vault.feesTransfer();
         vm.stopPrank();
 
@@ -572,7 +623,7 @@ contract WorkFlowTest is BasicTest {
         vm.expectEmit(true, true, false, true, address(usdc));
         emit Transfer(address(vault), treasuryWallet, 0);
         vm.expectEmit(true, false, false, true, address(vault));
-        emit FeesTranfer(vault.CURRENT_EPOCH(), 0);
+        emit FeesTransfer(vault.CURRENT_EPOCH(), 0);
         vault.feesTransfer();
         vm.stopPrank();
 
@@ -587,7 +638,6 @@ contract WorkFlowTest is BasicTest {
         (uint256 vaultBalance, uint256 transferBotBalance) = testEpoch6();
         assertEq(vault.CURRENT_EPOCH(), 7, "epoch 6: already in epoch 7");
 
-        address alice = investors[0];
         address bob = investors[1];
         address carla = investors[2];
         uint256 carlaExpectedAssets = 166800001;
@@ -614,7 +664,7 @@ contract WorkFlowTest is BasicTest {
         assertEq(amountShares, 0, "epoch 7: wrong shares of carla after finalizing");
         assertEq(finalAmount, carlaExpectedAssets, "epoch 7: wrong final amount of carla after finalizing");
 
-        uint256 bobDepositAmount = _usdc(500);
+        uint256 bobDepositAmount = _usdc(50_000);
         uint256 bobSharesAmount = 470.295213711551014804 ether;
 
         vm.expectEmit(true, true, false, true, address(usdc));
@@ -645,7 +695,7 @@ contract WorkFlowTest is BasicTest {
         vm.expectEmit(true, true, false, true, address(usdc));
         emit Transfer(address(vault), treasuryWallet, 0);
         vm.expectEmit(true, false, false, true, address(vault));
-        emit FeesTranfer(vault.CURRENT_EPOCH(), 0);
+        emit FeesTransfer(vault.CURRENT_EPOCH(), 0);
         vault.feesTransfer();
         vm.stopPrank();
 
@@ -704,7 +754,7 @@ contract WorkFlowTest is BasicTest {
         vm.expectEmit(true, true, false, true, address(usdc));
         emit Transfer(address(vault), treasuryWallet, 0);
         vm.expectEmit(true, false, false, true, address(vault));
-        emit FeesTranfer(vault.CURRENT_EPOCH(), 0);
+        emit FeesTransfer(vault.CURRENT_EPOCH(), 0);
         vault.feesTransfer();
         vm.stopPrank();
     }
