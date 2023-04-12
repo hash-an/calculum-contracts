@@ -119,6 +119,7 @@ describe("Verification of Basic Value and Features", function () {
     expect(USDc.address).to.properAddress;
     console.log(`USDC Address: ${USDc.address}`);
     // Mint 100 K Stable coin to deployer, user1, user2, user3
+    console.log("Alice Address: ", alice.address);
     await USDc.transfer(alice.address, 250000 * 10 ** 6);
     await USDc.transfer(bob.address, 100000 * 10 ** 6);
     await USDc.transfer(carla.address, 30000 * 10 ** 6);
