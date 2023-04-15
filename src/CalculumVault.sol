@@ -9,6 +9,7 @@ import "@openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeab
 import "@openzeppelin-contracts-upgradeable/contracts/access/AccessControlUpgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
 import "@uniswap/v2-periphery/interfaces/IUniswapV2Router02.sol";
+import "forge-std/console.sol";
 
 interface Oracle {
     function GetAccount(address _wallet) external view returns (uint256);
@@ -748,17 +749,13 @@ contract CalculumVault is
 
         // Calculate the total fees to be collected for the current epoch
         uint256 totalFees = getPnLPerVaultToken()
-            ? (MgtFeePerVaultToken().add(PerfFeePerVaultToken())).mul(
-                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)].mulDiv(
-                    1,
-                    10 ** decimals()
-                )
+            ? (MgtFeePerVaultToken().add(PerfFeePerVaultToken())).mulDiv(
+                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
+                10 ** decimals()
             )
-            : MgtFeePerVaultToken().mul(
-                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)].mulDiv(
-                    1,
-                    10 ** decimals()
-                )
+            : MgtFeePerVaultToken().mulDiv(
+                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
+                10 ** decimals()
             );
 
         // Take the smallest amount between the missing USDC and the total fees
@@ -773,6 +770,7 @@ contract CalculumVault is
             (_asset.balanceOf(transferBotRoleWallet) >
                 MIN_WALLET_BALANCE_USDC_TRANSFER_BOT)
         ) {
+            console.log("Swapping USDC for ETH");
             uint256 swapAmount = _asset.balanceOf(transferBotRoleWallet);
             SafeERC20Upgradeable.safeTransferFrom(
                 _asset,
@@ -780,7 +778,7 @@ contract CalculumVault is
                 address(this),
                 swapAmount
             );
-			_asset.approve(address(router), swapAmount);
+            _asset.approve(address(router), swapAmount);
             _swapTokensForETH(
                 address(_asset),
                 swapAmount,
@@ -901,7 +899,20 @@ contract CalculumVault is
     function feesTransfer() external onlyRole(TRANSFER_BOT_ROLE) nonReentrant {
         _checkVaultOutMaintenance();
         if (CURRENT_EPOCH == 0) revert FirstEpochNoFeeTransfer();
-        uint256 rest = _asset.balanceOf(address(this));
+        uint256 totalFees = getPnLPerVaultToken()
+            ? (MgtFeePerVaultToken().add(PerfFeePerVaultToken())).mulDiv(
+                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
+                10 ** decimals()
+            )
+            : MgtFeePerVaultToken().mulDiv(
+                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
+                10 ** decimals()
+            );
+        uint256 rest = totalFees.sub(CalculateTransferBotGasReserveDA());
+        console.log("rest Fee: ", rest);
+        rest = (rest > _asset.balanceOf(address(this)))
+            ? _asset.balanceOf(address(this))
+            : rest ;
         if (rest > 0)
             SafeERC20Upgradeable.safeTransfer(_asset, treasuryWallet, rest);
         emit FeesTransfer(CURRENT_EPOCH, rest);

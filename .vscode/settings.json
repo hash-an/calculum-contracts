@@ -1,8 +1,9 @@
 {
-  "cSpell.words": [
-    "Calculum",
-    "lastdeployer"
-  ],
-  "solidity.packageDefaultDependenciesContractsDirectory": "src",
-  "solidity.packageDefaultDependenciesDirectory": "lib"
+    "cSpell.words": [
+        "Calculum",
+        "lastdeployer"
+    ],
+    "solidity.packageDefaultDependenciesContractsDirectory": "src",
+    "solidity.packageDefaultDependenciesDirectory": "lib",
+    "html.format.unformatted": "",
 }

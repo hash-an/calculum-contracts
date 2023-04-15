@@ -66,7 +66,7 @@ abstract contract Helpers {
      * @dev Fees Transfer
      */
     event FeesTransfer(uint256 indexed epoch, uint256 Amount);
-	/**
+    /**
      * @dev Dex Transfer
      */
     event DexTransfer(uint256 indexed epoch, uint256 Amount);
@@ -108,9 +108,8 @@ abstract contract Helpers {
     error FirstEpochNoFeeTransfer();
     /// The User `_caller` try to deposit a value `_amount`, under the Minimal Permitted
     error DepositAmountTooLow(address _caller, uint256 _amount);
-	/// The Wallet not whitelisted
-	error NotWhitelisted(address _wallet);
-	///  Transfer Faild
-	error TransferFailed(address _to, uint256 _amount);
-
+    /// The Wallet not whitelisted
+    error NotWhitelisted(address _wallet);
+    ///  Transfer Faild
+    error TransferFailed(address _to, uint256 _amount);
 }
