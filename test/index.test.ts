@@ -20,6 +20,7 @@ import {
     // eslint-disable-next-line node/no-missing-import
 } from "../typechain-types";
 import { USDC_ABI } from "../files/USDC.json";
+import exp from "constants";
 
 dotenv.config();
 
@@ -244,10 +245,6 @@ describe("Verification of Basic Value and Features", function () {
         expect(await Calculum.treasuryWallet()).to.equal(treasuryWallet.address);
         // Verify Oracle Address
         expect(await Calculum.oracle()).to.equal(Oracle.address);
-        // Verify Trader Bot Address
-        expect(await Calculum.transferBotWallet()).to.equal(
-            transferBotWallet.address
-        );
         // Verify Initial Value of Percentage Maintenance Fee
         expect(await Calculum.MANAGEMENT_FEE_PERCENTAGE()).to.equal(
             ethers.utils.parseEther("0.01")
@@ -698,10 +695,6 @@ describe("Verification of Basic Value and Features", function () {
         expect(await Calculum.treasuryWallet()).to.equal(treasuryWallet.address);
         // Verify Oracle Address
         expect(await Calculum.oracle()).to.equal(Oracle.address);
-        // Verify Trader Bot Address
-        expect(await Calculum.transferBotWallet()).to.equal(
-            transferBotWallet.address
-        );
         // Verify Initial Value of Percentage Maintenance Fee
         expect(await Calculum.MANAGEMENT_FEE_PERCENTAGE()).to.equal(
             ethers.utils.parseEther("0.01")
@@ -972,6 +965,8 @@ describe("Verification of Basic Value and Features", function () {
         expect(netTransfer.pending).to.be.true;
         expect(netTransfer.direction).to.be.true;
         expect(parseInt(netTransfer.amount.toString()) / 10 ** 6).to.equal(150000);
+        console.log("Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
+        expect(parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6).to.equal(1);
         // Call dexTransfer to transfer the amount of USDc to the Vault
         await expect(Calculum.connect(transferBotRoleAddress).dexTransfer())
             .to.emit(USDc, "Transfer")
@@ -1192,6 +1187,8 @@ describe("Verification of Basic Value and Features", function () {
         expect(parseInt(netTransfer.amount.toString()) / 10 ** 6).to.equal(
             288 / 10
         );
+        console.log("Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
+        expect(parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6).to.equal(974809 / 10 ** 6);
         // Call dexTransfer to transfer the amount of USDc to the Vault
         await expect(Calculum.connect(transferBotRoleAddress).dexTransfer())
             .to.emit(USDc, "Transfer")
@@ -1398,6 +1395,8 @@ describe("Verification of Basic Value and Features", function () {
         expect(parseInt(netTransfer.amount.toString()) / 10 ** 6).to.equal(
             4997195 / 100
         );
+        console.log("Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
+        expect(parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6).to.equal(955126 / 10 ** 6);
         // Call dexTransfer to transfer the amount of USDc to the Vault
         await expect(Calculum.connect(transferBotRoleAddress).dexTransfer())
             .to.emit(USDc, "Transfer")
@@ -1661,6 +1660,8 @@ describe("Verification of Basic Value and Features", function () {
         expect(parseInt(netTransfer.amount.toString()) / 10 ** 6).to.equal(
             12880310499 / 100000
         );
+        console.log("Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
+        expect(parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6).to.equal(987416 / 10 ** 6);
         // Verify the Transfer Bot Gas Reserve in USD is Zero
         expect(
             parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString()) /
@@ -1940,6 +1941,8 @@ describe("Verification of Basic Value and Features", function () {
         expect(parseInt(netTransfer.amount.toString()) / 10 ** 6).to.equal(
             1547783261 / 1000000
         );
+        console.log("Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
+        expect(parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6).to.equal(1012405 / 10 ** 6);
         // Verify the Transfer Bot Gas Reserve in USD is Zero
         expect(
             parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString()) /
@@ -2168,6 +2171,8 @@ describe("Verification of Basic Value and Features", function () {
         expect(parseInt(netTransfer.amount.toString()) / 10 ** 6).to.equal(
             133432721484 / 1000000
         );
+        console.log("Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
+        expect(parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6).to.equal(1033725 / 10 ** 6);
         // Verify the Transfer Bot Gas Reserve in USD is Zero
         expect(
             parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString()) /

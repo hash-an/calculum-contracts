@@ -42,7 +42,7 @@ contract CalculumVault is
     // Transfer Bot Wallet in DEX
     address payable private transferBotRoleWallet;
     // Transfer Bot Wallet in DEX
-    address payable public transferBotWallet;
+    address payable private transferBotWallet;
     // Treasury Wallet of Calculum
     address public treasuryWallet;
     // Management Fee percentage , e.g. 1% = 1 / 100
@@ -50,7 +50,7 @@ contract CalculumVault is
     // Performace Fee percentage , e.g. 15% = 15 / 100
     uint256 public PERFORMANCE_FEE_PERCENTAGE;
     // Vault Token Price per EPOCH
-    mapping(uint256 => uint256) private VAULT_TOKEN_PRICE;
+    mapping(uint256 => uint256) public VAULT_TOKEN_PRICE;
     // Total Supply per EPOCH
     mapping(uint256 => uint256) private TOTAL_VAULT_TOKEN_SUPPLY;
     /// @dev Address of Uniswap v2 router to swap whitelisted ERC20 tokens to router.WETH()
