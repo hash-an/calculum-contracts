@@ -40,9 +40,9 @@ contract CalculumVault is
     // Flag to Control Start Sales of Shares
     uint256 public EPOCH_START; // start 10 July 2022, Sunday 22:00:00  UTC
     // Transfer Bot Wallet in DEX
-    address payable private transferBotRoleWallet;
+    address payable private openZeppelinDefenderWallet;
     // Transfer Bot Wallet in DEX
-    address payable private transferBotWallet;
+    address payable private dexWallet;
     // Treasury Wallet of Calculum
     address public treasuryWallet;
     // Management Fee percentage , e.g. 1% = 1 / 100
@@ -114,9 +114,9 @@ contract CalculumVault is
         uint8 decimals_,
         IERC20MetadataUpgradeable _USDCToken,
         address _oracle,
-        address _transferBotWallet,
+        address _dexWallet,
         address _treasuryWallet,
-        address _transferBotRoleAddress,
+        address _openZeppelinDefenderWallet,
         address _router,
         uint256[7] memory _initialValue // 0: Start timestamp, 1: Min Deposit, 2: Max Deposit, 3: Max Total Supply Value
     ) public reinitializer(1) {
@@ -127,14 +127,14 @@ contract CalculumVault is
         __Ownable_init();
         __ReentrancyGuard_init();
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-        _setupRole(TRANSFER_BOT_ROLE, _transferBotRoleAddress);
+        _setupRole(TRANSFER_BOT_ROLE, _openZeppelinDefenderWallet);
         __ERC20_init(_name, _symbol);
         _asset = _USDCToken;
         _decimals = decimals_;
         oracle = Oracle(_oracle);
         router = IUniswapV2Router02(_router);
-        transferBotWallet = payable(_transferBotWallet);
-        transferBotRoleWallet = payable(_transferBotRoleAddress);
+        dexWallet = payable(_dexWallet);
+        openZeppelinDefenderWallet = payable(_openZeppelinDefenderWallet);
         treasuryWallet = _treasuryWallet;
         EPOCH_START = _initialValue[0];
         MIN_DEPOSIT = _initialValue[1];
@@ -563,11 +563,11 @@ contract CalculumVault is
         if ((totalSupply() == 0) && (CURRENT_EPOCH == 0)) {
             DEX_WALLET_BALANCE = newDeposits();
         } else {
-            DEX_WALLET_BALANCE = oracle.GetAccount(address(transferBotWallet));
+            DEX_WALLET_BALANCE = oracle.GetAccount(address(dexWallet));
             if (DEX_WALLET_BALANCE == 0) {
                 revert ActualAssetValueIsZero(
                     address(oracle),
-                    address(transferBotWallet)
+                    address(dexWallet)
                 );
             }
         }
@@ -740,7 +740,7 @@ contract CalculumVault is
     function CalculateTransferBotGasReserveDA() public view returns (uint256) {
         if (CURRENT_EPOCH == 0) return 0;
         uint256 targetBalance = TARGET_WALLET_BALANCE_USDC_TRANSFER_BOT;
-        uint256 currentBalance = _asset.balanceOf(transferBotRoleWallet);
+        uint256 currentBalance = _asset.balanceOf(openZeppelinDefenderWallet);
 
         // Calculate the missing USDC amount to reach the target balance
         uint256 missingAmount = targetBalance > currentBalance
@@ -765,16 +765,16 @@ contract CalculumVault is
 
     function _swapDAforETH() private {
         if (
-            (transferBotRoleWallet.balance <
+            (openZeppelinDefenderWallet.balance <
                 MIN_WALLET_BALANCE_ETH_TRANSFER_BOT) &&
-            (_asset.balanceOf(transferBotRoleWallet) >
+            (_asset.balanceOf(openZeppelinDefenderWallet) >
                 MIN_WALLET_BALANCE_USDC_TRANSFER_BOT)
         ) {
             console.log("Swapping USDC for ETH");
-            uint256 swapAmount = _asset.balanceOf(transferBotRoleWallet);
+            uint256 swapAmount = _asset.balanceOf(openZeppelinDefenderWallet);
             SafeERC20Upgradeable.safeTransferFrom(
                 _asset,
-                address(transferBotRoleWallet),
+                address(openZeppelinDefenderWallet),
                 address(this),
                 swapAmount
             );
@@ -806,7 +806,7 @@ contract CalculumVault is
             tokenAmount,
             expectedAmount.mulDiv(0.9 ether, 1 ether), // Allow for up to 10% max slippage
             path,
-            address(transferBotRoleWallet),
+            address(openZeppelinDefenderWallet),
             block.timestamp
         );
     }
@@ -863,13 +863,13 @@ contract CalculumVault is
             if (actualTx.direction) {
                 SafeERC20Upgradeable.safeTransfer(
                     _asset,
-                    address(transferBotWallet),
+                    address(dexWallet),
                     actualTx.amount
                 );
             } else {
                 SafeERC20Upgradeable.safeTransferFrom(
                     _asset,
-                    address(transferBotWallet),
+                    address(dexWallet),
                     address(this),
                     actualTx.amount
                 );
@@ -886,7 +886,7 @@ contract CalculumVault is
             }
             SafeERC20Upgradeable.safeTransfer(
                 _asset,
-                transferBotRoleWallet,
+                openZeppelinDefenderWallet,
                 reserveGas
             );
         }
@@ -1006,10 +1006,10 @@ contract CalculumVault is
     /**
      * @dev Setter for the TraderBot Wallet
      */
-    function setTransferBotWallet(
-        address _transferBotWallet
+    function setdexWallet(
+        address _dexWallet
     ) external onlyOwner {
-        transferBotWallet = payable(_transferBotWallet);
+        dexWallet = payable(_dexWallet);
     }
 
     function isDepositWallet(address _wallet) public view returns (bool) {
@@ -1031,7 +1031,7 @@ contract CalculumVault is
         return false;
     }
 
-    function newDeposits() private view returns (uint256 _total) {
+    function newDeposits() public view returns (uint256 _total) {
         for (uint256 i = 0; i < depositWallets.length; i++) {
             if (DEPOSITS[depositWallets[i]].status == Status.Pending) {
                 _total += DEPOSITS[depositWallets[i]].amountAssets;
@@ -1047,7 +1047,7 @@ contract CalculumVault is
         }
     }
 
-    function newWithdrawals() private view returns (uint256 _total) {
+    function newWithdrawals() public view returns (uint256 _total) {
         for (uint256 i = 0; i < withdrawWallets.length; i++) {
             if (WITHDRAWALS[withdrawWallets[i]].status == Status.Pending) {
                 _total += WITHDRAWALS[withdrawWallets[i]].amountAssets;
