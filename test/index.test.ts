@@ -968,7 +968,8 @@ describe("Verification of Basic Value and Features", function () {
         );
         expect(netTransfer.pending).to.be.true;
         expect(netTransfer.direction).to.be.true;
-        expect(parseInt(netTransfer.amount.toString()) / 10 ** 6).to.equal(150000);
+        const netTransferAmount = parseInt(netTransfer.amount.toString()) / 10 ** 6;
+        expect(netTransferAmount).to.equal(150000);
         console.log("Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
         expect(parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6).to.equal(1);
         // Call dexTransfer to transfer the amount of USDc to the Vault
@@ -1010,6 +1011,7 @@ describe("Verification of Basic Value and Features", function () {
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance End Period: ", (DexWalletBalance + newDeposits - newWithdrawalsShares - feeKept) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "Treasury Balance : ", parseInt((await USDc.balanceOf(treasuryWallet.address)).toString()) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
+        console.log('\x1b[32m%s\x1b[0m', "Net Transfer Amount: ", netTransferAmount);
 
         // Validate the Transfer of USDc to TraderBotWallet
         expect(
@@ -1217,7 +1219,8 @@ describe("Verification of Basic Value and Features", function () {
         );
         expect(netTransfer.pending).to.be.true;
         expect(netTransfer.direction).to.be.false;
-        expect(parseInt(netTransfer.amount.toString()) / 10 ** 6).to.equal(
+        const netTransferAmount = parseInt(netTransfer.amount.toString()) / 10 ** 6;
+        expect(netTransferAmount).to.equal(
             288 / 10
         );
         console.log("Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
@@ -1276,6 +1279,7 @@ describe("Verification of Basic Value and Features", function () {
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance End Period: ", (DexWalletBalance + newDeposits - newWithdrawalsShares - feeKept) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "Treasury Balance : ", parseInt((await USDc.balanceOf(treasuryWallet.address)).toString()) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
+        console.log('\x1b[32m%s\x1b[0m', "Net Transfer Amount: ", netTransferAmount);
         // Verify the Balance of USDc of Transfer Bot in the Wallet
         expect(
             parseInt((await USDc.balanceOf(dexWallet.address)).toString())
@@ -1455,7 +1459,8 @@ describe("Verification of Basic Value and Features", function () {
         );
         expect(netTransfer.pending).to.be.true;
         expect(netTransfer.direction).to.be.true;
-        expect(parseInt(netTransfer.amount.toString()) / 10 ** 6).to.equal(
+        const netTransferAmount = parseInt(netTransfer.amount.toString()) / 10 ** 6;
+        expect(netTransferAmount).to.equal(
             4997195 / 100
         );
         console.log("Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
@@ -1509,6 +1514,7 @@ describe("Verification of Basic Value and Features", function () {
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance End Period: ", (DexWalletBalance + newDeposits - newWithdrawalsShares - feeKept) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "Treasury Balance : ", parseInt((await USDc.balanceOf(treasuryWallet.address)).toString()) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
+        console.log('\x1b[32m%s\x1b[0m', "Net Transfer Amount: ", netTransferAmount);
         // The Amount of USDc in the Dex Wallet is 1500000 USDc minus the last fee
         expect(
             parseInt((await USDc.balanceOf(dexWallet.address)).toString())
@@ -1749,7 +1755,8 @@ describe("Verification of Basic Value and Features", function () {
         );
         expect(netTransfer.pending).to.be.true;
         expect(netTransfer.direction).to.be.true;
-        expect(parseInt(netTransfer.amount.toString()) / 10 ** 6).to.equal(
+        const netTransferAmount = parseInt(netTransfer.amount.toString()) / 10 ** 6;
+        expect(netTransferAmount).to.equal(
             12880310499 / 100000
         );
         console.log("Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
@@ -1811,6 +1818,7 @@ describe("Verification of Basic Value and Features", function () {
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance End Period: ", (DexWalletBalance + newDeposits - newWithdrawalsShares - feeKept) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "Treasury Balance : ", parseInt((await USDc.balanceOf(treasuryWallet.address)).toString()) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
+        console.log('\x1b[32m%s\x1b[0m', "Net Transfer Amount: ", netTransferAmount);
         // The Amount of USDc in the Dex Wallet is 328746.254990 USDc minus the last fee
         expect(
             parseInt((await USDc.balanceOf(dexWallet.address)).toString())
@@ -2051,7 +2059,7 @@ describe("Verification of Basic Value and Features", function () {
                     await ethers.provider.getBalance(openZeppelinDefenderWallet.address)
                 ).toString()
             )
-        ).to.lessThanOrEqual(parseInt(ethers.utils.parseEther("1").toString()));
+        ).to.greaterThanOrEqual(parseInt(ethers.utils.parseEther("1").toString()));
         console.log(
             "Transfer Bot Role Address Balance in Eth: ",
             parseInt(
@@ -2066,7 +2074,8 @@ describe("Verification of Basic Value and Features", function () {
         );
         expect(netTransfer.pending).to.be.true;
         expect(netTransfer.direction).to.be.false;
-        expect(parseInt(netTransfer.amount.toString()) / 10 ** 6).to.equal(
+        const netTransferAmount = parseInt(netTransfer.amount.toString()) / 10 ** 6
+        expect(netTransferAmount).to.equal(
             1547783261 / 1000000
         );
         console.log("Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
@@ -2128,6 +2137,7 @@ describe("Verification of Basic Value and Features", function () {
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance End Period: ", (DexWalletBalance + newDeposits - newWithdrawalsShares - feeKept) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "Treasury Balance : ", parseInt((await USDc.balanceOf(treasuryWallet.address)).toString()) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
+        console.log('\x1b[32m%s\x1b[0m', "Net Transfer Amount: ", netTransferAmount);
         // The Amount of USDc in the Dex Wallet is 327198.471729 USDc minus the last fee
         expect(
             parseInt((await USDc.balanceOf(dexWallet.address)).toString())
@@ -2257,7 +2267,7 @@ describe("Verification of Basic Value and Features", function () {
             .to.emit(Calculum, "PendingWithdraw")
             .withArgs(alice.address, alice.address, 13209937 * 10 ** 4, ethers.utils.parseEther("130000"));
         // Validate WITHDRAWALS VALUE after withdraw
-        expect((await Calculum.WITHDRAWALS(alice.address)).status).to.equal(1); // 1 = Pending
+        expect((await Calculum.WITHDRAWALS(alice.address)).status).to.equal(4); // 4 = PendingRedeem
         expect((await Calculum.WITHDRAWALS(alice.address)).amountAssets).to.equal(13209937 * 10 ** 4);
         expect((await Calculum.WITHDRAWALS(alice.address)).amountShares).to.equal(ethers.utils.parseEther("130000"));
         expect((await Calculum.WITHDRAWALS(alice.address)).finalAmount).to.equal(0);
@@ -2317,7 +2327,7 @@ describe("Verification of Basic Value and Features", function () {
                     await ethers.provider.getBalance(openZeppelinDefenderWallet.address)
                 ).toString()
             )
-        ).to.lessThanOrEqual(parseInt(ethers.utils.parseEther("1").toString()));
+        ).to.greaterThanOrEqual(parseInt(ethers.utils.parseEther("1").toString()));
         console.log(
             "Transfer Bot Role Address Balance in Eth: ",
             parseInt(
@@ -2332,8 +2342,9 @@ describe("Verification of Basic Value and Features", function () {
         );
         expect(netTransfer.pending).to.be.true;
         expect(netTransfer.direction).to.be.false;
-        expect(parseInt(netTransfer.amount.toString()) / 10 ** 6).to.equal(
-            133432721484 / 1000000
+        const netTransferAmount = parseInt(netTransfer.amount.toString()) / 10 ** 6
+        expect(netTransferAmount).to.equal(
+            135717601484 / 1000000
         );
         console.log("Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
         expect(parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6).to.equal(1033725 / 10 ** 6);
@@ -2374,7 +2385,7 @@ describe("Verification of Basic Value and Features", function () {
         );
         expect(
             parseInt((await USDc.balanceOf(Calculum.address)).toString()) / 10 ** 6
-        ).to.equal(133432721484 / 1000000);
+        ).to.equal(135717601484 / 1000000);
         // Call FeeTransfer to transfer the amount of USDc to the Fee Address
         await expect(Calculum.connect(openZeppelinDefenderWallet).feesTransfer())
             .to.emit(Calculum, "FeesTransfer")
@@ -2395,10 +2406,11 @@ describe("Verification of Basic Value and Features", function () {
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance End Period: ", (DexWalletBalance + newDeposits - newWithdrawalsShares - feeKept) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "Treasury Balance : ", parseInt((await USDc.balanceOf(treasuryWallet.address)).toString()) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
+        console.log('\x1b[32m%s\x1b[0m', "Net Transfer Amount: ", netTransferAmount);
         // The Amount of USDc in the Dex Wallet is 327198.471729 USDc minus the last fee
         expect(
             parseInt((await USDc.balanceOf(dexWallet.address)).toString())
-        ).to.equal(213170850245);
+        ).to.equal(210885970245);
         console.log("Balance of Dex Wallet in USDc: ", parseInt((await USDc.balanceOf(dexWallet.address)).toString()) / 10 ** 6);
         // Verify the Balance of USDc of treasury in the Vault
         expect(
