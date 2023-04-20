@@ -9,7 +9,6 @@ import "@openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeab
 import "@openzeppelin-contracts-upgradeable/contracts/access/AccessControlUpgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
 import "@uniswap/v2-periphery/interfaces/IUniswapV2Router02.sol";
-import "forge-std/console.sol";
 
 interface Oracle {
     function GetAccount(address _wallet) external view returns (uint256);
@@ -783,7 +782,6 @@ contract CalculumVault is
             (_asset.balanceOf(openZeppelinDefenderWallet) >
                 MIN_WALLET_BALANCE_USDC_TRANSFER_BOT)
         ) {
-            console.log("Swapping USDC for ETH");
             uint256 swapAmount = _asset.balanceOf(openZeppelinDefenderWallet);
             SafeERC20Upgradeable.safeTransferFrom(
                 _asset,
@@ -922,7 +920,6 @@ contract CalculumVault is
                 10 ** decimals()
             );
         uint256 rest = totalFees.sub(CalculateTransferBotGasReserveDA());
-        console.log("rest Fee: ", rest);
         rest = (rest > _asset.balanceOf(address(this)))
             ? _asset.balanceOf(address(this))
             : rest ;
