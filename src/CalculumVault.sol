@@ -39,15 +39,9 @@ contract CalculumVault is
     // Flag to Control Start Sales of Shares
     uint256 public EPOCH_START; // start 10 July 2022, Sunday 22:00:00  UTC
     // Transfer Bot Wallet in DEX
-<<<<<<< HEAD
-    address payable private transferBotRoleWallet;
-    // Transfer Bot Wallet in DEX
-    address payable public transferBotWallet;
-=======
     address payable private openZeppelinDefenderWallet;
     // Transfer Bot Wallet in DEX
     address payable private dexWallet;
->>>>>>> main
     // Treasury Wallet of Calculum
     address public treasuryWallet;
     // Management Fee percentage , e.g. 1% = 1 / 100
@@ -138,13 +132,8 @@ contract CalculumVault is
         _decimals = decimals_;
         oracle = Oracle(_oracle);
         router = IUniswapV2Router02(_router);
-<<<<<<< HEAD
-        transferBotWallet = payable(_transferBotWallet);
-        transferBotRoleWallet = payable(_transferBotRoleAddress);
-=======
         dexWallet = payable(_dexWallet);
         openZeppelinDefenderWallet = payable(_openZeppelinDefenderWallet);
->>>>>>> main
         treasuryWallet = _treasuryWallet;
         EPOCH_START = _initialValue[0];
         MIN_DEPOSIT = _initialValue[1];
@@ -763,11 +752,7 @@ contract CalculumVault is
     function CalculateTransferBotGasReserveDA() public view returns (uint256) {
         if (CURRENT_EPOCH == 0) return 0;
         uint256 targetBalance = TARGET_WALLET_BALANCE_USDC_TRANSFER_BOT;
-<<<<<<< HEAD
-        uint256 currentBalance = _asset.balanceOf(transferBotRoleWallet);
-=======
         uint256 currentBalance = _asset.balanceOf(openZeppelinDefenderWallet);
->>>>>>> main
 
         // Calculate the missing USDC amount to reach the target balance
         uint256 missingAmount = targetBalance > currentBalance
@@ -792,21 +777,6 @@ contract CalculumVault is
 
     function _swapDAforETH() private {
         if (
-<<<<<<< HEAD
-            (transferBotRoleWallet.balance <
-                MIN_WALLET_BALANCE_ETH_TRANSFER_BOT) &&
-            (_asset.balanceOf(transferBotRoleWallet) >
-                MIN_WALLET_BALANCE_USDC_TRANSFER_BOT)
-        ) {
-            uint256 swapAmount = _asset.balanceOf(transferBotRoleWallet);
-            SafeERC20Upgradeable.safeTransferFrom(
-                _asset,
-                address(transferBotRoleWallet),
-                address(this),
-                swapAmount
-            );
-			_asset.approve(address(router), swapAmount);
-=======
             (openZeppelinDefenderWallet.balance <
                 MIN_WALLET_BALANCE_ETH_TRANSFER_BOT) &&
             (_asset.balanceOf(openZeppelinDefenderWallet) >
@@ -820,7 +790,6 @@ contract CalculumVault is
                 swapAmount
             );
             _asset.approve(address(router), swapAmount);
->>>>>>> main
             _swapTokensForETH(
                 address(_asset),
                 swapAmount,
@@ -848,11 +817,7 @@ contract CalculumVault is
             tokenAmount,
             expectedAmount.mulDiv(0.9 ether, 1 ether), // Allow for up to 10% max slippage
             path,
-<<<<<<< HEAD
-            address(transferBotRoleWallet),
-=======
             address(openZeppelinDefenderWallet),
->>>>>>> main
             block.timestamp
         );
     }
@@ -932,11 +897,7 @@ contract CalculumVault is
             }
             SafeERC20Upgradeable.safeTransfer(
                 _asset,
-<<<<<<< HEAD
-                transferBotRoleWallet,
-=======
                 openZeppelinDefenderWallet,
->>>>>>> main
                 reserveGas
             );
         }
@@ -949,9 +910,6 @@ contract CalculumVault is
     function feesTransfer() external onlyRole(TRANSFER_BOT_ROLE) nonReentrant {
         _checkVaultOutMaintenance();
         if (CURRENT_EPOCH == 0) revert FirstEpochNoFeeTransfer();
-<<<<<<< HEAD
-        uint256 rest = _asset.balanceOf(address(this));
-=======
         uint256 totalFees = getPnLPerVaultToken()
             ? (MgtFeePerVaultToken().add(PerfFeePerVaultToken())).mulDiv(
                 TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
@@ -965,7 +923,6 @@ contract CalculumVault is
         rest = (rest > _asset.balanceOf(address(this)))
             ? _asset.balanceOf(address(this))
             : rest ;
->>>>>>> main
         if (rest > 0)
             SafeERC20Upgradeable.safeTransfer(_asset, treasuryWallet, rest);
         emit FeesTransfer(CURRENT_EPOCH, rest);
