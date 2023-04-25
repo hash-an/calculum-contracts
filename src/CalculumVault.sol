@@ -39,9 +39,15 @@ contract CalculumVault is
     // Flag to Control Start Sales of Shares
     uint256 public EPOCH_START; // start 10 July 2022, Sunday 22:00:00  UTC
     // Transfer Bot Wallet in DEX
+<<<<<<< HEAD
     address payable private transferBotRoleWallet;
     // Transfer Bot Wallet in DEX
     address payable public transferBotWallet;
+=======
+    address payable private openZeppelinDefenderWallet;
+    // Transfer Bot Wallet in DEX
+    address payable private dexWallet;
+>>>>>>> main
     // Treasury Wallet of Calculum
     address public treasuryWallet;
     // Management Fee percentage , e.g. 1% = 1 / 100
@@ -49,7 +55,7 @@ contract CalculumVault is
     // Performace Fee percentage , e.g. 15% = 15 / 100
     uint256 public PERFORMANCE_FEE_PERCENTAGE;
     // Vault Token Price per EPOCH
-    mapping(uint256 => uint256) private VAULT_TOKEN_PRICE;
+    mapping(uint256 => uint256) public VAULT_TOKEN_PRICE;
     // Total Supply per EPOCH
     mapping(uint256 => uint256) private TOTAL_VAULT_TOKEN_SUPPLY;
     /// @dev Address of Uniswap v2 router to swap whitelisted ERC20 tokens to router.WETH()
@@ -113,9 +119,9 @@ contract CalculumVault is
         uint8 decimals_,
         IERC20MetadataUpgradeable _USDCToken,
         address _oracle,
-        address _transferBotWallet,
+        address _dexWallet,
         address _treasuryWallet,
-        address _transferBotRoleAddress,
+        address _openZeppelinDefenderWallet,
         address _router,
         uint256[7] memory _initialValue // 0: Start timestamp, 1: Min Deposit, 2: Max Deposit, 3: Max Total Supply Value
     ) public reinitializer(1) {
@@ -126,14 +132,19 @@ contract CalculumVault is
         __Ownable_init();
         __ReentrancyGuard_init();
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-        _setupRole(TRANSFER_BOT_ROLE, _transferBotRoleAddress);
+        _setupRole(TRANSFER_BOT_ROLE, _openZeppelinDefenderWallet);
         __ERC20_init(_name, _symbol);
         _asset = _USDCToken;
         _decimals = decimals_;
         oracle = Oracle(_oracle);
         router = IUniswapV2Router02(_router);
+<<<<<<< HEAD
         transferBotWallet = payable(_transferBotWallet);
         transferBotRoleWallet = payable(_transferBotRoleAddress);
+=======
+        dexWallet = payable(_dexWallet);
+        openZeppelinDefenderWallet = payable(_openZeppelinDefenderWallet);
+>>>>>>> main
         treasuryWallet = _treasuryWallet;
         EPOCH_START = _initialValue[0];
         MIN_DEPOSIT = _initialValue[1];
@@ -335,7 +346,7 @@ contract CalculumVault is
 
         // if _asset is ERC777, transfer can call reenter AFTER the transfer happens through
         // the tokensReceived hook, so we need to transfer after we burn to keep the invariants.
-        addWithdraw(_receiver, shares, _assets);
+        addWithdraw(_receiver, shares, _assets, true);
 
         emit PendingWithdraw(_receiver, _owner, _assets, shares);
 
@@ -382,7 +393,7 @@ contract CalculumVault is
 
         // if _asset is ERC777, transfer can call reenter AFTER the transfer happens through
         // the tokensReceived hook, so we need to transfer after we burn to keep the invariants.
-        addWithdraw(_receiver, _shares, assets);
+        addWithdraw(_receiver, _shares, assets, false);
 
         emit PendingWithdraw(_receiver, _owner, assets, _shares);
 
@@ -401,6 +412,7 @@ contract CalculumVault is
         uint256 _shares,
         uint256 _assets
     ) private {
+        Basics storage depositor = DEPOSITS[_wallet];
         if (!isDepositWallet(_wallet)) depositWallets.push(_wallet);
         if (DEPOSITS[_wallet].status == Status.Inactive) {
             DEPOSITS[_wallet] = Basics({
@@ -410,9 +422,9 @@ contract CalculumVault is
                 finalAmount: uint256(0)
             });
         } else {
-            DEPOSITS[_wallet].status = Status.Pending;
-            DEPOSITS[_wallet].amountAssets += _assets;
-            DEPOSITS[_wallet].amountShares += _shares;
+            depositor.status = Status.Pending;
+            depositor.amountAssets += _assets;
+            depositor.amountShares += _shares;
         }
     }
 
@@ -425,22 +437,22 @@ contract CalculumVault is
     function addWithdraw(
         address _wallet,
         uint256 _shares,
-        uint256 _assets
+        uint256 _assets,
+        bool _isWithdraw
     ) private {
         if (!isWithdrawWallet(_wallet)) withdrawWallets.push(_wallet);
+        Basics storage withdrawer = WITHDRAWALS[_wallet];
         if (WITHDRAWALS[_wallet].status == Status.Inactive) {
             WITHDRAWALS[_wallet] = Basics({
-                status: Status.Pending,
-                // pending: true,
-                // claimer: false,
+                status: _isWithdraw ? Status.PendingWithdraw : Status.PendingRedeem,
                 amountAssets: _assets,
                 amountShares: _shares,
                 finalAmount: uint256(0)
             });
         } else {
-            WITHDRAWALS[_wallet].status = Status.Pending;
-            WITHDRAWALS[_wallet].amountAssets += _assets;
-            WITHDRAWALS[_wallet].amountShares += _shares;
+            withdrawer.status = _isWithdraw ? Status.PendingWithdraw : Status.PendingRedeem;
+            withdrawer.amountAssets += _assets;
+            withdrawer.amountShares += _shares;
         }
     }
 
@@ -453,19 +465,20 @@ contract CalculumVault is
     ) external whitelisted(_msgSender()) nonReentrant {
         _checkVaultInMaintenance();
         address caller = _msgSender();
+        Basics storage depositor = DEPOSITS[_owner]; 
         if (_owner != caller) {
             revert CallerIsNotOwner(caller, _owner);
         }
         if (!isClaimerMint(_owner)) revert CalletIsNotClaimerToDeposit(_owner);
-        _mint(_owner, DEPOSITS[_owner].amountShares);
+        _mint(_owner, depositor.amountShares);
         emit Deposit(
             caller,
             _owner,
-            DEPOSITS[_owner].finalAmount,
-            DEPOSITS[_owner].amountShares
+            depositor.finalAmount,
+            depositor.amountShares
         );
-        delete DEPOSITS[_owner].amountShares;
-        DEPOSITS[_owner].status = Status.Completed;
+        delete depositor.amountShares;
+        depositor.status = Status.Completed;
     }
 
     /**
@@ -487,9 +500,9 @@ contract CalculumVault is
             revert CalletIsNotClaimerToRedeem(_owner);
         }
         // TODO: add a verification of the amount shares to be redeemed
-        if (withdrawer.finalAmount > _asset.balanceOf(address(this))) {
+        if (withdrawer.amountAssets > _asset.balanceOf(address(this))) {
             revert NotEnoughBalance(
-                withdrawer.finalAmount,
+                withdrawer.amountAssets,
                 _asset.balanceOf(address(this))
             );
         }
@@ -497,14 +510,14 @@ contract CalculumVault is
         SafeERC20Upgradeable.safeTransfer(
             _asset,
             _receiver,
-            withdrawer.finalAmount
+            withdrawer.amountAssets
         );
         emit Withdraw(
             caller,
             _receiver,
             _owner,
-            withdrawer.finalAmount,
-            withdrawer.amountShares
+            withdrawer.amountShares,
+            withdrawer.amountAssets
         );
         delete withdrawer.amountAssets;
         delete withdrawer.amountShares;
@@ -562,11 +575,11 @@ contract CalculumVault is
         if ((totalSupply() == 0) && (CURRENT_EPOCH == 0)) {
             DEX_WALLET_BALANCE = newDeposits();
         } else {
-            DEX_WALLET_BALANCE = oracle.GetAccount(address(transferBotWallet));
+            DEX_WALLET_BALANCE = oracle.GetAccount(address(dexWallet));
             if (DEX_WALLET_BALANCE == 0) {
                 revert ActualAssetValueIsZero(
                     address(oracle),
-                    address(transferBotWallet)
+                    address(dexWallet)
                 );
             }
         }
@@ -583,16 +596,23 @@ contract CalculumVault is
         DexWalletBalance();
         VAULT_TOKEN_PRICE[CURRENT_EPOCH] = convertToAssets(1 ether);
         for (uint256 i = 0; i < depositWallets.length; i++) {
-            if (DEPOSITS[depositWallets[i]].status == Status.Pending) {
-                DEPOSITS[depositWallets[i]].amountShares = convertToShares(
-                    DEPOSITS[depositWallets[i]].amountAssets
+            Basics storage depositor = DEPOSITS[depositWallets[i]];
+            if (depositor.status == Status.Pending) {
+                depositor.amountShares = convertToShares(
+                    depositor.amountAssets
                 );
             }
         }
         for (uint256 i = 0; i < withdrawWallets.length; i++) {
-            if (WITHDRAWALS[withdrawWallets[i]].status == Status.Pending) {
-                WITHDRAWALS[withdrawWallets[i]].amountShares = convertToShares(
-                    WITHDRAWALS[withdrawWallets[i]].amountAssets
+            Basics storage withdrawer = WITHDRAWALS[withdrawWallets[i]];
+            if (withdrawer.status == Status.PendingWithdraw) {
+                withdrawer.amountShares = convertToShares(
+                    withdrawer.amountAssets
+                );
+            }
+            if (withdrawer.status == Status.PendingRedeem) {
+                withdrawer.amountAssets = convertToAssets(
+                    withdrawer.amountShares
                 );
             }
         }
@@ -600,27 +620,31 @@ contract CalculumVault is
         updateTotalSupply();
         netTransferBalance();
         for (uint256 i = 0; i < depositWallets.length; i++) {
-            if (DEPOSITS[depositWallets[i]].status == Status.Pending) {
-                DEPOSITS[depositWallets[i]].status = Status.Claimet;
-                DEPOSITS[depositWallets[i]].amountShares = convertToShares(
-                    DEPOSITS[depositWallets[i]].amountAssets
+            Basics storage depositor = DEPOSITS[depositWallets[i]];
+            if (depositor.status == Status.Pending) {
+                depositor.status = Status.Claimet;
+                depositor.amountShares = convertToShares(
+                    depositor.amountAssets
                 );
-                DEPOSITS[depositWallets[i]].finalAmount += DEPOSITS[
-                    depositWallets[i]
-                ].amountAssets;
-                delete DEPOSITS[depositWallets[i]].amountAssets;
+                depositor.finalAmount += depositor.amountAssets;
+                delete depositor.amountAssets;
             }
         }
         for (uint256 i = 0; i < withdrawWallets.length; i++) {
-            if (WITHDRAWALS[withdrawWallets[i]].status == Status.Pending) {
-                WITHDRAWALS[withdrawWallets[i]].status = Status.Claimet;
-                WITHDRAWALS[withdrawWallets[i]].amountShares = convertToShares(
-                    WITHDRAWALS[withdrawWallets[i]].amountAssets
+            Basics storage withdrawer = WITHDRAWALS[withdrawWallets[i]];
+            if (withdrawer.status == Status.PendingWithdraw) {
+                withdrawer.amountShares = convertToShares(
+                    withdrawer.amountAssets
                 );
-                WITHDRAWALS[withdrawWallets[i]].finalAmount += WITHDRAWALS[
-                    withdrawWallets[i]
-                ].amountAssets;
-                delete WITHDRAWALS[withdrawWallets[i]].amountAssets;
+                withdrawer.status = Status.Claimet;
+                withdrawer.finalAmount += withdrawer.amountAssets;
+            }
+            if (withdrawer.status == Status.PendingRedeem) {
+                withdrawer.amountAssets = convertToAssets(
+                    withdrawer.amountShares
+                );
+                withdrawer.status = Status.Claimet;
+                withdrawer.finalAmount += withdrawer.amountAssets;
             }
         }
         _swapDAforETH();
@@ -739,7 +763,11 @@ contract CalculumVault is
     function CalculateTransferBotGasReserveDA() public view returns (uint256) {
         if (CURRENT_EPOCH == 0) return 0;
         uint256 targetBalance = TARGET_WALLET_BALANCE_USDC_TRANSFER_BOT;
+<<<<<<< HEAD
         uint256 currentBalance = _asset.balanceOf(transferBotRoleWallet);
+=======
+        uint256 currentBalance = _asset.balanceOf(openZeppelinDefenderWallet);
+>>>>>>> main
 
         // Calculate the missing USDC amount to reach the target balance
         uint256 missingAmount = targetBalance > currentBalance
@@ -748,17 +776,13 @@ contract CalculumVault is
 
         // Calculate the total fees to be collected for the current epoch
         uint256 totalFees = getPnLPerVaultToken()
-            ? (MgtFeePerVaultToken().add(PerfFeePerVaultToken())).mul(
-                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)].mulDiv(
-                    1,
-                    10 ** decimals()
-                )
+            ? (MgtFeePerVaultToken().add(PerfFeePerVaultToken())).mulDiv(
+                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
+                10 ** decimals()
             )
-            : MgtFeePerVaultToken().mul(
-                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)].mulDiv(
-                    1,
-                    10 ** decimals()
-                )
+            : MgtFeePerVaultToken().mulDiv(
+                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
+                10 ** decimals()
             );
 
         // Take the smallest amount between the missing USDC and the total fees
@@ -768,6 +792,7 @@ contract CalculumVault is
 
     function _swapDAforETH() private {
         if (
+<<<<<<< HEAD
             (transferBotRoleWallet.balance <
                 MIN_WALLET_BALANCE_ETH_TRANSFER_BOT) &&
             (_asset.balanceOf(transferBotRoleWallet) >
@@ -781,6 +806,21 @@ contract CalculumVault is
                 swapAmount
             );
 			_asset.approve(address(router), swapAmount);
+=======
+            (openZeppelinDefenderWallet.balance <
+                MIN_WALLET_BALANCE_ETH_TRANSFER_BOT) &&
+            (_asset.balanceOf(openZeppelinDefenderWallet) >
+                MIN_WALLET_BALANCE_USDC_TRANSFER_BOT)
+        ) {
+            uint256 swapAmount = _asset.balanceOf(openZeppelinDefenderWallet);
+            SafeERC20Upgradeable.safeTransferFrom(
+                _asset,
+                address(openZeppelinDefenderWallet),
+                address(this),
+                swapAmount
+            );
+            _asset.approve(address(router), swapAmount);
+>>>>>>> main
             _swapTokensForETH(
                 address(_asset),
                 swapAmount,
@@ -808,7 +848,11 @@ contract CalculumVault is
             tokenAmount,
             expectedAmount.mulDiv(0.9 ether, 1 ether), // Allow for up to 10% max slippage
             path,
+<<<<<<< HEAD
             address(transferBotRoleWallet),
+=======
+            address(openZeppelinDefenderWallet),
+>>>>>>> main
             block.timestamp
         );
     }
@@ -865,13 +909,13 @@ contract CalculumVault is
             if (actualTx.direction) {
                 SafeERC20Upgradeable.safeTransfer(
                     _asset,
-                    address(transferBotWallet),
+                    address(dexWallet),
                     actualTx.amount
                 );
             } else {
                 SafeERC20Upgradeable.safeTransferFrom(
                     _asset,
-                    address(transferBotWallet),
+                    address(dexWallet),
                     address(this),
                     actualTx.amount
                 );
@@ -888,7 +932,11 @@ contract CalculumVault is
             }
             SafeERC20Upgradeable.safeTransfer(
                 _asset,
+<<<<<<< HEAD
                 transferBotRoleWallet,
+=======
+                openZeppelinDefenderWallet,
+>>>>>>> main
                 reserveGas
             );
         }
@@ -901,7 +949,23 @@ contract CalculumVault is
     function feesTransfer() external onlyRole(TRANSFER_BOT_ROLE) nonReentrant {
         _checkVaultOutMaintenance();
         if (CURRENT_EPOCH == 0) revert FirstEpochNoFeeTransfer();
+<<<<<<< HEAD
         uint256 rest = _asset.balanceOf(address(this));
+=======
+        uint256 totalFees = getPnLPerVaultToken()
+            ? (MgtFeePerVaultToken().add(PerfFeePerVaultToken())).mulDiv(
+                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
+                10 ** decimals()
+            )
+            : MgtFeePerVaultToken().mulDiv(
+                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
+                10 ** decimals()
+            );
+        uint256 rest = totalFees.sub(CalculateTransferBotGasReserveDA());
+        rest = (rest > _asset.balanceOf(address(this)))
+            ? _asset.balanceOf(address(this))
+            : rest ;
+>>>>>>> main
         if (rest > 0)
             SafeERC20Upgradeable.safeTransfer(_asset, treasuryWallet, rest);
         emit FeesTransfer(CURRENT_EPOCH, rest);
@@ -995,10 +1059,10 @@ contract CalculumVault is
     /**
      * @dev Setter for the TraderBot Wallet
      */
-    function setTransferBotWallet(
-        address _transferBotWallet
+    function setdexWallet(
+        address _dexWallet
     ) external onlyOwner {
-        transferBotWallet = payable(_transferBotWallet);
+        dexWallet = payable(_dexWallet);
     }
 
     function isDepositWallet(address _wallet) public view returns (bool) {
@@ -1020,7 +1084,7 @@ contract CalculumVault is
         return false;
     }
 
-    function newDeposits() private view returns (uint256 _total) {
+    function newDeposits() public view returns (uint256 _total) {
         for (uint256 i = 0; i < depositWallets.length; i++) {
             if (DEPOSITS[depositWallets[i]].status == Status.Pending) {
                 _total += DEPOSITS[depositWallets[i]].amountAssets;
@@ -1036,18 +1100,20 @@ contract CalculumVault is
         }
     }
 
-    function newWithdrawals() private view returns (uint256 _total) {
+    function newWithdrawals() public view returns (uint256 _total) {
         for (uint256 i = 0; i < withdrawWallets.length; i++) {
-            if (WITHDRAWALS[withdrawWallets[i]].status == Status.Pending) {
-                _total += WITHDRAWALS[withdrawWallets[i]].amountAssets;
+            Basics storage withdrawer = WITHDRAWALS[withdrawWallets[i]];
+            if ((withdrawer.status == Status.PendingRedeem) || (withdrawer.status == Status.PendingWithdraw)) {
+                _total += withdrawer.amountAssets;
             }
         }
     }
 
     function newWithdrawalsShares() private view returns (uint256 _total) {
         for (uint256 i = 0; i < withdrawWallets.length; i++) {
-            if (WITHDRAWALS[withdrawWallets[i]].status == Status.Pending) {
-                _total += WITHDRAWALS[withdrawWallets[i]].amountShares;
+            Basics storage withdrawer = WITHDRAWALS[withdrawWallets[i]];
+            if ((withdrawer.status == Status.PendingRedeem) || (withdrawer.status == Status.PendingWithdraw)) {
+                _total += withdrawer.amountShares;
             }
         }
     }

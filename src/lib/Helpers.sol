@@ -14,14 +14,18 @@ abstract contract Helpers {
         Inactive, // 0
         Pending, // 1
         Claimet, // 2
+<<<<<<< HEAD
         Completed // 3
+=======
+        Completed, // 3
+        PendingRedeem, //4
+        PendingWithdraw //5
+>>>>>>> main
     }
     /// Struct of Basics
 
     struct Basics {
         Status status;
-        // bool pending;
-        // bool claimer;
         uint256 amountAssets; // Expresed in Amount of Assets of the Vault
         uint256 amountShares; // Expresed in Amount of Shares of the Vault
         uint256 finalAmount; // Expresed in Amount of Assets of the Vault
@@ -66,7 +70,11 @@ abstract contract Helpers {
      * @dev Fees Transfer
      */
     event FeesTransfer(uint256 indexed epoch, uint256 Amount);
+<<<<<<< HEAD
 	/**
+=======
+    /**
+>>>>>>> main
      * @dev Dex Transfer
      */
     event DexTransfer(uint256 indexed epoch, uint256 Amount);
@@ -108,9 +116,16 @@ abstract contract Helpers {
     error FirstEpochNoFeeTransfer();
     /// The User `_caller` try to deposit a value `_amount`, under the Minimal Permitted
     error DepositAmountTooLow(address _caller, uint256 _amount);
+<<<<<<< HEAD
 	/// The Wallet not whitelisted
 	error NotWhitelisted(address _wallet);
 	///  Transfer Faild
 	error TransferFailed(address _to, uint256 _amount);
 
+=======
+    /// The Wallet not whitelisted
+    error NotWhitelisted(address _wallet);
+    ///  Transfer Faild
+    error TransferFailed(address _to, uint256 _amount);
+>>>>>>> main
 }
