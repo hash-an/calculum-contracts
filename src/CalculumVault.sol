@@ -5,12 +5,12 @@ import "./lib/IERC4626.sol";
 import "./lib/Claimable.sol";
 import "./lib/Helpers.sol";
 import "./lib/IRouter.sol";
+import "./lib/TickMath.sol";
+import "./lib/FullMath.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/access/AccessControlUpgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
-import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
-import "@uniswap/v3-core/contracts/libraries/FullMath.sol";
 
 interface Oracle {
     function GetAccount(address _wallet) external view returns (uint256);
@@ -35,6 +35,8 @@ contract CalculumVault is
     using AddressUpgradeable for address;
     using SafeERC20Upgradeable for IERC20Upgradeable;
     // Principal private Variable of ERC4626
+
+    uint256 public TWAP_INTERVAL = 60*15; // 15 minutes twap;
 
     IERC20MetadataUpgradeable internal _asset;
     uint8 private _decimals;
