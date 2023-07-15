@@ -38,11 +38,11 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 module.exports = {
     networks: {
         hardhat: {
-            chainId: 1,
+            chainId: 10,
             throwOnTransactionFailures: true,
             throwOnCallFailures: true,
             forking: {
-                url: `https://mainnet.infura.io/v3/${API_KEY}`,
+                url: `https://optimism-mainnet.infura.io/v3/${API_KEY}`,
             },
             accounts: {
                 mnemonic: MNEMONIC,
@@ -130,13 +130,14 @@ module.exports = {
             process.env.COINMARKETCAP_API_KEY ||
             "f7169cda-d705-4f67-9e99-9a3985d713a4",
         enabled: true,
-        gasPriceApi: `https://api.etherscan.io/api?module=proxy&action=eth_gasPrice&apikey=${process.env.ETHERSCAN_API_KEY}`,
+        gasPriceApi: `https://api-optimistic.etherscan.io/api?module=proxy&action=eth_gasPrice&apikey=${process.env.ETHERSCAN_API_KEY}`,
         // gasPrice: 50
     },
     etherscan: {
         // Your API key for Etherscan
         // Obtain one at https://etherscan.io/
-        apiKey: process.env.ETHERSCAN_API_KEY,
+        // apiKey: process.env.ETHERSCAN_API_KEY,
+        apiKey: process.env.OPTIMISM_API_KEY,
         // apiKey: process.env.POLYGON_API_KEY
         // apiKey: SNOWTRACE_API_KEY,
     },

@@ -4,11 +4,11 @@ pragma solidity ^0.8.17;
 import "./lib/IERC4626.sol";
 import "./lib/Claimable.sol";
 import "./lib/Helpers.sol";
+import "./lib/IRouter.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/access/AccessControlUpgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
-import "@uniswap/v2-periphery/interfaces/IUniswapV2Router02.sol";
 
 interface Oracle {
     function GetAccount(address _wallet) external view returns (uint256);
@@ -53,7 +53,7 @@ contract CalculumVault is
     // Total Supply per EPOCH
     mapping(uint256 => uint256) private TOTAL_VAULT_TOKEN_SUPPLY;
     /// @dev Address of Uniswap v2 router to swap whitelisted ERC20 tokens to router.WETH()
-    IUniswapV2Router02 public router;
+    IRouter public router;
     // Interface for Oracle
     Oracle public oracle;
     // Period
@@ -131,7 +131,7 @@ contract CalculumVault is
         _asset = _USDCToken;
         _decimals = decimals_;
         oracle = Oracle(_oracle);
-        router = IUniswapV2Router02(_router);
+        router = IRouter(_router);
         dexWallet = payable(_dexWallet);
         openZeppelinDefenderWallet = payable(_openZeppelinDefenderWallet);
         treasuryWallet = _treasuryWallet;
@@ -433,13 +433,17 @@ contract CalculumVault is
         Basics storage withdrawer = WITHDRAWALS[_wallet];
         if (WITHDRAWALS[_wallet].status == Status.Inactive) {
             WITHDRAWALS[_wallet] = Basics({
-                status: _isWithdraw ? Status.PendingWithdraw : Status.PendingRedeem,
+                status: _isWithdraw
+                    ? Status.PendingWithdraw
+                    : Status.PendingRedeem,
                 amountAssets: _assets,
                 amountShares: _shares,
                 finalAmount: uint256(0)
             });
         } else {
-            withdrawer.status = _isWithdraw ? Status.PendingWithdraw : Status.PendingRedeem;
+            withdrawer.status = _isWithdraw
+                ? Status.PendingWithdraw
+                : Status.PendingRedeem;
             withdrawer.amountAssets += _assets;
             withdrawer.amountShares += _shares;
         }
@@ -454,7 +458,7 @@ contract CalculumVault is
     ) external whitelisted(_msgSender()) nonReentrant {
         _checkVaultInMaintenance();
         address caller = _msgSender();
-        Basics storage depositor = DEPOSITS[_owner]; 
+        Basics storage depositor = DEPOSITS[_owner];
         if (_owner != caller) {
             revert CallerIsNotOwner(caller, _owner);
         }
@@ -718,19 +722,23 @@ contract CalculumVault is
     /// @return price Price in payment Token equivalent with its decimals
     function getPriceInPaymentToken(
         address tokenAddress
-    ) public view returns (uint256 price) {
-        if (tokenAddress == address(router.WETH())) return 1;
+    ) public payable returns (uint256 price) {
+        if (tokenAddress == address(router.WETH9())) return 1;
 
-        address[] memory path = new address[](2);
-        uint256[] memory amounts = new uint256[](2);
-        path[0] = tokenAddress;
-        path[1] = address(router.WETH());
-        amounts = router.getAmountsOut(
-            1 * 10 ** IERC20MetadataUpgradeable(tokenAddress).decimals(),
-            path
-        );
+        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter
+            .ExactInputSingleParams({
+                tokenIn: tokenAddress,
+                tokenOut: address(router.WETH9()),
+                fee: 3000,
+                recipient: address(this),
+                deadline: block.timestamp + 1,
+                amountIn: 1 *
+                    10 ** IERC20MetadataUpgradeable(tokenAddress).decimals(),
+                amountOutMinimum: 0,
+                sqrtPriceLimitX96: 0
+            });
 
-        price = amounts[1];
+        price = router.exactInputSingle(params);
     }
 
     /**
@@ -811,14 +819,20 @@ contract CalculumVault is
     ) private {
         address[] memory path = new address[](2);
         path[0] = address(tokenAddress);
-        path[1] = address(router.WETH());
+        path[1] = address(router.WETH9());
         /// do the swap
-        router.swapExactTokensForETHSupportingFeeOnTransferTokens(
+        router.swapExactTokensForTokens(
             tokenAmount,
             expectedAmount.mulDiv(0.9 ether, 1 ether), // Allow for up to 10% max slippage
             path,
-            address(openZeppelinDefenderWallet),
-            block.timestamp
+            address(this)
+        );
+        // unwrap WETH9
+        IERC20Upgradeable weth = IERC20Upgradeable(address(router.WETH9()));
+        weth.approve(address(router), weth.balanceOf(address(this)));
+        router.unwrapWETH9(
+            expectedAmount.mulDiv(0.9 ether, 1 ether),
+            address(openZeppelinDefenderWallet)
         );
     }
 
@@ -922,7 +936,7 @@ contract CalculumVault is
         uint256 rest = totalFees.sub(CalculateTransferBotGasReserveDA());
         rest = (rest > _asset.balanceOf(address(this)))
             ? _asset.balanceOf(address(this))
-            : rest ;
+            : rest;
         if (rest > 0)
             SafeERC20Upgradeable.safeTransfer(_asset, treasuryWallet, rest);
         emit FeesTransfer(CURRENT_EPOCH, rest);
@@ -1016,9 +1030,7 @@ contract CalculumVault is
     /**
      * @dev Setter for the TraderBot Wallet
      */
-    function setdexWallet(
-        address _dexWallet
-    ) external onlyOwner {
+    function setdexWallet(address _dexWallet) external onlyOwner {
         dexWallet = payable(_dexWallet);
     }
 
@@ -1060,7 +1072,10 @@ contract CalculumVault is
     function newWithdrawals() public view returns (uint256 _total) {
         for (uint256 i = 0; i < withdrawWallets.length; i++) {
             Basics storage withdrawer = WITHDRAWALS[withdrawWallets[i]];
-            if ((withdrawer.status == Status.PendingRedeem) || (withdrawer.status == Status.PendingWithdraw)) {
+            if (
+                (withdrawer.status == Status.PendingRedeem) ||
+                (withdrawer.status == Status.PendingWithdraw)
+            ) {
                 _total += withdrawer.amountAssets;
             }
         }
@@ -1069,7 +1084,10 @@ contract CalculumVault is
     function newWithdrawalsShares() private view returns (uint256 _total) {
         for (uint256 i = 0; i < withdrawWallets.length; i++) {
             Basics storage withdrawer = WITHDRAWALS[withdrawWallets[i]];
-            if ((withdrawer.status == Status.PendingRedeem) || (withdrawer.status == Status.PendingWithdraw)) {
+            if (
+                (withdrawer.status == Status.PendingRedeem) ||
+                (withdrawer.status == Status.PendingWithdraw)
+            ) {
                 _total += withdrawer.amountShares;
             }
         }

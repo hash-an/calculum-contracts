@@ -54,9 +54,9 @@ const MIN_WALLET_BALANCE_USDC_TRANSFER_BOT = 500 * 10 ** 6;
 const TARGET_WALLET_BALANCE_USDC_TRANSFER_BOT = 1000 * 10 ** 6;
 const MIN_WALLET_BALANCE_ETH_TRANSFER_BOT = ethers.utils.parseEther("0.5");
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-const USDC_ADDRESS = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
-const UNISWAP_ROUTER2 = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
-const POLYGON_BRIDGE = "0x40ec5B33f54e0E8A33A975908C5BA1c14e5BbbDf";
+const USDC_ADDRESS = "0x7F5c764cBc14f9669B88837ca1490cCa17c31607";
+const UNISWAP_ROUTER2 = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
+const USDC_BIG_HOLDER = "0xEbe80f029b1c02862B9E8a70a7e5317C06F62Cae";
 
 const snooze = (ms: any) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -85,11 +85,11 @@ describe("Verification of Basic Value and Features", function () {
 
         // Deploy USDC in real World
         // Impersonate USDC Account of Polygon Bridge and Transfer USDC to Owner
-        await impersonateAccount(POLYGON_BRIDGE);
+        await impersonateAccount(USDC_BIG_HOLDER);
         const polygonBridge: SignerWithAddress = await ethers.getSigner(
-            POLYGON_BRIDGE
+            USDC_BIG_HOLDER
         );
-        await setBalance(POLYGON_BRIDGE, "0x56bc75e2d63100000");
+        await setBalance(USDC_BIG_HOLDER, "0x56bc75e2d63100000");
 
         // Create Instance of USDC
         USDc = await ethers.getContractAt(USDC_ABI, USDC_ADDRESS);
@@ -108,7 +108,7 @@ describe("Verification of Basic Value and Features", function () {
         )
             .to.emit(USDc, "Transfer")
             .withArgs(
-                POLYGON_BRIDGE,
+                USDC_BIG_HOLDER,
                 deployer.address,
                 ethers.utils.parseUnits("1000000000000", "wei")
             );
@@ -532,11 +532,11 @@ describe("Verification of Basic Value and Features", function () {
 
         // Deploy USDC in real World
         // Impersonate USDC Account of Polygon Bridge and Transfer USDC to Owner
-        await impersonateAccount(POLYGON_BRIDGE);
+        await impersonateAccount(USDC_BIG_HOLDER);
         const polygonBridge: SignerWithAddress = await ethers.getSigner(
-            POLYGON_BRIDGE
+            USDC_BIG_HOLDER
         );
-        await setBalance(POLYGON_BRIDGE, "0x56bc75e2d63100000");
+        await setBalance(USDC_BIG_HOLDER, "0x56bc75e2d63100000");
 
         // Create Instance of USDC
         USDc = await ethers.getContractAt(USDC_ABI, USDC_ADDRESS);
@@ -555,7 +555,7 @@ describe("Verification of Basic Value and Features", function () {
         )
             .to.emit(USDc, "Transfer")
             .withArgs(
-                POLYGON_BRIDGE,
+                USDC_BIG_HOLDER,
                 deployer.address,
                 ethers.utils.parseUnits("1000000000000", "wei")
             );
