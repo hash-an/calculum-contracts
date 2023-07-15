@@ -4,6 +4,8 @@ pragma solidity ^0.8.17;
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 
 interface IRouter is ISwapRouter {
+    /// @return Returns the address of the Uniswap V3 factory
+    function factory() external view returns(address);
     /// @return Returns the address of WETH9
     function WETH9() external view returns (address);
 
@@ -40,4 +42,24 @@ interface IRouter is ISwapRouter {
         address[] calldata path,
         address to
     ) external payable returns (uint256 amountIn);
+}
+
+interface IUniFactory {
+    function getPool(address, address, uint24) external view returns(address pool);
+}
+
+interface IUniPool {
+    function observe(
+        uint32[] calldata secondsAgos
+    )
+        external
+        view
+        returns (
+            int56[] memory tickCumulatives,
+            uint160[] memory secondsPerLiquidityCumulativeX128s
+        );
+
+    function token0() external view returns (address);
+
+    function token1() external view returns (address);
 }
