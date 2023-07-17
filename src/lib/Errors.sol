@@ -50,4 +50,8 @@ library Errors {
     error NotWhitelisted(address _wallet);
     ///  Transfer Faild
     error TransferFailed(address _to, uint256 _amount);
+    /// Wrong Config for Uniswap
+    error WrongUniswapConfig();
+    ///
+    error NotZeroAddress();
 }

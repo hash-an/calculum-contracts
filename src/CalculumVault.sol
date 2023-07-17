@@ -6,11 +6,13 @@ import "./lib/Claimable.sol";
 import "./lib/Events.sol";
 import "./lib/Constants.sol";
 import "./lib/Errors.sol";
+import "./lib/IRouter.sol";
+import "./lib/TickMath.sol";
+import "./lib/FullMath.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/access/AccessControlUpgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
-import "@uniswap/v2-periphery/interfaces/IUniswapV2Router02.sol";
 
 interface Oracle {
     function GetAccount(address _wallet) external view returns (uint256);
@@ -35,6 +37,8 @@ contract CalculumVault is
     using SafeERC20Upgradeable for IERC20Upgradeable;
     // Principal private Variable of ERC4626
 
+    uint256 public TWAP_INTERVAL = 60*15; // 15 minutes twap;
+
     IERC20MetadataUpgradeable internal _asset;
     uint8 private _decimals;
     // Flag to Control Start Sales of Shares
@@ -54,7 +58,7 @@ contract CalculumVault is
     // Total Supply per EPOCH
     mapping(uint256 => uint256) private TOTAL_VAULT_TOKEN_SUPPLY;
     /// @dev Address of Uniswap v2 router to swap whitelisted ERC20 tokens to router.WETH()
-    IUniswapV2Router02 public router;
+    IRouter public router;
     // Interface for Oracle
     Oracle public oracle;
     // Period
@@ -132,7 +136,7 @@ contract CalculumVault is
         _asset = _USDCToken;
         _decimals = decimals_;
         oracle = Oracle(_oracle);
-        router = IUniswapV2Router02(_router);
+        router = IRouter(_router);
         dexWallet = payable(_dexWallet);
         openZeppelinDefenderWallet = payable(_openZeppelinDefenderWallet);
         treasuryWallet = _treasuryWallet;
@@ -714,25 +718,80 @@ contract CalculumVault is
         ) >= VAULT_TOKEN_PRICE[CURRENT_EPOCH.sub(1)]);
     }
 
-    /// @dev Method to get the price of 1 token of tokenAddress if swapped for router.WETH()
+    /// @dev Method to get the price of 1 token of tokenAddress if swapped for paymentToken
     /// @param tokenAddress ERC20 token address of a whitelisted ERC20 token
     /// @return price Price in payment Token equivalent with its decimals
     function getPriceInPaymentToken(
         address tokenAddress
     ) public view returns (uint256 price) {
-        if (tokenAddress == address(router.WETH())) return 1;
+        if (tokenAddress == address(router.WETH9())) return 1;
+        IUniFactory factory = IUniFactory(router.factory());
+        IUniPool pool;
+        pool = IUniPool(factory.getPool(tokenAddress, address(router.WETH9()), 500));
+        
+        if(address(pool) == address(0)) {
+            pool = IUniPool(factory.getPool(address(router.WETH9()), tokenAddress, 500));
+            if(address(pool) == address(0)) revert NotZeroAddress();
+        }
+        
+        address poolToken0 = pool.token0();
+        address poolToken1 = pool.token1();
 
-        address[] memory path = new address[](2);
-        uint256[] memory amounts = new uint256[](2);
-        path[0] = tokenAddress;
-        path[1] = address(router.WETH());
-        amounts = router.getAmountsOut(
-            1 * 10 ** IERC20MetadataUpgradeable(tokenAddress).decimals(),
-            path
-        );
+        bool invertPrice;
 
-        price = amounts[1];
+        if (
+            poolToken0 == tokenAddress && poolToken1 == address(router.WETH9())
+        ) {
+            invertPrice = false;
+        } else if ( 
+            poolToken0 == address(router.WETH9()) && poolToken1 == tokenAddress 
+        ) {
+            invertPrice = true;
+        } else revert WrongUniswapConfig();
+
+
+        uint32[] memory secondsAgos = new uint32[](2);
+        secondsAgos[0] = uint32(TWAP_INTERVAL);
+        secondsAgos[1] = 0;
+        
+        (int56[] memory tickCumulatives, ) = pool.observe(secondsAgos);
+
+        int56 tickCumulativesDelta = tickCumulatives[1] - tickCumulatives[0];
+        int24 tick = int24(tickCumulativesDelta / int56(int256(TWAP_INTERVAL)));
+
+        if (tickCumulativesDelta < 0 && (tickCumulativesDelta % int256(TWAP_INTERVAL) != 0)) {
+            tick--;
+        }
+
+        uint256 baseAmount = 10 ** IERC20MetadataUpgradeable(tokenAddress).decimals();
+
+        price = uint256(_getQuoteAtTick(tick, baseAmount, tokenAddress, address(router.WETH9())));
     }
+
+    /// Internal methods
+
+    /// @dev Internal method to calculate quote price at a determined Uniswap tick value
+    function _getQuoteAtTick(
+        int24 tick,
+        uint256 baseAmount,
+        address baseToken,
+        address quoteToken
+    ) internal pure returns (uint256 quoteAmount) {
+        uint160 sqrtRatioX96 = TickMath.getSqrtRatioAtTick(tick);
+
+        // Calculate quoteAmount with better precision if it doesn't overflow when multiplied by itself
+        if (sqrtRatioX96 <= type(uint128).max) {
+            uint256 ratioX192 = uint256(sqrtRatioX96) * sqrtRatioX96;
+            quoteAmount = baseToken < quoteToken
+                ? FullMath.mulDiv(ratioX192, baseAmount, 1 << 192)
+                : FullMath.mulDiv(1 << 192, baseAmount, ratioX192);
+        } else {
+            uint256 ratioX128 = FullMath.mulDiv(sqrtRatioX96, sqrtRatioX96, 1 << 64);
+            quoteAmount = baseToken < quoteToken
+                ? FullMath.mulDiv(ratioX128, baseAmount, 1 << 128)
+                : FullMath.mulDiv(1 << 128, baseAmount, ratioX128);
+        }
+    } 
 
     /**
      * @dev  Method for Update Total Supply
@@ -812,14 +871,20 @@ contract CalculumVault is
     ) private {
         address[] memory path = new address[](2);
         path[0] = address(tokenAddress);
-        path[1] = address(router.WETH());
+        path[1] = address(router.WETH9());
         /// do the swap
-        router.swapExactTokensForETHSupportingFeeOnTransferTokens(
+        router.swapExactTokensForTokens(
             tokenAmount,
             expectedAmount.mulDiv(0.9 ether, 1 ether), // Allow for up to 10% max slippage
             path,
-            address(openZeppelinDefenderWallet),
-            block.timestamp
+            address(this)
+        );
+        // unwrap WETH9
+        IERC20Upgradeable weth = IERC20Upgradeable(address(router.WETH9()));
+        weth.approve(address(router), weth.balanceOf(address(this)));
+        router.unwrapWETH9(
+            expectedAmount.mulDiv(0.9 ether, 1 ether),
+            address(openZeppelinDefenderWallet)
         );
     }
 
@@ -923,7 +988,7 @@ contract CalculumVault is
         uint256 rest = totalFees.sub(CalculateTransferBotGasReserveDA());
         rest = (rest > _asset.balanceOf(address(this)))
             ? _asset.balanceOf(address(this))
-            : rest ;
+            : rest;
         if (rest > 0)
             SafeERC20Upgradeable.safeTransfer(_asset, treasuryWallet, rest);
         emit Events.FeesTransfer(CURRENT_EPOCH, rest);
@@ -1017,9 +1082,7 @@ contract CalculumVault is
     /**
      * @dev Setter for the TraderBot Wallet
      */
-    function setdexWallet(
-        address _dexWallet
-    ) external onlyOwner {
+    function setdexWallet(address _dexWallet) external onlyOwner {
         dexWallet = payable(_dexWallet);
     }
 
