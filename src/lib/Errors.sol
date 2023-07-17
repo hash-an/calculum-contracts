@@ -1,77 +1,15 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity ^0.8.17;
 
-/**
- * @title Helpers Methods
- * @dev Events, Errors  and Structs for Vault Contract
- * @custom:a Alfredo Lopez / Calculum
- */
-abstract contract Helpers {
-    /**
-     * @dev Helpers Smart Contract for Events and Errors
-     */
-    enum Status {
-        Inactive, // 0
-        Pending, // 1
-        Claimet, // 2
-        Completed, // 3
-        PendingRedeem, //4
-        PendingWithdraw //5
-    }
-    /// Struct of Basics
+import {DataTypes} from "./DataTypes.sol";
 
-    struct Basics {
-        Status status;
-        uint256 amountAssets; // Expresed in Amount of Assets of the Vault
-        uint256 amountShares; // Expresed in Amount of Shares of the Vault
-        uint256 finalAmount; // Expresed in Amount of Assets of the Vault
-    }
-    /// Net Transfer Struct
-
-    struct NetTransfer {
-        bool pending;
-        bool direction; // true = deposit, false = withdrawal
-        uint256 amount;
-    }
-    /// Events
-    /**
-     * @dev Events of Mint/Deposit Process
-     * @param caller Caller of Deposit/Mint Method
-     * @param receiver Wallet Address where receive the Assets to Deposit/Mint
-     * @param assets Amount of Assets to Deposit/Mint
-     * @param estimationOfShares Estimation of Amount of Shares to Mint
-     */
-
-    event PendingDeposit(
-        address indexed caller, address indexed receiver, uint256 assets, uint256 estimationOfShares
-    );
-
-    /**
-     * @dev Events of Withdraw/Redeem Process
-     * @param receiver Wallet Address where receive the Assets to Deposit/Mint
-     * @param owner Caller of Deposit/Mint Method
-     * @param assets Amount of Assets to Deposit/Mint
-     * @param estimationOfShares Estimation of Amount of Shares to Mint
-     */
-    event PendingWithdraw(
-        address indexed receiver, address indexed owner, uint256 assets, uint256 estimationOfShares
-    );
-    /**
-     * @dev Epoch Changed
-     */
-    event EpochChanged(
-        uint256 OldPeriod, uint256 NewPeriod, uint256 newMaintTimeBefore, uint256 newMaintTimeAfter
-    );
-    /**
-     * @dev Fees Transfer
-     */
-    event FeesTransfer(uint256 indexed epoch, uint256 Amount);
-    /**
-     * @dev Dex Transfer
-     */
-    event DexTransfer(uint256 indexed epoch, uint256 Amount);
-
+/// @title Library DataTypes
+library Errors {
     /// Errors
+    /** @title Helpers Methods
+    * @dev Errors for Vault Contract
+    * @custom:a Alfredo Lopez / Calculum
+    */
     /// The User `_claimer` is not allowed to claim this deposit
     error CalletIsNotClaimerToDeposit(address _claimer);
     /// The User `_claimer` is not allowed to redeem the Assets
