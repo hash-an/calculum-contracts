@@ -1,8 +1,8 @@
 # Solidity API
 
-# Contract Helpers
-**Title:** Helpers Methods
-**Author:** Alfredo Lopez / Calculum
+# Contract Constants
+**Title:** Library Constants
+**Author:** 
 
 **Description:** 
 

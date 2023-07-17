@@ -731,7 +731,7 @@ contract CalculumVault is
         
         if(address(pool) == address(0)) {
             pool = IUniPool(factory.getPool(address(router.WETH9()), tokenAddress, 500));
-            if(address(pool) == address(0)) revert NotZeroAddress();
+            if(address(pool) == address(0)) revert Errors.NotZeroAddress();
         }
         
         address poolToken0 = pool.token0();
@@ -747,7 +747,7 @@ contract CalculumVault is
             poolToken0 == address(router.WETH9()) && poolToken1 == tokenAddress 
         ) {
             invertPrice = true;
-        } else revert WrongUniswapConfig();
+        } else revert Errors.WrongUniswapConfig();
 
 
         uint32[] memory secondsAgos = new uint32[](2);
