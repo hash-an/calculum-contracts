@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
-
-interface IRouter is ISwapRouter {
+interface IRouter {
     /// @return Returns the address of the Uniswap V3 factory
     function factory() external view returns(address);
     /// @return Returns the address of WETH9

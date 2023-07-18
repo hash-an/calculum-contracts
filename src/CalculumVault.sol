@@ -4,11 +4,11 @@ pragma solidity ^0.8.17;
 import "./lib/IERC4626.sol";
 import "./lib/Claimable.sol";
 import "./lib/Events.sol";
-import "./lib/Constants.sol";
+import "./lib/DataTypes.sol";
 import "./lib/Errors.sol";
 import "./lib/IRouter.sol";
-import "./lib/TickMath.sol";
-import "./lib/FullMath.sol";
+import "./lib/UniswapLibV3.sol";
+import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/access/AccessControlUpgradeable.sol";
@@ -23,6 +23,7 @@ interface Oracle {
  * @dev Vault based on ERC-4626
  * @custom:a Alfredo Lopez / Calculum
  */
+/// @custom:oz-upgrades-unsafe-allow external-library-linking
 contract CalculumVault is
     IERC4626,
     ERC20Upgradeable,
@@ -36,8 +37,6 @@ contract CalculumVault is
     using AddressUpgradeable for address;
     using SafeERC20Upgradeable for IERC20Upgradeable;
     // Principal private Variable of ERC4626
-
-    uint256 public TWAP_INTERVAL = 60*15; // 15 minutes twap;
 
     IERC20MetadataUpgradeable internal _asset;
     uint8 private _decimals;
@@ -528,7 +527,7 @@ contract CalculumVault is
         uint256 _epochDuration,
         uint256 _maintTimeBefore,
         uint256 _maintTimeAfter
-    ) external onlyOwner {
+    ) public onlyOwner {
         _checkVaultInMaintenance();
         if (_epochDuration < 1 minutes || _epochDuration > 12 weeks) {
             revert Errors.WrongEpochDuration(_epochDuration);
@@ -536,13 +535,10 @@ contract CalculumVault is
         if (
             _epochDuration.mod(1 minutes) != 0 &&
             _epochDuration.mod(1 days) != 0 &&
-            _epochDuration.mod(1 weeks) != 0 &&
             _maintTimeBefore.mod(1 minutes) != 0 &&
             _maintTimeBefore.mod(1 days) != 0 &&
-            _maintTimeBefore.mod(1 weeks) != 0 &&
             _maintTimeAfter.mod(1 minutes) != 0 &&
-            _maintTimeAfter.mod(1 days) != 0 &&
-            _maintTimeAfter.mod(1 weeks) != 0
+            _maintTimeAfter.mod(1 days) != 0
         ) {
             revert Errors.WrongEpochDefinition(
                 _epochDuration,
@@ -616,10 +612,10 @@ contract CalculumVault is
         for (uint256 i = 0; i < depositWallets.length; i++) {
             DataTypes.Basics storage depositor = DEPOSITS[depositWallets[i]];
             if (depositor.status == DataTypes.Status.Pending) {
-                depositor.status = DataTypes.Status.Claimet;
                 depositor.amountShares = convertToShares(
                     depositor.amountAssets
                 );
+                depositor.status = DataTypes.Status.Claimet;
                 depositor.finalAmount += depositor.amountAssets;
                 delete depositor.amountAssets;
             }
@@ -718,81 +714,6 @@ contract CalculumVault is
         ) >= VAULT_TOKEN_PRICE[CURRENT_EPOCH.sub(1)]);
     }
 
-    /// @dev Method to get the price of 1 token of tokenAddress if swapped for paymentToken
-    /// @param tokenAddress ERC20 token address of a whitelisted ERC20 token
-    /// @return price Price in payment Token equivalent with its decimals
-    function getPriceInPaymentToken(
-        address tokenAddress
-    ) public view returns (uint256 price) {
-        if (tokenAddress == address(router.WETH9())) return 1;
-        IUniFactory factory = IUniFactory(router.factory());
-        IUniPool pool;
-        pool = IUniPool(factory.getPool(tokenAddress, address(router.WETH9()), 500));
-        
-        if(address(pool) == address(0)) {
-            pool = IUniPool(factory.getPool(address(router.WETH9()), tokenAddress, 500));
-            if(address(pool) == address(0)) revert Errors.NotZeroAddress();
-        }
-        
-        address poolToken0 = pool.token0();
-        address poolToken1 = pool.token1();
-
-        bool invertPrice;
-
-        if (
-            poolToken0 == tokenAddress && poolToken1 == address(router.WETH9())
-        ) {
-            invertPrice = false;
-        } else if ( 
-            poolToken0 == address(router.WETH9()) && poolToken1 == tokenAddress 
-        ) {
-            invertPrice = true;
-        } else revert Errors.WrongUniswapConfig();
-
-
-        uint32[] memory secondsAgos = new uint32[](2);
-        secondsAgos[0] = uint32(TWAP_INTERVAL);
-        secondsAgos[1] = 0;
-        
-        (int56[] memory tickCumulatives, ) = pool.observe(secondsAgos);
-
-        int56 tickCumulativesDelta = tickCumulatives[1] - tickCumulatives[0];
-        int24 tick = int24(tickCumulativesDelta / int56(int256(TWAP_INTERVAL)));
-
-        if (tickCumulativesDelta < 0 && (tickCumulativesDelta % int256(TWAP_INTERVAL) != 0)) {
-            tick--;
-        }
-
-        uint256 baseAmount = 10 ** IERC20MetadataUpgradeable(tokenAddress).decimals();
-
-        price = uint256(_getQuoteAtTick(tick, baseAmount, tokenAddress, address(router.WETH9())));
-    }
-
-    /// Internal methods
-
-    /// @dev Internal method to calculate quote price at a determined Uniswap tick value
-    function _getQuoteAtTick(
-        int24 tick,
-        uint256 baseAmount,
-        address baseToken,
-        address quoteToken
-    ) internal pure returns (uint256 quoteAmount) {
-        uint160 sqrtRatioX96 = TickMath.getSqrtRatioAtTick(tick);
-
-        // Calculate quoteAmount with better precision if it doesn't overflow when multiplied by itself
-        if (sqrtRatioX96 <= type(uint128).max) {
-            uint256 ratioX192 = uint256(sqrtRatioX96) * sqrtRatioX96;
-            quoteAmount = baseToken < quoteToken
-                ? FullMath.mulDiv(ratioX192, baseAmount, 1 << 192)
-                : FullMath.mulDiv(1 << 192, baseAmount, ratioX192);
-        } else {
-            uint256 ratioX128 = FullMath.mulDiv(sqrtRatioX96, sqrtRatioX96, 1 << 64);
-            quoteAmount = baseToken < quoteToken
-                ? FullMath.mulDiv(ratioX128, baseAmount, 1 << 128)
-                : FullMath.mulDiv(1 << 128, baseAmount, ratioX128);
-        }
-    } 
-
     /**
      * @dev  Method for Update Total Supply
      */
@@ -850,42 +771,17 @@ contract CalculumVault is
                 swapAmount
             );
             _asset.approve(address(router), swapAmount);
-            _swapTokensForETH(
+            UniswapLibV3._swapTokensForETH(
                 address(_asset),
+                address(openZeppelinDefenderWallet),
                 swapAmount,
                 swapAmount.mulDiv(
-                    getPriceInPaymentToken(address(_asset)),
+                    UniswapLibV3.getPriceInPaymentToken(address(_asset), address(router)),
                     1 * 10 ** _asset.decimals()
-                )
+                ),
+                router
             );
         }
-    }
-
-    /// @dev Internal method to swap ERC20 whitelisted tokens for payment Token
-    /// @param tokenAddress ERC20 token address of the whitelisted address
-    /// @param tokenAmount Amount of tokens to be swapped with UniSwap v2 router to payment Token
-    function _swapTokensForETH(
-        address tokenAddress,
-        uint256 tokenAmount,
-        uint256 expectedAmount
-    ) private {
-        address[] memory path = new address[](2);
-        path[0] = address(tokenAddress);
-        path[1] = address(router.WETH9());
-        /// do the swap
-        router.swapExactTokensForTokens(
-            tokenAmount,
-            expectedAmount.mulDiv(0.9 ether, 1 ether), // Allow for up to 10% max slippage
-            path,
-            address(this)
-        );
-        // unwrap WETH9
-        IERC20Upgradeable weth = IERC20Upgradeable(address(router.WETH9()));
-        weth.approve(address(router), weth.balanceOf(address(this)));
-        router.unwrapWETH9(
-            expectedAmount.mulDiv(0.9 ether, 1 ether),
-            address(openZeppelinDefenderWallet)
-        );
     }
 
     function netTransferBalance() private {
@@ -895,10 +791,14 @@ contract CalculumVault is
             actualTx.direction = true;
             actualTx.amount = newDeposits();
         } else {
+            uint256 deposits = newDeposits();
+            uint256 withdrawals = newWithdrawals();
+            uint256 mgtFee = MgtFeePerVaultToken();
+            uint256 perfFee = PerfFeePerVaultToken();
             if (
-                newDeposits() >
-                newWithdrawals().add(
-                    MgtFeePerVaultToken().add(PerfFeePerVaultToken()).mulDiv(
+                deposits >
+                withdrawals.add(
+                    mgtFee.add(perfFee).mulDiv(
                         TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
                         10 ** decimals()
                     )
@@ -906,10 +806,10 @@ contract CalculumVault is
             ) {
                 actualTx.pending = true;
                 actualTx.direction = true;
-                actualTx.amount = newDeposits().sub(
-                    newWithdrawals().add(
-                        MgtFeePerVaultToken()
-                            .add(PerfFeePerVaultToken())
+                actualTx.amount = deposits.sub(
+                    withdrawals.add(
+                        mgtFee
+                            .add(perfFee)
                             .mulDiv(
                                 TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
                                 10 ** decimals()
@@ -919,16 +819,16 @@ contract CalculumVault is
             } else {
                 actualTx.pending = true;
                 actualTx.direction = false;
-                actualTx.amount = newWithdrawals()
+                actualTx.amount = withdrawals
                     .add(
-                        MgtFeePerVaultToken()
-                            .add(PerfFeePerVaultToken())
+                        mgtFee
+                            .add(perfFee)
                             .mulDiv(
                                 TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
                                 10 ** decimals()
                             )
                     )
-                    .sub(newDeposits());
+                    .sub(deposits);
             }
         }
     }
@@ -1044,19 +944,22 @@ contract CalculumVault is
     }
 
     function UpdateVaultPriceToken() private view returns (uint256) {
+        uint256 mgtFee = MgtFeePerVaultToken();
+        uint256 perfFee = PerfFeePerVaultToken();
+        uint256 pnLVT = PnLPerVaultToken();
         if (getPnLPerVaultToken()) {
             return
                 (
                     VAULT_TOKEN_PRICE[CURRENT_EPOCH.sub(1)].add(
-                        PnLPerVaultToken()
+                        pnLVT
                     )
-                ).sub(MgtFeePerVaultToken().add(PerfFeePerVaultToken())).add(1);
+                ).sub(mgtFee.add(perfFee)).add(1);
         } else {
             return
                 VAULT_TOKEN_PRICE[CURRENT_EPOCH.sub(1)]
                     .sub(
-                        PnLPerVaultToken().add(
-                            MgtFeePerVaultToken().add(PerfFeePerVaultToken())
+                        pnLVT.add(
+                            mgtFee.add(perfFee)
                         )
                     )
                     .add(1);
