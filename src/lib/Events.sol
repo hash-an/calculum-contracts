@@ -2,12 +2,13 @@
 pragma solidity ^0.8.17;
 
 /// @title Library Events
-library Events {
+abstract contract Events {
     /// Events
     /** @title Helpers Methods
     * @dev Events for Vault Contract
     * @custom:a Alfredo Lopez / Calculum
     */
+    
     /**
      * @dev Events of Mint/Deposit Process
      * @param caller Caller of Deposit/Mint Method
@@ -19,6 +20,13 @@ library Events {
     event PendingDeposit(
         address indexed caller, address indexed receiver, uint256 assets, uint256 estimationOfShares
     );
+
+    /**
+     * @dev Events of Receive Ether
+     * @param sender sender wallet address of the Ether
+    * @param value Value of the Ether
+    */
+    event ValueReceived(address indexed sender, uint256 indexed value);
 
     /**
      * @dev Events of Withdraw/Redeem Process

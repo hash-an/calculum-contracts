@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
+import "./Events.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/utils/math/SafeMathUpgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/token/ERC20/utils/SafeERC20Upgradeable.sol";
@@ -15,14 +16,12 @@ import "@openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.
  * @dev Implementation of the claiming utils that can be useful for withdrawing accidentally sent tokens that are not used in bridge operations.
  * @custom:a Alfredo Lopez / Calculum
  */
-abstract contract Claimable is OwnableUpgradeable {
+abstract contract Claimable is OwnableUpgradeable, Events {
     using SafeMathUpgradeable for uint256;
     using MathUpgradeable for uint256;
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using AddressUpgradeable for address;
     // Event when the Smart Contract receive Amount of Native or ERC20 tokens
-
-    event ValueReceived(address indexed sender, uint256 indexed value);
 
     /// @notice Handle receive ether
     receive() external payable {

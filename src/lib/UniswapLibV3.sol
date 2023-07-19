@@ -9,6 +9,7 @@ import "@openzeppelin-contracts-upgradeable/contracts/utils/math/SafeMathUpgrade
 import "@openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 
+/// @custom:oz-upgrades-unsafe-allow external-library-linking
 library UniswapLibV3 {
     using SafeMathUpgradeable for uint256;
     using MathUpgradeable for uint256;
@@ -65,35 +66,6 @@ library UniswapLibV3 {
         uint256 baseAmount = 10 ** IERC20MetadataUpgradeable(tokenAddress).decimals();
 
         price = uint256(_getQuoteAtTick(tick, baseAmount, tokenAddress, address(router.WETH9())));
-    }
-
-        /// @dev Internal method to swap ERC20 whitelisted tokens for payment Token
-    /// @param tokenAddress ERC20 token address of the whitelisted address
-    /// @param tokenAmount Amount of tokens to be swapped with UniSwap v2 router to payment Token
-    function _swapTokensForETH(
-        address tokenAddress,
-        address openZeppelinDefenderWallet,
-        uint256 tokenAmount,
-        uint256 expectedAmount,
-        IRouter router
-    ) public {
-        address[] memory path = new address[](2);
-        path[0] = address(tokenAddress);
-        path[1] = address(router.WETH9());
-        /// do the swap
-        router.swapExactTokensForTokens(
-            tokenAmount,
-            expectedAmount.mulDiv(0.9 ether, 1 ether), // Allow for up to 10% max slippage
-            path,
-            address(this)
-        );
-        // unwrap WETH9
-        IERC20Upgradeable weth = IERC20Upgradeable(address(router.WETH9()));
-        weth.approve(address(router), weth.balanceOf(address(this)));
-        router.unwrapWETH9(
-            expectedAmount.mulDiv(0.9 ether, 1 ether),
-            address(openZeppelinDefenderWallet)
-        );
     }
 
     /// Internal methods

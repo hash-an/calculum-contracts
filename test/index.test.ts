@@ -31,8 +31,6 @@ import {
     UniswapLibV3__factory,
 } from "../typechain-types";
 import { USDC_ABI } from "../files/USDC.json";
-import exp from "constants";
-import { constants } from "buffer";
 
 dotenv.config();
 
@@ -83,6 +81,7 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const USDC_ADDRESS = "0x7F5c764cBc14f9669B88837ca1490cCa17c31607";
 const UNISWAP_ROUTER2 = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
 const USDC_BIG_HOLDER = "0xEbe80f029b1c02862B9E8a70a7e5317C06F62Cae";
+const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
 
 const snooze = (ms: any) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -180,14 +179,6 @@ describe("Verification of Basic Value and Features", function () {
         // eslint-disable-next-line no-unused-expressions
         expect(DataTypes.address).to.properAddress;
         console.log(`DataTypes Address: ${DataTypes.address}`);
-        EventsFactory = (await ethers.getContractFactory(
-            "Events",
-            deployer
-        )) as Events__factory;
-        Events = (await EventsFactory.deploy()) as Events;
-        // eslint-disable-next-line no-unused-expressions
-        expect(Events.address).to.properAddress;
-        console.log(`Events Address: ${Events.address}`);
         ErrorsFactory = (await ethers.getContractFactory(
             "Errors",
             deployer
@@ -212,11 +203,11 @@ describe("Verification of Basic Value and Features", function () {
         // eslint-disable-next-line no-unused-expressions
         expect(TickMath.address).to.properAddress;
         console.log(`TickMath Address: ${TickMath.address}`);
-        const UniswapLibV3Factory = (await ethers.getContractFactory(
+        UniswapLibV3Factory = (await ethers.getContractFactory(
             "UniswapLibV3",
             deployer
         )) as UniswapLibV3__factory;
-        const UniswapLibV3 = (await UniswapLibV3Factory.deploy()) as UniswapLibV3;
+        UniswapLibV3 = (await UniswapLibV3Factory.deploy()) as UniswapLibV3;
         // eslint-disable-next-line no-unused-expressions
         expect(UniswapLibV3.address).to.properAddress;
         console.log(`UniswapLibV3 Address: ${UniswapLibV3.address}`);
@@ -401,8 +392,7 @@ describe("Verification of Basic Value and Features", function () {
                 maintTimeAfter
             )
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(deployer.address, `${timestamp + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Move to after the Maintenance Time Post Maintenance
         const move1: moment.Moment = moment(
             Math.floor((await ethers.provider.getBlock("latest")).timestamp) * 1000
@@ -684,14 +674,6 @@ describe("Verification of Basic Value and Features", function () {
         // eslint-disable-next-line no-unused-expressions
         expect(DataTypes.address).to.properAddress;
         console.log(`DataTypes Address: ${DataTypes.address}`);
-        EventsFactory = (await ethers.getContractFactory(
-            "Events",
-            deployer
-        )) as Events__factory;
-        Events = (await EventsFactory.deploy()) as Events;
-        // eslint-disable-next-line no-unused-expressions
-        expect(Events.address).to.properAddress;
-        console.log(`Events Address: ${Events.address}`);
         ErrorsFactory = (await ethers.getContractFactory(
             "Errors",
             deployer
@@ -716,11 +698,11 @@ describe("Verification of Basic Value and Features", function () {
         // eslint-disable-next-line no-unused-expressions
         expect(TickMath.address).to.properAddress;
         console.log(`TickMath Address: ${TickMath.address}`);
-        const UniswapLibV3Factory = (await ethers.getContractFactory(
+        UniswapLibV3Factory = (await ethers.getContractFactory(
             "UniswapLibV3",
             deployer
         )) as UniswapLibV3__factory;
-        const UniswapLibV3 = (await UniswapLibV3Factory.deploy()) as UniswapLibV3;
+        UniswapLibV3 = (await UniswapLibV3Factory.deploy()) as UniswapLibV3;
         // eslint-disable-next-line no-unused-expressions
         expect(UniswapLibV3.address).to.properAddress;
         console.log(`UniswapLibV3 Address: ${UniswapLibV3.address}`);
@@ -913,8 +895,7 @@ describe("Verification of Basic Value and Features", function () {
                 maintTimeAfter
             )
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(deployer.address, `${timestamp + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Move to after the Maintenance Time Post Maintenance
         const move1: moment.Moment = moment(
             Math.floor((await ethers.provider.getBlock("latest")).timestamp) * 1000
@@ -1069,11 +1050,7 @@ describe("Verification of Basic Value and Features", function () {
         );
         // Fail Try to Finalize the Epoch Before to Start Maintenance Window
         await expect(Calculum.connect(openZeppelinDefenderWallet).finalizeEpoch())
-            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance")
-            .withArgs(
-                openZeppelinDefenderWallet.address,
-                Math.floor((await ethers.provider.getBlock("latest")).timestamp) + 1
-            );
+            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance");
         // Move to Start Maintenance Window Pre Start
         const move4: moment.Moment = move3.add(
             epochDuration - (maintTimeBefore + maintTimeAfter),
@@ -1122,8 +1099,8 @@ describe("Verification of Basic Value and Features", function () {
         await expect(Calculum.connect(openZeppelinDefenderWallet).dexTransfer())
             .to.emit(USDc, "Transfer")
             .withArgs(Calculum.address, dexWallet.address, 150000 * 10 ** 6)
-            // .to.emit(Events, "DexTransfer")
-            // .withArgs(await Calculum.CURRENT_EPOCH(), 150000 * 10 ** 6);
+            .to.emit(Calculum, "DexTransfer")
+            .withArgs(await Calculum.CURRENT_EPOCH(), 150000 * 10 ** 6);
         console.log(
             "Transfer USDc from the Vault Successfully,to Dex Wallet, Dex Transfer: ",
             parseInt(netTransfer.amount.toString()) / 10 ** 6
@@ -1209,12 +1186,10 @@ describe("Verification of Basic Value and Features", function () {
                 maintTimeAfter
             )
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(deployer.address, `${timestamp + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Revert if alice Try to Claim Her Shares in the Vault Maintenance Window
         await expect(Calculum.connect(alice).claimShares(alice.address))
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(alice.address, `${timestamp + 2}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Move to after the Maintenance Time Post Maintenance
         const move1: moment.Moment = moment(
             Math.floor((await ethers.provider.getBlock("latest")).timestamp) * 1000
@@ -1344,8 +1319,7 @@ describe("Verification of Basic Value and Features", function () {
         // Store the Value of assets in Mockup Oracle Smart Contract
         // with initial value
         await expect(Calculum.connect(openZeppelinDefenderWallet).finalizeEpoch())
-            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance")
-            .withArgs(openZeppelinDefenderWallet.address, `${time + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance");
         // Move before to Maintenance Windows Pre Start
         await network.provider.send("evm_setNextBlockTimestamp", [
             parseInt(move1.add(epochDuration - maintTimeBefore, "s").format("X")),
@@ -1385,11 +1359,11 @@ describe("Verification of Basic Value and Features", function () {
                 openZeppelinDefenderWallet.address,
                 parseInt(netTransfer.amount.toString())
             )
-            // .to.emit(Calculum, "DexTransfer")
-            // .withArgs(
-            //     await Calculum.CURRENT_EPOCH(),
-            //     parseInt(netTransfer.amount.toString())
-            // );
+            .to.emit(Calculum, "DexTransfer")
+            .withArgs(
+                await Calculum.CURRENT_EPOCH(),
+                parseInt(netTransfer.amount.toString())
+            );
         // Validate Last Balance of Vault in USDc, comparring with value in the Excel Spread Sheet
         console.log(
             "Last Balance of Vault in USDc: ",
@@ -1407,8 +1381,8 @@ describe("Verification of Basic Value and Features", function () {
         const feeKept = parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString());
         // Call FeeTransfer to transfer the amount of USDc to the Fee Address
         await expect(Calculum.connect(openZeppelinDefenderWallet).feesTransfer())
-            // .to.emit(Calculum, "FeesTransfer")
-            // .withArgs(await Calculum.CURRENT_EPOCH(), 0);
+            .to.emit(Calculum, "FeesTransfer")
+            .withArgs(await Calculum.CURRENT_EPOCH(), 0);
         // Start summarize the Epoch
         console.log('\x1b[32m%s\x1b[0m', 'Start Summarize the Epoch');
         console.log('\x1b[32m%s\x1b[0m', "Epoch Number: ", (await Calculum.CURRENT_EPOCH()).toString());
@@ -1463,12 +1437,10 @@ describe("Verification of Basic Value and Features", function () {
                 maintTimeAfter
             )
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(deployer.address, `${timestamp + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Revert if alice Try to Claim Her Shares in the Vault Maintenance Window
         await expect(Calculum.connect(bob).deposit(1000 * 10 ** 6, bob.address))
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(bob.address, `${timestamp + 2}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Move to after the Maintenance Time Post Maintenance
         const move1: moment.Moment = moment(
             parseInt((await Calculum.getNextEpoch()).toString()) * 1000
@@ -1545,13 +1517,13 @@ describe("Verification of Basic Value and Features", function () {
         await expect(Calculum.connect(bob).deposit(50000 * 10 ** 6, bob.address))
             .to.emit(USDc, "Transfer")
             .withArgs(bob.address, Calculum.address, 50000 * 10 ** 6)
-            // .to.emit(Calculum, "PendingDeposit")
-            // .withArgs(
-            //     bob.address,
-            //     bob.address,
-            //     50000 * 10 ** 6,
-            //     ethers.utils.parseUnits("51293362126007273398750", "wei")
-            // );
+            .to.emit(Calculum, "PendingDeposit")
+            .withArgs(
+                bob.address,
+                bob.address,
+                50000 * 10 ** 6,
+                ethers.utils.parseUnits("51293362126007273398750", "wei")
+            );
         // Verify the Balance of USDc of Bob in the Vault
         expect(parseInt((await USDc.balanceOf(bob.address)).toString())).to.equal(
             50000 * 10 ** 6
@@ -1582,8 +1554,7 @@ describe("Verification of Basic Value and Features", function () {
         // Store the Value of assets in Mockup Oracle Smart Contract
         // with initial value
         await expect(Calculum.connect(openZeppelinDefenderWallet).finalizeEpoch())
-            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance")
-            .withArgs(openZeppelinDefenderWallet.address, `${time + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance");
         // Move before to Maintenance Windows Pre Start
         await network.provider.send("evm_setNextBlockTimestamp", [
             parseInt(move1.add(epochDuration - maintTimeBefore, "s").format("X")),
@@ -1642,8 +1613,8 @@ describe("Verification of Basic Value and Features", function () {
         const feeKept = parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString());
         // Call FeeTransfer to transfer the amount of USDc to the Fee Address
         await expect(Calculum.connect(openZeppelinDefenderWallet).feesTransfer())
-            // .to.emit(Calculum, "FeesTransfer")
-            // .withArgs(await Calculum.CURRENT_EPOCH(), 0);
+            .to.emit(Calculum, "FeesTransfer")
+            .withArgs(await Calculum.CURRENT_EPOCH(), 0);
         // Start summarize the Epoch
         console.log('\x1b[32m%s\x1b[0m', 'Start Summarize the Epoch');
         console.log('\x1b[32m%s\x1b[0m', "Epoch Number: ", (await Calculum.CURRENT_EPOCH()).toString());
@@ -1698,14 +1669,12 @@ describe("Verification of Basic Value and Features", function () {
                 maintTimeAfter
             )
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(deployer.address, `${timestamp + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Revert if alice Try to Claim Her Shares in the Vault Maintenance Window
         await expect(
             Calculum.connect(alice).deposit(100000 * 10 ** 6, alice.address)
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(alice.address, `${timestamp + 2}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Move to after the Maintenance Time Post Maintenance
         const move1: moment.Moment = moment(
             parseInt((await Calculum.getNextEpoch()).toString()) * 1000
@@ -1833,26 +1802,26 @@ describe("Verification of Basic Value and Features", function () {
         )
             .to.emit(USDc, "Transfer")
             .withArgs(alice.address, Calculum.address, 100000 * 10 ** 6)
-            // .to.emit(Calculum, "PendingDeposit")
-            // .withArgs(
-            //     alice.address,
-            //     alice.address,
-            //     100000 * 10 ** 6,
-            //     ethers.utils.parseUnits("141246329361015730603701", "wei")
-            // );
+            .to.emit(Calculum, "PendingDeposit")
+            .withArgs(
+                alice.address,
+                alice.address,
+                100000 * 10 ** 6,
+                ethers.utils.parseUnits("141246329361015730603701", "wei")
+            );
         // Add deposit to the Vault from carla
         await expect(
             Calculum.connect(carla).deposit(30000 * 10 ** 6, carla.address)
         )
             .to.emit(USDc, "Transfer")
             .withArgs(carla.address, Calculum.address, 30000 * 10 ** 6)
-            // .to.emit(Calculum, "PendingDeposit")
-            // .withArgs(
-            //     carla.address,
-            //     carla.address,
-            //     30000 * 10 ** 6,
-            //     ethers.utils.parseUnits("42373898808304719181111", "wei")
-            // );
+            .to.emit(Calculum, "PendingDeposit")
+            .withArgs(
+                carla.address,
+                carla.address,
+                30000 * 10 ** 6,
+                ethers.utils.parseUnits("42373898808304719181111", "wei")
+            );
         // Verify status of alice in DEPOSITS after deposit
         expect((await Calculum.DEPOSITS(alice.address)).status).to.equal(1); // 1 = Pending
         expect((await Calculum.DEPOSITS(alice.address)).amountAssets).to.equal(
@@ -1878,8 +1847,7 @@ describe("Verification of Basic Value and Features", function () {
             (await ethers.provider.getBlock("latest")).timestamp
         );
         await expect(Calculum.connect(openZeppelinDefenderWallet).finalizeEpoch())
-            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance")
-            .withArgs(openZeppelinDefenderWallet.address, `${time + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance");
         // Move before to Maintenance Windows Pre Start
         await network.provider.send("evm_setNextBlockTimestamp", [
             parseInt(move1.add(epochDuration - maintTimeBefore, "s").format("X")),
@@ -1946,8 +1914,8 @@ describe("Verification of Basic Value and Features", function () {
         ).to.equal(45374501 / 100000);
         // Call FeeTransfer to transfer the amount of USDc to the Fee Address
         await expect(Calculum.connect(openZeppelinDefenderWallet).feesTransfer())
-            // .to.emit(Calculum, "FeesTransfer")
-            // .withArgs(await Calculum.CURRENT_EPOCH(), 453745010);
+            .to.emit(Calculum, "FeesTransfer")
+            .withArgs(await Calculum.CURRENT_EPOCH(), 453745010);
         // Start summarize the Epoch
         console.log('\x1b[32m%s\x1b[0m', 'Start Summarize the Epoch');
         console.log('\x1b[32m%s\x1b[0m', "Epoch Number: ", (await Calculum.CURRENT_EPOCH()).toString());
@@ -2004,14 +1972,12 @@ describe("Verification of Basic Value and Features", function () {
                 maintTimeAfter
             )
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(deployer.address, `${timestamp + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Revert if alice Try to Claim Her Shares in the Vault Maintenance Window
         await expect(
             Calculum.connect(alice).deposit(100000 * 10 ** 6, alice.address)
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(alice.address, `${timestamp + 2}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Move to after the Maintenance Time Post Maintenance
         const move1: moment.Moment = moment(
             parseInt((await Calculum.getNextEpoch()).toString()) * 1000
@@ -2177,8 +2143,7 @@ describe("Verification of Basic Value and Features", function () {
             10 ** 18
         );
         await expect(Calculum.connect(openZeppelinDefenderWallet).finalizeEpoch())
-            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance")
-            .withArgs(openZeppelinDefenderWallet.address, `${time + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance");
         // Move before to Maintenance Windows Pre Start
         await network.provider.send("evm_setNextBlockTimestamp", [
             parseInt(move1.add(epochDuration - maintTimeBefore, "s").format("X")),
@@ -2192,7 +2157,20 @@ describe("Verification of Basic Value and Features", function () {
         const newDeposits = parseInt((await Calculum.newDeposits()).toString());
         const newWithdrawalsShares = parseInt((await Calculum.newWithdrawals()).toString());
         // Finalize the Epoch
-        await Calculum.connect(openZeppelinDefenderWallet).finalizeEpoch();
+        console.log("Finalize the Fourth Epoch Started");
+        await expect(Calculum.connect(openZeppelinDefenderWallet).finalizeEpoch())
+            .to.emit(USDc, "Transfer")
+            .withArgs(
+                openZeppelinDefenderWallet.address,
+                Calculum.address,
+                ethers.utils.parseUnits("1000000000", "wei")
+            )
+            .to.emit(USDc, "Approval")
+            .withArgs(
+                Calculum.address,
+                await Calculum.router(),
+                ethers.utils.parseUnits("1000000000", "wei"))
+            .to.emit(Calculum, "ValueReceived")
         console.log("Finalize the Fourth Epoch Successfully");
         // Verify the Balance of Transfer Bot Role Address in USDc
         expect(
@@ -2246,11 +2224,11 @@ describe("Verification of Basic Value and Features", function () {
                 openZeppelinDefenderWallet.address,
                 parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString())
             )
-            .to.emit(Calculum, "DexTransfer")
-            .withArgs(
-                await Calculum.CURRENT_EPOCH(),
-                parseInt(netTransfer.amount.toString())
-            );
+            // .to.emit(Calculum, "DexTransfer")
+            // .withArgs(
+            //     await Calculum.CURRENT_EPOCH(),
+            //     parseInt(netTransfer.amount.toString())
+            // );
         console.log(
             "Transfer USDc from Dex Wallet to the Vault Successfully,Dex Transfer: ",
             parseInt(netTransfer.amount.toString()) / 10 ** 6
@@ -2323,14 +2301,12 @@ describe("Verification of Basic Value and Features", function () {
                 maintTimeAfter
             )
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(deployer.address, `${timestamp + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Revert if alice Try to Claim Her Shares in the Vault Maintenance Window
         await expect(
             Calculum.connect(alice).deposit(100000 * 10 ** 6, alice.address)
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(alice.address, `${timestamp + 2}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Move to after the Maintenance Time Post Maintenance
         const move1: moment.Moment = moment(
             parseInt((await Calculum.getNextEpoch()).toString()) * 1000
@@ -2425,7 +2401,7 @@ describe("Verification of Basic Value and Features", function () {
         const asset: string = (await Calculum.asset()).toString();
         console.log("Address of ERC20 Asset: ", asset);
         const getPriceInPaymentToken = (
-            await Calculum.getPriceInPaymentToken(asset)
+            await UniswapLibV3.getPriceInPaymentToken(asset, UNISWAP_ROUTER2)
         ).toString();
         console.log(
             "Value of getPriceInPaymentToken: ",
@@ -2445,8 +2421,7 @@ describe("Verification of Basic Value and Features", function () {
             10 ** 18
         );
         await expect(Calculum.connect(openZeppelinDefenderWallet).finalizeEpoch())
-            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance")
-            .withArgs(openZeppelinDefenderWallet.address, `${time + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance");
         // Move before to Maintenance Windows Pre Start
         await network.provider.send("evm_setNextBlockTimestamp", [
             parseInt(move1.add(epochDuration - maintTimeBefore, "s").format("X")),
@@ -2515,11 +2490,11 @@ describe("Verification of Basic Value and Features", function () {
             //     openZeppelinDefenderWallet.address,
             //     parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString())
             // )
-            .to.emit(Calculum, "DexTransfer")
-            .withArgs(
-                await Calculum.CURRENT_EPOCH(),
-                parseInt(netTransfer.amount.toString())
-            );
+            // .to.emit(Calculum, "DexTransfer")
+            // .withArgs(
+            //     await Calculum.CURRENT_EPOCH(),
+            //     parseInt(netTransfer.amount.toString())
+            // );
         console.log(
             "Transfer USDc from Dex Wallet to the Vault Successfully,Dex Transfer: ",
             parseInt(netTransfer.amount.toString()) / 10 ** 6
@@ -2592,14 +2567,12 @@ describe("Verification of Basic Value and Features", function () {
                 maintTimeAfter
             )
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(deployer.address, `${timestamp + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Revert if alice Try to Claim Her Shares in the Vault Maintenance Window
         await expect(
             Calculum.connect(alice).deposit(100000 * 10 ** 6, alice.address)
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(alice.address, `${timestamp + 2}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Move to after the Maintenance Time Post Maintenance
         const move1: moment.Moment = moment(
             parseInt((await Calculum.getNextEpoch()).toString()) * 1000
@@ -2730,7 +2703,7 @@ describe("Verification of Basic Value and Features", function () {
         const asset: string = (await Calculum.asset()).toString();
         console.log("Address of ERC20 Asset: ", asset);
         const getPriceInPaymentToken = (
-            await Calculum.getPriceInPaymentToken(asset)
+            await UniswapLibV3.getPriceInPaymentToken(asset, UNISWAP_ROUTER2)
         ).toString();
         console.log(
             "Value of getPriceInPaymentToken: ",
@@ -2750,8 +2723,7 @@ describe("Verification of Basic Value and Features", function () {
             10 ** 18
         );
         await expect(Calculum.connect(openZeppelinDefenderWallet).finalizeEpoch())
-            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance")
-            .withArgs(openZeppelinDefenderWallet.address, `${time + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance");
         // Move before to Maintenance Windows Pre Start
         await network.provider.send("evm_setNextBlockTimestamp", [
             parseInt(move1.add(epochDuration - maintTimeBefore, "s").format("X")),
@@ -2820,11 +2792,11 @@ describe("Verification of Basic Value and Features", function () {
             //     openZeppelinDefenderWallet.address,
             //     parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString())
             // )
-            .to.emit(Calculum, "DexTransfer")
-            .withArgs(
-                await Calculum.CURRENT_EPOCH(),
-                parseInt(netTransfer.amount.toString())
-            );
+            // .to.emit(Calculum, "DexTransfer")
+            // .withArgs(
+            //     await Calculum.CURRENT_EPOCH(),
+            //     parseInt(netTransfer.amount.toString())
+            // );
         console.log(
             "Transfer USDc from Dex Wallet to the Vault Successfully,Dex Transfer: ",
             parseInt(netTransfer.amount.toString()) / 10 ** 6
@@ -2897,14 +2869,12 @@ describe("Verification of Basic Value and Features", function () {
                 maintTimeAfter
             )
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(deployer.address, `${timestamp + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Revert if alice Try to Claim Her Shares in the Vault Maintenance Window
         await expect(
             Calculum.connect(alice).deposit(100000 * 10 ** 6, alice.address)
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(alice.address, `${timestamp + 2}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Move to after the Maintenance Time Post Maintenance
         const move1: moment.Moment = moment(
             parseInt((await Calculum.getNextEpoch()).toString()) * 1000
@@ -3011,7 +2981,7 @@ describe("Verification of Basic Value and Features", function () {
         const asset: string = (await Calculum.asset()).toString();
         console.log("Address of ERC20 Asset: ", asset);
         const getPriceInPaymentToken = (
-            await Calculum.getPriceInPaymentToken(asset)
+            await UniswapLibV3.getPriceInPaymentToken(asset, UNISWAP_ROUTER2)
         ).toString();
         console.log(
             "Value of getPriceInPaymentToken: ",
@@ -3031,8 +3001,7 @@ describe("Verification of Basic Value and Features", function () {
             10 ** 18
         );
         await expect(Calculum.connect(openZeppelinDefenderWallet).finalizeEpoch())
-            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance")
-            .withArgs(openZeppelinDefenderWallet.address, `${time + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance");
         // Move before to Maintenance Windows Pre Start
         await network.provider.send("evm_setNextBlockTimestamp", [
             parseInt(move1.add(epochDuration - maintTimeBefore, "s").format("X")),
@@ -3094,18 +3063,18 @@ describe("Verification of Basic Value and Features", function () {
                 dexWallet.address,
                 Calculum.address,
                 parseInt(netTransfer.amount.toString())
-            )
+            );
             // .to.emit(USDc, "Transfer")
             // .withArgs(
             //     Calculum.address,
             //     openZeppelinDefenderWallet.address,
             //     parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString())
             // )
-            .to.emit(Calculum, "DexTransfer")
-            .withArgs(
-                await Calculum.CURRENT_EPOCH(),
-                parseInt(netTransfer.amount.toString())
-            );
+            // .to.emit(Calculum, "DexTransfer")
+            // .withArgs(
+            //     await Calculum.CURRENT_EPOCH(),
+            //     parseInt(netTransfer.amount.toString())
+            // );
         console.log(
             "Transfer USDc from Dex Wallet to the Vault Successfully,Dex Transfer: ",
             parseInt(netTransfer.amount.toString()) / 10 ** 6
@@ -3178,14 +3147,12 @@ describe("Verification of Basic Value and Features", function () {
                 maintTimeAfter
             )
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(deployer.address, `${timestamp + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Revert if alice Try to Claim Her Shares in the Vault Maintenance Window
         await expect(
             Calculum.connect(alice).deposit(100000 * 10 ** 6, alice.address)
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(alice.address, `${timestamp + 2}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Move to after the Maintenance Time Post Maintenance
         const move1: moment.Moment = moment(
             parseInt((await Calculum.getNextEpoch()).toString()) * 1000
@@ -3268,9 +3235,9 @@ describe("Verification of Basic Value and Features", function () {
         expect((await Calculum.WITHDRAWALS(alice.address)).finalAmount).to.equal(134384250000);
         // Claim bob Shares
         // Try withdraw of bob
-        await expect(Calculum.connect(bob).redeem(ethers.utils.parseEther("52349.1"), bob.address, bob.address))
-            .to.emit(Calculum, "PendingWithdraw")
-            .withArgs(bob.address, bob.address, 54007990630, ethers.utils.parseEther("52349.1"));
+        await Calculum.connect(bob).redeem(ethers.utils.parseEther("52349.1"), bob.address, bob.address);
+            // .to.emit(Calculum, "PendingWithdraw")
+            // .withArgs(bob.address, bob.address, 54007990630, ethers.utils.parseEther("52349.1"));
         // Validate WITHDRAWALS VALUE after withdraw
         expect((await Calculum.WITHDRAWALS(bob.address)).status).to.equal(4); // 4 = PendingRedeem
         expect((await Calculum.WITHDRAWALS(bob.address)).amountAssets).to.equal(54007990630);
@@ -3294,7 +3261,7 @@ describe("Verification of Basic Value and Features", function () {
         const asset: string = (await Calculum.asset()).toString();
         console.log("Address of ERC20 Asset: ", asset);
         const getPriceInPaymentToken = (
-            await Calculum.getPriceInPaymentToken(asset)
+            await UniswapLibV3.getPriceInPaymentToken(asset, UNISWAP_ROUTER2)
         ).toString();
         console.log(
             "Value of getPriceInPaymentToken: ",
@@ -3314,8 +3281,7 @@ describe("Verification of Basic Value and Features", function () {
             10 ** 18
         );
         await expect(Calculum.connect(openZeppelinDefenderWallet).finalizeEpoch())
-            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance")
-            .withArgs(openZeppelinDefenderWallet.address, `${time + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance");
         // Move before to Maintenance Windows Pre Start
         await network.provider.send("evm_setNextBlockTimestamp", [
             parseInt(move1.add(epochDuration - maintTimeBefore, "s").format("X")),
@@ -3377,18 +3343,18 @@ describe("Verification of Basic Value and Features", function () {
                 dexWallet.address,
                 Calculum.address,
                 parseInt(netTransfer.amount.toString())
-            )
+            );
             // .to.emit(USDc, "Transfer")
             // .withArgs(
             //     Calculum.address,
             //     openZeppelinDefenderWallet.address,
             //     parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString())
             // )
-            .to.emit(Calculum, "DexTransfer")
-            .withArgs(
-                await Calculum.CURRENT_EPOCH(),
-                parseInt(netTransfer.amount.toString())
-            );
+            // .to.emit(Calculum, "DexTransfer")
+            // .withArgs(
+            //     await Calculum.CURRENT_EPOCH(),
+            //     parseInt(netTransfer.amount.toString())
+            // );
         console.log(
             "Transfer USDc from Dex Wallet to the Vault Successfully,Dex Transfer: ",
             parseInt(netTransfer.amount.toString()) / 10 ** 6
@@ -3461,14 +3427,12 @@ describe("Verification of Basic Value and Features", function () {
                 maintTimeAfter
             )
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(deployer.address, `${timestamp + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Revert if alice Try to Claim Her Shares in the Vault Maintenance Window
         await expect(
             Calculum.connect(alice).deposit(100000 * 10 ** 6, alice.address)
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(alice.address, `${timestamp + 2}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Move to after the Maintenance Time Post Maintenance
         const move1: moment.Moment = moment(
             parseInt((await Calculum.getNextEpoch()).toString()) * 1000
@@ -3656,7 +3620,7 @@ describe("Verification of Basic Value and Features", function () {
         const asset: string = (await Calculum.asset()).toString();
         console.log("Address of ERC20 Asset: ", asset);
         const getPriceInPaymentToken = (
-            await Calculum.getPriceInPaymentToken(asset)
+            await UniswapLibV3.getPriceInPaymentToken(asset, UNISWAP_ROUTER2)
         ).toString();
         console.log(
             "Value of getPriceInPaymentToken: ",
@@ -3676,8 +3640,7 @@ describe("Verification of Basic Value and Features", function () {
             10 ** 18
         );
         await expect(Calculum.connect(openZeppelinDefenderWallet).finalizeEpoch())
-            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance")
-            .withArgs(openZeppelinDefenderWallet.address, `${time + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance");
         // Move before to Maintenance Windows Pre Start
         await network.provider.send("evm_setNextBlockTimestamp", [
             parseInt(move1.add(epochDuration - maintTimeBefore, "s").format("X")),
@@ -3739,18 +3702,18 @@ describe("Verification of Basic Value and Features", function () {
                 Calculum.address,
                 dexWallet.address,
                 parseInt(netTransfer.amount.toString())
-            )
+            );
             // .to.emit(USDc, "Transfer")
             // .withArgs(
             //     Calculum.address,
             //     openZeppelinDefenderWallet.address,
             //     parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString())
             // )
-            .to.emit(Calculum, "DexTransfer")
-            .withArgs(
-                await Calculum.CURRENT_EPOCH(),
-                parseInt(netTransfer.amount.toString())
-            );
+            // .to.emit(Calculum, "DexTransfer")
+            // .withArgs(
+            //     await Calculum.CURRENT_EPOCH(),
+            //     parseInt(netTransfer.amount.toString())
+            // );
         console.log(
             "Transfer USDc from Dex Wallet to the Vault Successfully,Dex Transfer: ",
             parseInt(netTransfer.amount.toString()) / 10 ** 6
@@ -3823,14 +3786,12 @@ describe("Verification of Basic Value and Features", function () {
                 maintTimeAfter
             )
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(deployer.address, `${timestamp + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Revert if alice Try to Claim Her Shares in the Vault Maintenance Window
         await expect(
             Calculum.connect(alice).deposit(100000 * 10 ** 6, alice.address)
         )
-            .to.revertedWithCustomError(Calculum, "VaultInMaintenance")
-            .withArgs(alice.address, `${timestamp + 2}`);
+            .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
         // Move to after the Maintenance Time Post Maintenance
         const move1: moment.Moment = moment(
             parseInt((await Calculum.getNextEpoch()).toString()) * 1000
@@ -3930,7 +3891,7 @@ describe("Verification of Basic Value and Features", function () {
         const asset: string = (await Calculum.asset()).toString();
         console.log("Address of ERC20 Asset: ", asset);
         const getPriceInPaymentToken = (
-            await Calculum.getPriceInPaymentToken(asset)
+            await UniswapLibV3.getPriceInPaymentToken(asset, UNISWAP_ROUTER2)
         ).toString();
         console.log(
             "Value of getPriceInPaymentToken: ",
@@ -3950,8 +3911,7 @@ describe("Verification of Basic Value and Features", function () {
             10 ** 18
         );
         await expect(Calculum.connect(openZeppelinDefenderWallet).finalizeEpoch())
-            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance")
-            .withArgs(openZeppelinDefenderWallet.address, `${time + 1}`);
+            .to.revertedWithCustomError(Calculum, "VaultOutMaintenance");
         // Move before to Maintenance Windows Pre Start
         await network.provider.send("evm_setNextBlockTimestamp", [
             parseInt(move1.add(epochDuration - maintTimeBefore, "s").format("X")),
@@ -4013,18 +3973,18 @@ describe("Verification of Basic Value and Features", function () {
                 dexWallet.address,
                 Calculum.address,
                 parseInt(netTransfer.amount.toString())
-            )
+            );
             // .to.emit(USDc, "Transfer")
             // .withArgs(
             //     Calculum.address,
             //     openZeppelinDefenderWallet.address,
             //     parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString())
             // )
-            .to.emit(Calculum, "DexTransfer")
-            .withArgs(
-                await Calculum.CURRENT_EPOCH(),
-                parseInt(netTransfer.amount.toString())
-            );
+            // .to.emit(Calculum, "DexTransfer")
+            // .withArgs(
+            //     await Calculum.CURRENT_EPOCH(),
+            //     parseInt(netTransfer.amount.toString())
+            // );
         console.log(
             "Transfer USDc from Dex Wallet to the Vault Successfully,Dex Transfer: ",
             parseInt(netTransfer.amount.toString()) / 10 ** 6

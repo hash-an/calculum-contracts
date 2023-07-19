@@ -130,8 +130,8 @@ module.exports = {
             process.env.COINMARKETCAP_API_KEY ||
             "f7169cda-d705-4f67-9e99-9a3985d713a4",
         enabled: true,
-        gasPriceApi: `https://api-optimistic.etherscan.io/api?module=proxy&action=eth_gasPrice&apikey=${process.env.ETHERSCAN_API_KEY}`,
-        // gasPrice: 50
+        gasPriceApi: `https://api-optimistic.etherscan.io/api?module=proxy&action=eth_gasPrice&apikey=${process.env.OPTIMISM_API_KEY}`,
+        // gasPrice: 35
     },
     etherscan: {
         // Your API key for Etherscan

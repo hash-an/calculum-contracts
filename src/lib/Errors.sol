@@ -27,9 +27,9 @@ library Errors {
     /// The Oracle `_oracle` getting a wrong answer of the Balance of the Trader Bot Wallet `_traderBotWallet`
     error ActualAssetValueIsZero(address _oracle, address _traderBotWallet);
     /// The Caller `_caller` try to call Principal Method in Maintenance Period
-    error VaultInMaintenance(address _caller, uint256 _timeStamp);
-
-    error VaultOutMaintenance(address _caller, uint256 _timeStamp);
+    error VaultInMaintenance();
+    /// The Caller `_caller` try to call Principal Method out Maintenance Period
+    error VaultOutMaintenance();
     ///	The Owner try to set a wrong value for the Period of the Epoch `_period`
     error WrongEpochDuration(uint256 _epochDuration);
     /// The Owner try to set a wrong value for the Period of the Epoch or Maintenace Period `_period` not multiple of minutes, days or weeks

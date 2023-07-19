@@ -1,5 +1,29 @@
 # Solidity API
 
+# Contract IWETH9
+**Title:** Interface for WETH9
+**Author:** 
+
+**Description:** 
+
+---
+### Globals Variables and Mappings
+
+---
+### Functions
+
+---
+### Modifiers
+
+---
+### Events
+
+---
+### Structs
+
+---
+### Enums
+
 # Contract IRouter
 **Title:** 
 **Author:** 
