@@ -764,41 +764,6 @@ contract CalculumVault is
         return missingAmount < totalFees ? missingAmount : totalFees;
     }
 
-    /// @dev Internal method to swap ERC20 whitelisted tokens for payment Token
-    /// @param tokenAddress ERC20 token address of the whitelisted address
-    /// @param tokenAmount Amount of tokens to be swapped with UniSwap v2 router to payment Token
-    /// @param expectedAmount Amount of payment tokens expected
-    function _swapTokensForETH(
-        address tokenAddress,
-        uint256 tokenAmount,
-        uint256 expectedAmount
-    ) internal {
-        uint256 currentAllowance = IERC20Upgradeable(tokenAddress).allowance(
-            address(this),
-            address(router)
-        );
-        if (currentAllowance <= tokenAmount) {
-            SafeERC20Upgradeable.safeIncreaseAllowance(
-                IERC20Upgradeable(tokenAddress),
-                address(router),
-                tokenAmount - currentAllowance
-            );
-        }
-
-        IRouter.ExactInputSingleParams memory params = IRouter
-            .ExactInputSingleParams({
-                tokenIn: tokenAddress,
-                tokenOut: address(router.WETH9()),
-                fee: 500,
-                recipient: address(this),
-                amountIn: tokenAmount,
-                amountOutMinimum: expectedAmount.mulDiv(0.95 ether, 1 ether), // 10% slippage
-                sqrtPriceLimitX96: 0
-            });
-
-        router.exactInputSingle(params);
-    }
-
     function _swapDAforETH() public {
         if (
             (openZeppelinDefenderWallet.balance <
@@ -806,33 +771,11 @@ contract CalculumVault is
             (_asset.balanceOf(openZeppelinDefenderWallet) >
                 MIN_WALLET_BALANCE_USDC_TRANSFER_BOT)
         ) {
-            uint256 swapAmount = _asset.balanceOf(openZeppelinDefenderWallet);
-            uint256 expectedAmount = swapAmount.mulDiv(
-                UniswapLibV3.getPriceInPaymentToken(
-                    address(_asset),
-                    address(router)
-                ),
-                1 * 10 ** _asset.decimals()
+            UniswapLibV3._swapTokensForETH(
+                address(_asset),
+                address(router),
+                openZeppelinDefenderWallet
             );
-            SafeERC20Upgradeable.safeTransferFrom(
-                _asset,
-                address(openZeppelinDefenderWallet),
-                address(this),
-                swapAmount
-            );
-            _swapTokensForETH(address(_asset), swapAmount, expectedAmount);
-            // unwrap WETH to ETH
-            IWETH9 weth = IWETH9(address(router.WETH9()));
-            uint256 balance = weth.balanceOf(address(this));
-            weth.withdraw(balance);
-            // security way transfer ETH to openZeppelinDefenderWallet
-            (bool success, ) = openZeppelinDefenderWallet.call{value: balance}("");
-            if (!success) {
-                revert Errors.TransferFailed(
-                    openZeppelinDefenderWallet,
-                    expectedAmount
-                );
-            }
         }
     }
 
