@@ -104,9 +104,12 @@ contract CalculumVault is
         _disableInitializers();
     }
 
-    modifier whitelisted(address wallet) {
-        if (whitelist[wallet] == false) {
-            revert Errors.NotWhitelisted(wallet);
+    modifier whitelisted(address caller, address _owner) {
+        if (_owner != caller) {
+            revert Errors.CallerIsNotOwner(caller, _owner);
+        }
+        if (whitelist[caller] == false) {
+            revert Errors.NotWhitelisted(caller);
         }
         _;
     }
@@ -115,30 +118,24 @@ contract CalculumVault is
         string memory _name,
         string memory _symbol,
         uint8 decimals_,
-        IERC20MetadataUpgradeable _USDCToken,
-        address _oracle,
-        address _dexWallet,
-        address _treasuryWallet,
-        address _openZeppelinDefenderWallet,
-        address _router,
+        address[6] memory _initialAddress, // 0: Oracle, 1: Dex Wallet, 2: Treasury Wallet, 3: OpenZeppelin Defender Wallet, 4: Router, 5: USDCToken
         uint256[7] memory _initialValue // 0: Start timestamp, 1: Min Deposit, 2: Max Deposit, 3: Max Total Supply Value
     ) public reinitializer(1) {
-        if (!address(_USDCToken).isContract()) {
-            revert Errors.AddressIsNotContract(address(_USDCToken));
-        }
-        if (!_oracle.isContract()) revert Errors.AddressIsNotContract(_oracle);
+        if (
+            !_initialAddress[0].isContract() || !_initialAddress[5].isContract() || !_initialAddress[4].isContract()
+        ) revert Errors.AddressIsNotContract();
         __Ownable_init();
         __ReentrancyGuard_init();
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-        _setupRole(TRANSFER_BOT_ROLE, _openZeppelinDefenderWallet);
+        _setupRole(TRANSFER_BOT_ROLE, _initialAddress[3]);
         __ERC20_init(_name, _symbol);
-        _asset = _USDCToken;
+        _asset = IERC20MetadataUpgradeable(_initialAddress[5]);
         _decimals = decimals_;
-        oracle = Oracle(_oracle);
-        router = IRouter(_router);
-        dexWallet = payable(_dexWallet);
-        openZeppelinDefenderWallet = payable(_openZeppelinDefenderWallet);
-        treasuryWallet = _treasuryWallet;
+        oracle = Oracle(_initialAddress[0]);
+        router = IRouter(_initialAddress[4]);
+        dexWallet = payable(_initialAddress[1]);
+        openZeppelinDefenderWallet = payable(_initialAddress[3]);
+        treasuryWallet = _initialAddress[2];
         EPOCH_START = _initialValue[0];
         MIN_DEPOSIT = _initialValue[1];
         MAX_DEPOSIT = _initialValue[2];
@@ -227,8 +224,7 @@ contract CalculumVault is
     )
         external
         override
-        validAddress(_receiver)
-        whitelisted(_msgSender())
+        whitelisted(_msgSender(), _receiver)
         whenNotPaused
         nonReentrant
         returns (uint256)
@@ -236,9 +232,6 @@ contract CalculumVault is
         _checkVaultInMaintenance();
         address caller = _msgSender();
         DataTypes.Basics storage depositor = DEPOSITS[_receiver];
-        if (_receiver != caller) {
-            revert Errors.CallerIsNotOwner(caller, _receiver);
-        }
         if (_assets < MIN_DEPOSIT) {
             revert Errors.DepositAmountTooLow(_receiver, _assets);
         }
@@ -290,10 +283,10 @@ contract CalculumVault is
      *
      * NOTE: most implementations will require pre-approval of the Vault with the Vault’s underlying asset token.
      */
-    function mint(
-        uint256 _shares,
-        address _receiver
-    ) external override returns (uint256) {}
+    // function mint(
+    //     uint256 _shares,
+    //     address _receiver
+    // ) external override returns (uint256) {}
 
     /**
      * @dev Burns shares from owner and sends exactly assets of underlying tokens to receiver.
@@ -314,9 +307,7 @@ contract CalculumVault is
     )
         external
         override
-        validAddress(_owner)
-        validAddress(_receiver)
-        whitelisted(_msgSender())
+        whitelisted(_msgSender(), _owner)
         whenNotPaused
         nonReentrant
         returns (uint256)
@@ -361,9 +352,7 @@ contract CalculumVault is
     )
         external
         override
-        validAddress(_owner)
-        validAddress(_receiver)
-        whitelisted(_msgSender())
+        whitelisted(_msgSender(), _owner)
         whenNotPaused
         nonReentrant
         returns (uint256)
@@ -455,13 +444,10 @@ contract CalculumVault is
      */
     function claimShares(
         address _owner
-    ) external whitelisted(_msgSender()) nonReentrant {
+    ) external whitelisted(_msgSender(), _owner) nonReentrant {
         _checkVaultInMaintenance();
         address caller = _msgSender();
         DataTypes.Basics storage depositor = DEPOSITS[_owner];
-        if (_owner != caller) {
-            revert Errors.CallerIsNotOwner(caller, _owner);
-        }
         if (!isClaimerMint(_owner))
             revert Errors.CalletIsNotClaimerToDeposit(_owner);
         _mint(_owner, depositor.amountShares);
@@ -483,13 +469,10 @@ contract CalculumVault is
     function claimAssets(
         address _receiver,
         address _owner
-    ) external whitelisted(_msgSender()) nonReentrant {
+    ) external whitelisted(_msgSender(), _owner) nonReentrant {
         _checkVaultInMaintenance();
         address caller = _msgSender();
         DataTypes.Basics storage withdrawer = WITHDRAWALS[_owner];
-        if (_owner != caller) {
-            revert Errors.CallerIsNotOwner(caller, _owner);
-        }
         if (!isClaimerWithdraw(_owner)) {
             revert Errors.CalletIsNotClaimerToRedeem(_owner);
         }
@@ -951,7 +934,7 @@ contract CalculumVault is
     /**
      * @dev See {IERC4262-previewMint}
      */
-    function previewMint(uint256 shares) public view returns (uint256) {}
+    // function previewMint(uint256 shares) public view returns (uint256) {}
 
     /**
      * @dev See {IERC4262-previewWithdraw}
@@ -989,7 +972,7 @@ contract CalculumVault is
     /**
      * @dev See {IERC4262-maxMint}
      */
-    function maxMint(address) public pure virtual override returns (uint256) {}
+    // function maxMint(address) public pure virtual override returns (uint256) {}
 
     /**
      * @dev See {IERC4262-maxWithdraw}

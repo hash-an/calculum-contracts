@@ -123,7 +123,7 @@ interface IERC4626 is IERC20Upgradeable, IERC20MetadataUpgradeable {
      * - MUST return 2 ** 256 - 1 if there is no limit on the maximum amount of shares that may be minted.
      * - MUST NOT revert.
      */
-    function maxMint(address receiver) external view returns (uint256 maxShares);
+    // function maxMint(address receiver) external view returns (uint256 maxShares);
 
     /**
      * @dev Allows an on-chain or off-chain user to simulate the effects of their mint at the current block, given
@@ -140,7 +140,7 @@ interface IERC4626 is IERC20Upgradeable, IERC20MetadataUpgradeable {
      * NOTE: any unfavorable discrepancy between convertToAssets and previewMint SHOULD be considered slippage in
      * share price or some other type of condition, meaning the depositor will lose assets by minting.
      */
-    function previewMint(uint256 shares) external view returns (uint256 assets);
+    // function previewMint(uint256 shares) external view returns (uint256 assets);
 
     /**
      * @dev Mints exactly shares Vault shares to receiver by depositing amount of underlying tokens.
@@ -153,7 +153,7 @@ interface IERC4626 is IERC20Upgradeable, IERC20MetadataUpgradeable {
      *
      * NOTE: most implementations will require pre-approval of the Vault with the Vault’s underlying asset token.
      */
-    function mint(uint256 shares, address receiver) external returns (uint256 assets);
+    // function mint(uint256 shares, address receiver) external returns (uint256 assets);
 
     /**
      * @dev Returns the maximum amount of the underlying asset that can be withdrawn from the owner balance in the

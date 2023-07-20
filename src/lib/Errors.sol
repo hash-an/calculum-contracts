@@ -37,7 +37,7 @@ library Errors {
         uint256 _epochDefinition, uint256 _maintTimeBefore, uint256 _maintTimeAfter
     );
     /// Address is not a Contract
-    error AddressIsNotContract(address _address);
+    error AddressIsNotContract();
     /// Transfer to `_to` with the amount `_amount` Fail
     error TransferFail(address _to, uint256 _amount);
     // The Owner try to Execute a Fee Transfer in the Epoch 0

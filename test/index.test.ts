@@ -238,12 +238,14 @@ describe("Verification of Basic Value and Features", function () {
             name,
             symbol,
             decimals,
-            USDc.address,
-            Oracle.address,
-            dexWallet.address,
-            treasuryWallet.address,
-            openZeppelinDefenderWallet.address,
-            UNISWAP_ROUTER2,
+            [
+                Oracle.address,
+                dexWallet.address,
+                treasuryWallet.address,
+                openZeppelinDefenderWallet.address,
+                UNISWAP_ROUTER2,
+                USDc.address
+            ],
             [
                 EPOCH_START,
                 MIN_DEPOSIT,
@@ -743,12 +745,14 @@ describe("Verification of Basic Value and Features", function () {
             name,
             symbol,
             decimals,
-            USDc.address,
-            Oracle.address,
-            dexWallet.address,
-            treasuryWallet.address,
-            openZeppelinDefenderWallet.address,
-            UNISWAP_ROUTER2,
+            [
+                Oracle.address,
+                dexWallet.address,
+                treasuryWallet.address,
+                openZeppelinDefenderWallet.address,
+                UNISWAP_ROUTER2,
+                USDc.address
+            ],
             [
                 EPOCH_START,
                 MIN_DEPOSIT,
@@ -2509,12 +2513,12 @@ describe("Verification of Basic Value and Features", function () {
                 Calculum.address,
                 parseInt(netTransfer.amount.toString())
             )
-        // .to.emit(USDc, "Transfer")
-        // .withArgs(
-        //     Calculum.address,
-        //     openZeppelinDefenderWallet.address,
-        //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, USDc.address)).toString())
-        // )
+            // .to.emit(USDc, "Transfer")
+            // .withArgs(
+            //     Calculum.address,
+            //     openZeppelinDefenderWallet.address,
+            //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, USDc.address)).toString())
+            // )
             .to.emit(Calculum, "DexTransfer")
             .withArgs(
                 await Calculum.CURRENT_EPOCH(),
@@ -2811,12 +2815,12 @@ describe("Verification of Basic Value and Features", function () {
                 Calculum.address,
                 parseInt(netTransfer.amount.toString())
             )
-        // .to.emit(USDc, "Transfer")
-        // .withArgs(
-        //     Calculum.address,
-        //     openZeppelinDefenderWallet.address,
-        //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, USDc.address)).toString())
-        // )
+            // .to.emit(USDc, "Transfer")
+            // .withArgs(
+            //     Calculum.address,
+            //     openZeppelinDefenderWallet.address,
+            //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, USDc.address)).toString())
+            // )
             .to.emit(Calculum, "DexTransfer")
             .withArgs(
                 await Calculum.CURRENT_EPOCH(),
@@ -3089,12 +3093,12 @@ describe("Verification of Basic Value and Features", function () {
                 Calculum.address,
                 parseInt(netTransfer.amount.toString())
             )
-        // .to.emit(USDc, "Transfer")
-        // .withArgs(
-        //     Calculum.address,
-        //     openZeppelinDefenderWallet.address,
-        //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, USDc.address)).toString())
-        // )
+            // .to.emit(USDc, "Transfer")
+            // .withArgs(
+            //     Calculum.address,
+            //     openZeppelinDefenderWallet.address,
+            //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, USDc.address)).toString())
+            // )
             .to.emit(Calculum, "DexTransfer")
             .withArgs(
                 await Calculum.CURRENT_EPOCH(),
@@ -3369,12 +3373,12 @@ describe("Verification of Basic Value and Features", function () {
                 Calculum.address,
                 parseInt(netTransfer.amount.toString())
             )
-        // .to.emit(USDc, "Transfer")
-        // .withArgs(
-        //     Calculum.address,
-        //     openZeppelinDefenderWallet.address,
-        //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, USDc.address)).toString())
-        // )
+            // .to.emit(USDc, "Transfer")
+            // .withArgs(
+            //     Calculum.address,
+            //     openZeppelinDefenderWallet.address,
+            //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, USDc.address)).toString())
+            // )
             .to.emit(Calculum, "DexTransfer")
             .withArgs(
                 await Calculum.CURRENT_EPOCH(),
@@ -3728,12 +3732,12 @@ describe("Verification of Basic Value and Features", function () {
                 dexWallet.address,
                 parseInt(netTransfer.amount.toString())
             )
-        // .to.emit(USDc, "Transfer")
-        // .withArgs(
-        //     Calculum.address,
-        //     openZeppelinDefenderWallet.address,
-        //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, USDc.address)).toString())
-        // )
+            // .to.emit(USDc, "Transfer")
+            // .withArgs(
+            //     Calculum.address,
+            //     openZeppelinDefenderWallet.address,
+            //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, USDc.address)).toString())
+            // )
             .to.emit(Calculum, "DexTransfer")
             .withArgs(
                 await Calculum.CURRENT_EPOCH(),
@@ -3999,12 +4003,12 @@ describe("Verification of Basic Value and Features", function () {
                 Calculum.address,
                 parseInt(netTransfer.amount.toString())
             )
-        // .to.emit(USDc, "Transfer")
-        // .withArgs(
-        //     Calculum.address,
-        //     openZeppelinDefenderWallet.address,
-        //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, USDc.address)).toString())
-        // )
+            // .to.emit(USDc, "Transfer")
+            // .withArgs(
+            //     Calculum.address,
+            //     openZeppelinDefenderWallet.address,
+            //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, USDc.address)).toString())
+            // )
             .to.emit(Calculum, "DexTransfer")
             .withArgs(
                 await Calculum.CURRENT_EPOCH(),

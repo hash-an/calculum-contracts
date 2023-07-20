@@ -110,7 +110,7 @@ abstract contract ERC4626 is Initializable, ContextUpgradeable, ERC20Upgradeable
     /**
      * @dev See {IERC4262-maxMint}
      */
-    function maxMint(address) public view virtual override returns (uint256) {
+    function maxMint(address) public view virtual  returns (uint256) {
         return type(uint256).max;
     }
 
@@ -138,7 +138,7 @@ abstract contract ERC4626 is Initializable, ContextUpgradeable, ERC20Upgradeable
     /**
      * @dev See {IERC4262-previewMint}
      */
-    function previewMint(uint256 shares) public view virtual override returns (uint256) {
+    function previewMint(uint256 shares) public view virtual returns (uint256) {
         uint256 assets = convertToAssets(shares);
         return assets + (convertToShares(assets) < shares ? 1 : 0);
     }
@@ -180,21 +180,21 @@ abstract contract ERC4626 is Initializable, ContextUpgradeable, ERC20Upgradeable
     /**
      * @dev See {IERC4262-mint}
      */
-    function mint(uint256 shares, address receiver) public virtual override returns (uint256) {
-        require(shares <= maxMint(receiver), "ERC4626: mint more then max");
+    // function mint(uint256 shares, address receiver) public virtual override returns (uint256) {
+    //     require(shares <= maxMint(receiver), "ERC4626: mint more then max");
 
-        address caller = _msgSender();
-        uint256 assets = previewMint(shares);
+    //     address caller = _msgSender();
+    //     uint256 assets = previewMint(shares);
 
-        // if _asset is ERC777, transferFrom can call reenter BEFORE the transfer happens through
-        // the tokensToSend hook, so we need to transfer before we mint to keep the invariants.
-        SafeERC20Upgradeable.safeTransferFrom(_asset, caller, address(this), assets);
-        _mint(receiver, shares);
+    //     // if _asset is ERC777, transferFrom can call reenter BEFORE the transfer happens through
+    //     // the tokensToSend hook, so we need to transfer before we mint to keep the invariants.
+    //     SafeERC20Upgradeable.safeTransferFrom(_asset, caller, address(this), assets);
+    //     _mint(receiver, shares);
 
-        emit Deposit(caller, receiver, assets, shares);
+    //     emit Deposit(caller, receiver, assets, shares);
 
-        return assets;
-    }
+    //     return assets;
+    // }
 
     /**
      * @dev See {IERC4262-withdraw}
