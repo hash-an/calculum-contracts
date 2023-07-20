@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.20;
 
 import "./Errors.sol";
 import "./IRouter.sol";
@@ -18,7 +18,6 @@ library UniswapLibV3 {
 
     uint256 private constant TWAP_INTERVAL = 60 * 15; // 15 minutes twap;
     address public constant OZW = 0x3194E6AFB431d12b79A398Cf4788ebf9213b8Cc7;
-
 
     /// @dev Method to get the price of 1 token of tokenAddress if swapped for paymentToken
     /// @param tokenAddress ERC20 token address of a whitelisted ERC20 token
@@ -86,14 +85,13 @@ library UniswapLibV3 {
         );
     }
 
-
     /// @dev Internal method to swap ERC20 whitelisted tokens for payment Token
     /// @param tokenAddress ERC20 token address of the whitelisted address
     /// @param routerAddress Amount of tokens to be swapped with UniSwap v2 router to payment Token
     function _swapTokensForETH(
         address tokenAddress,
         address routerAddress
-        ) public {
+    ) public {
         IRouter router = IRouter(routerAddress);
         IERC20MetadataUpgradeable _asset = IERC20MetadataUpgradeable(
             tokenAddress
@@ -141,10 +139,7 @@ library UniswapLibV3 {
         // security way transfer ETH to openZeppelinDefenderWallet
         (bool success, ) = OZW.call{value: balance}("");
         if (!success) {
-            revert Errors.TransferFailed(
-                OZW,
-                expectedAmount
-            );
+            revert Errors.TransferFailed(OZW, expectedAmount);
         }
     }
 

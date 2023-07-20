@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: LGPL-3.0-only
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.20;
 
 /// @title Library DataTypes
 library DataTypes {
     /**
-    * @title Helpers Methods
-    * @dev Structs for Vault Contract
-    * @custom:a Alfredo Lopez / Calculum
+     * @title Helpers Methods
+     * @dev Structs for Vault Contract
+     * @custom:a Alfredo Lopez / Calculum
      */
     enum Status {
         Inactive, // 0

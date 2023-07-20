@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.20;
 
 import "./lib/IERC4626.sol";
 import "./lib/Claimable.sol";
@@ -122,7 +122,9 @@ contract CalculumVault is
         uint256[7] memory _initialValue // 0: Start timestamp, 1: Min Deposit, 2: Max Deposit, 3: Max Total Supply Value
     ) public reinitializer(1) {
         if (
-            !_initialAddress[0].isContract() || !_initialAddress[5].isContract() || !_initialAddress[4].isContract()
+            !_initialAddress[0].isContract() ||
+            !_initialAddress[5].isContract() ||
+            !_initialAddress[4].isContract()
         ) revert Errors.AddressIsNotContract();
         __Ownable_init();
         __ReentrancyGuard_init();
@@ -501,46 +503,46 @@ contract CalculumVault is
         withdrawer.status = DataTypes.Status.Completed;
     }
 
-    /**
-     * @dev Setting epoch duration
-     * @param _epochDuration New epoch duration
-     * @param _maintTimeBefore New maintenance time before start epoch
-     * @param _maintTimeAfter New maintenance time after end epoch
-     */
-    function setEpochDuration(
-        uint256 _epochDuration,
-        uint256 _maintTimeBefore,
-        uint256 _maintTimeAfter
-    ) public onlyOwner {
-        _checkVaultInMaintenance();
-        if (_epochDuration < 1 minutes || _epochDuration > 12 weeks) {
-            revert Errors.WrongEpochDuration(_epochDuration);
-        }
-        if (
-            _epochDuration.mod(1 minutes) != 0 &&
-            _epochDuration.mod(1 days) != 0 &&
-            _maintTimeBefore.mod(1 minutes) != 0 &&
-            _maintTimeBefore.mod(1 days) != 0 &&
-            _maintTimeAfter.mod(1 minutes) != 0 &&
-            _maintTimeAfter.mod(1 days) != 0
-        ) {
-            revert Errors.WrongEpochDefinition(
-                _epochDuration,
-                _maintTimeBefore,
-                _maintTimeAfter
-            );
-        }
-        uint256 oldEpochDuration = EPOCH_DURATION;
-        EPOCH_DURATION = _epochDuration;
-        MAINTENANCE_PERIOD_PRE_START = _maintTimeBefore;
-        MAINTENANCE_PERIOD_POST_START = _maintTimeAfter;
-        emit EpochChanged(
-            oldEpochDuration,
-            _epochDuration,
-            _maintTimeBefore,
-            _maintTimeAfter
-        );
-    }
+    // /**
+    //  * @dev Setting epoch duration
+    //  * @param _epochDuration New epoch duration
+    //  * @param _maintTimeBefore New maintenance time before start epoch
+    //  * @param _maintTimeAfter New maintenance time after end epoch
+    //  */
+    // function setEpochDuration(
+    //     uint256 _epochDuration,
+    //     uint256 _maintTimeBefore,
+    //     uint256 _maintTimeAfter
+    // ) public onlyOwner {
+    //     _checkVaultInMaintenance();
+    //     if (_epochDuration < 1 minutes || _epochDuration > 12 weeks) {
+    //         revert Errors.WrongEpochDuration(_epochDuration);
+    //     }
+    //     if (
+    //         _epochDuration.mod(1 minutes) != 0 &&
+    //         _epochDuration.mod(1 days) != 0 &&
+    //         _maintTimeBefore.mod(1 minutes) != 0 &&
+    //         _maintTimeBefore.mod(1 days) != 0 &&
+    //         _maintTimeAfter.mod(1 minutes) != 0 &&
+    //         _maintTimeAfter.mod(1 days) != 0
+    //     ) {
+    //         revert Errors.WrongEpochDefinition(
+    //             _epochDuration,
+    //             _maintTimeBefore,
+    //             _maintTimeAfter
+    //         );
+    //     }
+    //     uint256 oldEpochDuration = EPOCH_DURATION;
+    //     EPOCH_DURATION = _epochDuration;
+    //     MAINTENANCE_PERIOD_PRE_START = _maintTimeBefore;
+    //     MAINTENANCE_PERIOD_POST_START = _maintTimeAfter;
+    //     emit EpochChanged(
+    //         oldEpochDuration,
+    //         _epochDuration,
+    //         _maintTimeBefore,
+    //         _maintTimeAfter
+    //     );
+    // }
 
     /**
      * @dev Contract for Getting Actual Balance of the TraderBot Wallet in Dydx
@@ -958,16 +960,16 @@ contract CalculumVault is
         return MAX_DEPOSIT;
     }
 
-    /**
-     * @dev Set Min and Max Value of the Deposit and Max Total Supply of Value
-     */
-    function setInitialValue(
-        uint256[3] memory _initialValue
-    ) external onlyOwner {
-        MIN_DEPOSIT = _initialValue[0];
-        MAX_DEPOSIT = _initialValue[1];
-        MAX_TOTAL_DEPOSIT = _initialValue[2];
-    }
+    // /**
+    //  * @dev Set Min and Max Value of the Deposit and Max Total Supply of Value
+    //  */
+    // function setInitialValue(
+    //     uint256[3] memory _initialValue
+    // ) external onlyOwner {
+    //     MIN_DEPOSIT = _initialValue[0];
+    //     MAX_DEPOSIT = _initialValue[1];
+    //     MAX_TOTAL_DEPOSIT = _initialValue[2];
+    // }
 
     /**
      * @dev See {IERC4262-maxMint}

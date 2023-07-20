@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 
@@ -23,7 +23,10 @@ contract Blacklistable is OwnableUpgradeable {
      * @param _account The address to check
      */
     modifier notBlacklisted(address _account) {
-        require(!blacklisted[_account], "ERC20 Vault: sender account is blacklisted");
+        require(
+            !blacklisted[_account],
+            "ERC20 Vault: sender account is blacklisted"
+        );
         _;
     }
 
@@ -49,7 +52,9 @@ contract Blacklistable is OwnableUpgradeable {
      * @dev Adds account to blacklist
      * @param _account The address to blacklist
      */
-    function addBlacklist(address _account)
+    function addBlacklist(
+        address _account
+    )
         public
         validAddress(_account)
         /// notBlacklisted(_account)
@@ -64,7 +69,9 @@ contract Blacklistable is OwnableUpgradeable {
      * @dev Removes account from blacklist
      * @param _account The address to remove from the blacklist
      */
-    function dropBlacklist(address _account) public validAddress(_account) onlyOwner {
+    function dropBlacklist(
+        address _account
+    ) public validAddress(_account) onlyOwner {
         require(isBlacklisted(_account), "ERC20 Vault: Wallet don't exist");
         blacklisted[_account] = false;
         emit OutBlacklisted(_account);

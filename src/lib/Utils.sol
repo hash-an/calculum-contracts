@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.20;
 
 import "./ICalculumVault.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
@@ -166,14 +166,9 @@ library Utils {
             Calculum.CURRENT_EPOCH().sub(1)
         );
         if (getPnLPerVaultToken(calculum, asset)) {
-            return
-                (tokenPrice.add(pnLVT))
-                    .sub(mgtFee.add(perfFee))
-                    .add(1);
+            return (tokenPrice.add(pnLVT)).sub(mgtFee.add(perfFee)).add(1);
         } else {
-            return
-                tokenPrice.sub(pnLVT.add(mgtFee.add(perfFee)))
-                    .add(1);
+            return tokenPrice.sub(pnLVT.add(mgtFee.add(perfFee))).add(1);
         }
     }
 }
