@@ -20,10 +20,10 @@ remappings = [
     '@forge-std/=lib/forge-std/'
 ]
 optimizer = true
-optimizer_runs = 999
+optimizer_runs = 500
 
 # Fixed Version
-solc_version = '0.8.17'
+solc_version = '0.8.20'
 ffi = true
 via-ir = true
 
