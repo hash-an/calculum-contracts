@@ -29,6 +29,8 @@ import {
     FullMath__factory,
     UniswapLibV3,
     UniswapLibV3__factory,
+    Utils,
+    Utils__factory,
 } from "../typechain-types";
 import { USDC_ABI } from "../files/USDC.json";
 
@@ -64,6 +66,8 @@ let FullMathFactory: FullMath__factory;
 let FullMath: FullMath;
 let UniswapLibV3Factory: UniswapLibV3__factory;
 let UniswapLibV3: UniswapLibV3;
+let UtilsFactory: Utils__factory;
+let Utils: Utils;
 // eslint-disable-next-line prefer-const
 const name = "CalculumUSDC1";
 const symbol = "calcUSDC1";
@@ -211,13 +215,22 @@ describe("Verification of Basic Value and Features", function () {
         // eslint-disable-next-line no-unused-expressions
         expect(UniswapLibV3.address).to.properAddress;
         console.log(`UniswapLibV3 Address: ${UniswapLibV3.address}`);
+        UtilsFactory = (await ethers.getContractFactory(
+            "Utils",
+            deployer
+        )) as Utils__factory;
+        Utils = (await UtilsFactory.deploy()) as Utils;
+        // eslint-disable-next-line no-unused-expressions
+        expect(Utils.address).to.properAddress;
+        console.log(`Utils Address: ${Utils.address}`);
         // Calculum Vault Deployer
         CalculumFactory = (await ethers.getContractFactory(
             contractName, {
-                libraries: {
-                    UniswapLibV3: UniswapLibV3.address,
-                }
+            libraries: {
+                UniswapLibV3: UniswapLibV3.address,
+                Utils: Utils.address,
             }
+        }
         )) as CalculumVault__factory;
         // Deploy Calculum Vault
         Calculum = (await upgrades.deployProxy(CalculumFactory, [
@@ -706,13 +719,22 @@ describe("Verification of Basic Value and Features", function () {
         // eslint-disable-next-line no-unused-expressions
         expect(UniswapLibV3.address).to.properAddress;
         console.log(`UniswapLibV3 Address: ${UniswapLibV3.address}`);
+        UtilsFactory = (await ethers.getContractFactory(
+            "Utils",
+            deployer
+        )) as Utils__factory;
+        Utils = (await UtilsFactory.deploy()) as Utils;
+        // eslint-disable-next-line no-unused-expressions
+        expect(Utils.address).to.properAddress;
+        console.log(`Utils Address: ${Utils.address}`);
         // Calculum Vault Deployer
         CalculumFactory = (await ethers.getContractFactory(
             contractName, {
-                libraries: {
-                    UniswapLibV3: UniswapLibV3.address,
-                }
+            libraries: {
+                UniswapLibV3: UniswapLibV3.address,
+                Utils: Utils.address,
             }
+        }
         )) as CalculumVault__factory;
         // Deploy Calculum Vault
         Calculum = (await upgrades.deployProxy(CalculumFactory, [
@@ -1107,9 +1129,9 @@ describe("Verification of Basic Value and Features", function () {
         );
         // Verify the Transfer Bot Gas Reserve in USD is Zero
         expect(
-            parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString())
+            parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString())
         ).to.equal(0);
-        const feeKept = parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString());
+        const feeKept = parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString());
         // Call FeeTransfer to transfer the amount of USDc to the Fee Address
         await expect(
             Calculum.connect(openZeppelinDefenderWallet).feesTransfer()
@@ -1375,10 +1397,10 @@ describe("Verification of Basic Value and Features", function () {
         );
         // Verify the Transfer Bot Gas Reserve in USD is Zero
         expect(
-            parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString()) /
+            parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString()) /
             10 ** 6
         ).to.equal(288 / 10);
-        const feeKept = parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString());
+        const feeKept = parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString());
         // Call FeeTransfer to transfer the amount of USDc to the Fee Address
         await expect(Calculum.connect(openZeppelinDefenderWallet).feesTransfer())
             .to.emit(Calculum, "FeesTransfer")
@@ -1594,23 +1616,23 @@ describe("Verification of Basic Value and Features", function () {
             .withArgs(
                 Calculum.address,
                 openZeppelinDefenderWallet.address,
-                parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString())
+                parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString())
             )
-            // .to.emit(Calculum, "DexTransfer")
-            // .withArgs(
-            //     await Calculum.CURRENT_EPOCH(),
-            //     parseInt(netTransfer.amount.toString())
-            // );
+        // .to.emit(Calculum, "DexTransfer")
+        // .withArgs(
+        //     await Calculum.CURRENT_EPOCH(),
+        //     parseInt(netTransfer.amount.toString())
+        // );
         console.log(
             "Transfer USDc from the Vault to Dex Wallet Successfully,Dex Transfer: ",
             parseInt(netTransfer.amount.toString()) / 10 ** 6
         );
         // Verify the Transfer Bot Gas Reserve in USD is Zero
         expect(
-            parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString()) /
+            parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString()) /
             10 ** 6
         ).to.equal(2805 / 100);
-        const feeKept = parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString());
+        const feeKept = parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString());
         // Call FeeTransfer to transfer the amount of USDc to the Fee Address
         await expect(Calculum.connect(openZeppelinDefenderWallet).feesTransfer())
             .to.emit(Calculum, "FeesTransfer")
@@ -1777,13 +1799,13 @@ describe("Verification of Basic Value and Features", function () {
                 bob.address,
                 ethers.utils.parseUnits("52349114148290382630146", "wei")
             )
-            // .to.emit(Calculum, "Deposit")
-            // .withArgs(
-            //     bob.address,
-            //     bob.address,
-            //     50000 * 10 ** 6,
-            //     ethers.utils.parseUnits("52349114148290382630146", "wei")
-            // );
+        // .to.emit(Calculum, "Deposit")
+        // .withArgs(
+        //     bob.address,
+        //     bob.address,
+        //     50000 * 10 ** 6,
+        //     ethers.utils.parseUnits("52349114148290382630146", "wei")
+        // );
         // Verify status of bob in DEPOSITS after claim his shares
         expect((await Calculum.DEPOSITS(bob.address)).status).to.equal(3); // 3 = Completed
         expect((await Calculum.DEPOSITS(bob.address)).amountAssets).to.equal(0);
@@ -1877,10 +1899,10 @@ describe("Verification of Basic Value and Features", function () {
         expect(parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6).to.equal(987416 / 10 ** 6);
         // Verify the Transfer Bot Gas Reserve in USD is Zero
         expect(
-            parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString()) /
+            parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString()) /
             10 ** 6
         ).to.equal(74315 / 100);
-        const feeKept = parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString());
+        const feeKept = parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString());
         // Call dexTransfer to transfer the amount of USDc to the Vault
         await expect(Calculum.connect(openZeppelinDefenderWallet).dexTransfer())
             .to.emit(USDc, "Transfer")
@@ -1893,13 +1915,13 @@ describe("Verification of Basic Value and Features", function () {
             .withArgs(
                 Calculum.address,
                 openZeppelinDefenderWallet.address,
-                parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString())
+                parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString())
             )
-            // .to.emit(Calculum, "DexTransfer")
-            // .withArgs(
-            //     await Calculum.CURRENT_EPOCH(),
-            //     parseInt(netTransfer.amount.toString())
-            // );
+        // .to.emit(Calculum, "DexTransfer")
+        // .withArgs(
+        //     await Calculum.CURRENT_EPOCH(),
+        //     parseInt(netTransfer.amount.toString())
+        // );
         console.log(
             "Transfer USDc from the Vault to Dex Wallet Successfully,Dex Transfer: ",
             parseInt(netTransfer.amount.toString()) / 10 ** 6
@@ -2074,13 +2096,13 @@ describe("Verification of Basic Value and Features", function () {
                 alice.address,
                 ethers.utils.parseUnits("101274437521774004067182", "wei")
             )
-            // .to.emit(Calculum, "Deposit")
-            // .withArgs(
-            //     alice.address,
-            //     alice.address,
-            //     250000 * 10 ** 6,
-            //     ethers.utils.parseUnits("101274437521774004067182", "wei")
-            // );
+        // .to.emit(Calculum, "Deposit")
+        // .withArgs(
+        //     alice.address,
+        //     alice.address,
+        //     250000 * 10 ** 6,
+        //     ethers.utils.parseUnits("101274437521774004067182", "wei")
+        // );
         // Claim Shares of Carla
         await expect(Calculum.connect(carla).claimShares(carla.address))
             .to.emit(Calculum, "Transfer")
@@ -2089,13 +2111,13 @@ describe("Verification of Basic Value and Features", function () {
                 carla.address,
                 ethers.utils.parseUnits("30382331256532201220155", "wei")
             )
-            // .to.emit(Calculum, "Deposit")
-            // .withArgs(
-            //     carla.address,
-            //     carla.address,
-            //     30000 * 10 ** 6,
-            //     ethers.utils.parseUnits("30382331256532201220155", "wei")
-            // );
+        // .to.emit(Calculum, "Deposit")
+        // .withArgs(
+        //     carla.address,
+        //     carla.address,
+        //     30000 * 10 ** 6,
+        //     ethers.utils.parseUnits("30382331256532201220155", "wei")
+        // );
         // Verify status of alice in DEPOSITS after claim her shares
         expect((await Calculum.DEPOSITS(alice.address)).status).to.equal(3); // 3 = Completed
         expect((await Calculum.DEPOSITS(alice.address)).amountAssets).to.equal(0);
@@ -2206,10 +2228,10 @@ describe("Verification of Basic Value and Features", function () {
         expect(parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6).to.equal(1012405 / 10 ** 6);
         // Verify the Transfer Bot Gas Reserve in USD is Zero
         expect(
-            parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString()) /
+            parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString()) /
             10 ** 6
         ).to.equal(1000);
-        const feeKept = parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString());
+        const feeKept = parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString());
         // Call dexTransfer to transfer the amount of USDc to the Vault
         await expect(Calculum.connect(openZeppelinDefenderWallet).dexTransfer())
             .to.emit(USDc, "Transfer")
@@ -2222,13 +2244,13 @@ describe("Verification of Basic Value and Features", function () {
             .withArgs(
                 Calculum.address,
                 openZeppelinDefenderWallet.address,
-                parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString())
+                parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString())
             )
-            // .to.emit(Calculum, "DexTransfer")
-            // .withArgs(
-            //     await Calculum.CURRENT_EPOCH(),
-            //     parseInt(netTransfer.amount.toString())
-            // );
+        // .to.emit(Calculum, "DexTransfer")
+        // .withArgs(
+        //     await Calculum.CURRENT_EPOCH(),
+        //     parseInt(netTransfer.amount.toString())
+        // );
         console.log(
             "Transfer USDc from Dex Wallet to the Vault Successfully,Dex Transfer: ",
             parseInt(netTransfer.amount.toString()) / 10 ** 6
@@ -2471,10 +2493,10 @@ describe("Verification of Basic Value and Features", function () {
         expect(parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6).to.equal(1033725 / 10 ** 6);
         // Verify the Transfer Bot Gas Reserve in USD is Zero
         expect(
-            parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString()) /
+            parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString()) /
             10 ** 6
         ).to.equal(0);
-        const feeKept = parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString());
+        const feeKept = parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString());
 
         // Call dexTransfer to transfer the amount of USDc to the Vault
         await expect(Calculum.connect(openZeppelinDefenderWallet).dexTransfer())
@@ -2484,17 +2506,17 @@ describe("Verification of Basic Value and Features", function () {
                 Calculum.address,
                 parseInt(netTransfer.amount.toString())
             )
-            // .to.emit(USDc, "Transfer")
-            // .withArgs(
-            //     Calculum.address,
-            //     openZeppelinDefenderWallet.address,
-            //     parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString())
-            // )
-            // .to.emit(Calculum, "DexTransfer")
-            // .withArgs(
-            //     await Calculum.CURRENT_EPOCH(),
-            //     parseInt(netTransfer.amount.toString())
-            // );
+        // .to.emit(USDc, "Transfer")
+        // .withArgs(
+        //     Calculum.address,
+        //     openZeppelinDefenderWallet.address,
+        //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString())
+        // )
+        // .to.emit(Calculum, "DexTransfer")
+        // .withArgs(
+        //     await Calculum.CURRENT_EPOCH(),
+        //     parseInt(netTransfer.amount.toString())
+        // );
         console.log(
             "Transfer USDc from Dex Wallet to the Vault Successfully,Dex Transfer: ",
             parseInt(netTransfer.amount.toString()) / 10 ** 6
@@ -2773,10 +2795,10 @@ describe("Verification of Basic Value and Features", function () {
         expect(parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6).to.equal(1002515 / 10 ** 6);
         // Verify the Transfer Bot Gas Reserve in USD is Zero
         expect(
-            parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString()) /
+            parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString()) /
             10 ** 6
         ).to.equal(0);
-        const feeKept = parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString());
+        const feeKept = parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString());
 
         // Call dexTransfer to transfer the amount of USDc to the Vault
         await expect(Calculum.connect(openZeppelinDefenderWallet).dexTransfer())
@@ -2786,17 +2808,17 @@ describe("Verification of Basic Value and Features", function () {
                 Calculum.address,
                 parseInt(netTransfer.amount.toString())
             )
-            // .to.emit(USDc, "Transfer")
-            // .withArgs(
-            //     Calculum.address,
-            //     openZeppelinDefenderWallet.address,
-            //     parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString())
-            // )
-            // .to.emit(Calculum, "DexTransfer")
-            // .withArgs(
-            //     await Calculum.CURRENT_EPOCH(),
-            //     parseInt(netTransfer.amount.toString())
-            // );
+        // .to.emit(USDc, "Transfer")
+        // .withArgs(
+        //     Calculum.address,
+        //     openZeppelinDefenderWallet.address,
+        //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString())
+        // )
+        // .to.emit(Calculum, "DexTransfer")
+        // .withArgs(
+        //     await Calculum.CURRENT_EPOCH(),
+        //     parseInt(netTransfer.amount.toString())
+        // );
         console.log(
             "Transfer USDc from Dex Wallet to the Vault Successfully,Dex Transfer: ",
             parseInt(netTransfer.amount.toString()) / 10 ** 6
@@ -3051,10 +3073,10 @@ describe("Verification of Basic Value and Features", function () {
         expect(parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6).to.equal(1027887 / 10 ** 6);
         // Verify the Transfer Bot Gas Reserve in USD is Zero
         expect(
-            parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString()) /
+            parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString()) /
             10 ** 6
         ).to.equal(0);
-        const feeKept = parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString());
+        const feeKept = parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString());
 
         // Call dexTransfer to transfer the amount of USDc to the Vault
         await expect(Calculum.connect(openZeppelinDefenderWallet).dexTransfer())
@@ -3064,17 +3086,17 @@ describe("Verification of Basic Value and Features", function () {
                 Calculum.address,
                 parseInt(netTransfer.amount.toString())
             );
-            // .to.emit(USDc, "Transfer")
-            // .withArgs(
-            //     Calculum.address,
-            //     openZeppelinDefenderWallet.address,
-            //     parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString())
-            // )
-            // .to.emit(Calculum, "DexTransfer")
-            // .withArgs(
-            //     await Calculum.CURRENT_EPOCH(),
-            //     parseInt(netTransfer.amount.toString())
-            // );
+        // .to.emit(USDc, "Transfer")
+        // .withArgs(
+        //     Calculum.address,
+        //     openZeppelinDefenderWallet.address,
+        //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString())
+        // )
+        // .to.emit(Calculum, "DexTransfer")
+        // .withArgs(
+        //     await Calculum.CURRENT_EPOCH(),
+        //     parseInt(netTransfer.amount.toString())
+        // );
         console.log(
             "Transfer USDc from Dex Wallet to the Vault Successfully,Dex Transfer: ",
             parseInt(netTransfer.amount.toString()) / 10 ** 6
@@ -3236,8 +3258,8 @@ describe("Verification of Basic Value and Features", function () {
         // Claim bob Shares
         // Try withdraw of bob
         await Calculum.connect(bob).redeem(ethers.utils.parseEther("52349.1"), bob.address, bob.address);
-            // .to.emit(Calculum, "PendingWithdraw")
-            // .withArgs(bob.address, bob.address, 54007990630, ethers.utils.parseEther("52349.1"));
+        // .to.emit(Calculum, "PendingWithdraw")
+        // .withArgs(bob.address, bob.address, 54007990630, ethers.utils.parseEther("52349.1"));
         // Validate WITHDRAWALS VALUE after withdraw
         expect((await Calculum.WITHDRAWALS(bob.address)).status).to.equal(4); // 4 = PendingRedeem
         expect((await Calculum.WITHDRAWALS(bob.address)).amountAssets).to.equal(54007990630);
@@ -3291,7 +3313,7 @@ describe("Verification of Basic Value and Features", function () {
         await Oracle.connect(deployer).setAssetValue(1991338 * 10 ** 5);
         // Adjust Balance of Dex Wallet to Real Value
         await USDc.connect(deployer).transfer(dexWallet.address, (1991338 - 1942769) * 10 ** 5);
-        expect(parseInt((await USDc.balanceOf(dexWallet.address)).toString()) / 10 ** 6).to.equal(199133075396 /  10 ** 6);
+        expect(parseInt((await USDc.balanceOf(dexWallet.address)).toString()) / 10 ** 6).to.equal(199133075396 / 10 ** 6);
         const newDeposits = parseInt((await Calculum.newDeposits()).toString());
         const newWithdrawalsShares = parseInt((await Calculum.newWithdrawals()).toString());
         // Finalize the Epoch
@@ -3331,10 +3353,10 @@ describe("Verification of Basic Value and Features", function () {
         expect(parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6).to.equal(1049534 / 10 ** 6);
         // Verify the Transfer Bot Gas Reserve in USD is Zero
         expect(
-            parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString()) /
+            parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString()) /
             10 ** 6
         ).to.equal(0);
-        const feeKept = parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString());
+        const feeKept = parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString());
 
         // Call dexTransfer to transfer the amount of USDc to the Vault
         await expect(Calculum.connect(openZeppelinDefenderWallet).dexTransfer())
@@ -3344,17 +3366,17 @@ describe("Verification of Basic Value and Features", function () {
                 Calculum.address,
                 parseInt(netTransfer.amount.toString())
             );
-            // .to.emit(USDc, "Transfer")
-            // .withArgs(
-            //     Calculum.address,
-            //     openZeppelinDefenderWallet.address,
-            //     parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString())
-            // )
-            // .to.emit(Calculum, "DexTransfer")
-            // .withArgs(
-            //     await Calculum.CURRENT_EPOCH(),
-            //     parseInt(netTransfer.amount.toString())
-            // );
+        // .to.emit(USDc, "Transfer")
+        // .withArgs(
+        //     Calculum.address,
+        //     openZeppelinDefenderWallet.address,
+        //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString())
+        // )
+        // .to.emit(Calculum, "DexTransfer")
+        // .withArgs(
+        //     await Calculum.CURRENT_EPOCH(),
+        //     parseInt(netTransfer.amount.toString())
+        // );
         console.log(
             "Transfer USDc from Dex Wallet to the Vault Successfully,Dex Transfer: ",
             parseInt(netTransfer.amount.toString()) / 10 ** 6
@@ -3612,7 +3634,7 @@ describe("Verification of Basic Value and Features", function () {
         expect((await Calculum.DEPOSITS(bob.address)).finalAmount).to.equal(
             50000000000
         );
-        
+
         // Try to Finalize the Epoch before the Finalization Time
         const time = Math.floor(
             (await ethers.provider.getBlock("latest")).timestamp
@@ -3649,7 +3671,7 @@ describe("Verification of Basic Value and Features", function () {
         // Setting actual value of Assets through Mockup Oracle
         await Oracle.connect(deployer).setAssetValue(10 ** 6);
         // Adjust Balance of Dex Wallet to Real Value
-        await USDc.connect(deployer).transfer(dexWallet.address, (10 ** 6 )- 49888);
+        await USDc.connect(deployer).transfer(dexWallet.address, (10 ** 6) - 49888);
         expect(parseInt((await USDc.balanceOf(dexWallet.address)).toString()) / 10 ** 6).to.equal(1);
         const newDeposits = parseInt((await Calculum.newDeposits()).toString());
         const newWithdrawalsShares = parseInt((await Calculum.newWithdrawals()).toString());
@@ -3690,10 +3712,10 @@ describe("Verification of Basic Value and Features", function () {
         expect(parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6).to.equal(1119936 / 10 ** 6);
         // Verify the Transfer Bot Gas Reserve in USD is Zero
         expect(
-            parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString()) /
+            parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString()) /
             10 ** 6
         ).to.equal(0);
-        const feeKept = parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString());
+        const feeKept = parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString());
 
         // Call dexTransfer to transfer the amount of USDc to the Vault
         await expect(Calculum.connect(openZeppelinDefenderWallet).dexTransfer())
@@ -3703,17 +3725,17 @@ describe("Verification of Basic Value and Features", function () {
                 dexWallet.address,
                 parseInt(netTransfer.amount.toString())
             );
-            // .to.emit(USDc, "Transfer")
-            // .withArgs(
-            //     Calculum.address,
-            //     openZeppelinDefenderWallet.address,
-            //     parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString())
-            // )
-            // .to.emit(Calculum, "DexTransfer")
-            // .withArgs(
-            //     await Calculum.CURRENT_EPOCH(),
-            //     parseInt(netTransfer.amount.toString())
-            // );
+        // .to.emit(USDc, "Transfer")
+        // .withArgs(
+        //     Calculum.address,
+        //     openZeppelinDefenderWallet.address,
+        //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString())
+        // )
+        // .to.emit(Calculum, "DexTransfer")
+        // .withArgs(
+        //     await Calculum.CURRENT_EPOCH(),
+        //     parseInt(netTransfer.amount.toString())
+        // );
         console.log(
             "Transfer USDc from Dex Wallet to the Vault Successfully,Dex Transfer: ",
             parseInt(netTransfer.amount.toString()) / 10 ** 6
@@ -3958,13 +3980,13 @@ describe("Verification of Basic Value and Features", function () {
             159610491 / 10 ** 6
         );
         console.log("Vault Token Price: ", parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6);
-        expect(parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6).to.equal(113876/ 10 ** 5);
+        expect(parseInt((await Calculum.VAULT_TOKEN_PRICE(await Calculum.CURRENT_EPOCH())).toString()) / 10 ** 6).to.equal(113876 / 10 ** 5);
         // Verify the Transfer Bot Gas Reserve in USD is Zero
         expect(
-            parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString()) /
+            parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString()) /
             10 ** 6
         ).to.equal(0);
-        const feeKept = parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString());
+        const feeKept = parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString());
 
         // Call dexTransfer to transfer the amount of USDc to the Vault
         await expect(Calculum.connect(openZeppelinDefenderWallet).dexTransfer())
@@ -3974,17 +3996,17 @@ describe("Verification of Basic Value and Features", function () {
                 Calculum.address,
                 parseInt(netTransfer.amount.toString())
             );
-            // .to.emit(USDc, "Transfer")
-            // .withArgs(
-            //     Calculum.address,
-            //     openZeppelinDefenderWallet.address,
-            //     parseInt((await Calculum.CalculateTransferBotGasReserveDA()).toString())
-            // )
-            // .to.emit(Calculum, "DexTransfer")
-            // .withArgs(
-            //     await Calculum.CURRENT_EPOCH(),
-            //     parseInt(netTransfer.amount.toString())
-            // );
+        // .to.emit(USDc, "Transfer")
+        // .withArgs(
+        //     Calculum.address,
+        //     openZeppelinDefenderWallet.address,
+        //     parseInt((await Utils.CalculateTransferBotGasReserveDA(Calculum.address, openZeppelinDefenderWallet.address, USDc.address)).toString())
+        // )
+        // .to.emit(Calculum, "DexTransfer")
+        // .withArgs(
+        //     await Calculum.CURRENT_EPOCH(),
+        //     parseInt(netTransfer.amount.toString())
+        // );
         console.log(
             "Transfer USDc from Dex Wallet to the Vault Successfully,Dex Transfer: ",
             parseInt(netTransfer.amount.toString()) / 10 ** 6

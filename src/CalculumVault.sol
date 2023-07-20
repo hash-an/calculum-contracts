@@ -7,6 +7,7 @@ import "./lib/DataTypes.sol";
 import "./lib/Errors.sol";
 import "./lib/IRouter.sol";
 import "./lib/UniswapLibV3.sol";
+import "./lib/Utils.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol";
@@ -244,7 +245,7 @@ contract CalculumVault is
         if (
             _assets >
             (
-                maxDeposit(_receiver).sub(
+                MAX_DEPOSIT.sub(
                     depositor.finalAmount.add(depositor.amountAssets)
                 )
             )
@@ -252,7 +253,7 @@ contract CalculumVault is
             // Verify the maximun value per user
             revert Errors.DepositExceededMax(
                 _receiver,
-                maxDeposit(_receiver).sub(
+                MAX_DEPOSIT.sub(
                     depositor.finalAmount.add(depositor.amountAssets)
                 )
             );
@@ -735,35 +736,6 @@ contract CalculumVault is
         }
     }
 
-    /**
-     * @dev Method to Calculate the Transfer Bot Gas Reserve in USDC in the current epoch
-     */
-    function CalculateTransferBotGasReserveDA() public view returns (uint256) {
-        if (CURRENT_EPOCH == 0) return 0;
-        uint256 targetBalance = TARGET_WALLET_BALANCE_USDC_TRANSFER_BOT;
-        uint256 currentBalance = _asset.balanceOf(openZeppelinDefenderWallet);
-
-        // Calculate the missing USDC amount to reach the target balance
-        uint256 missingAmount = targetBalance > currentBalance
-            ? targetBalance - currentBalance
-            : 0;
-
-        // Calculate the total fees to be collected for the current epoch
-        uint256 totalFees = getPnLPerVaultToken()
-            ? (MgtFeePerVaultToken().add(PerfFeePerVaultToken())).mulDiv(
-                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
-                10 ** decimals()
-            )
-            : MgtFeePerVaultToken().mulDiv(
-                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
-                10 ** decimals()
-            );
-
-        // Take the smallest amount between the missing USDC and the total fees
-        // Deduct the amount from the fees sent to the protocol Treasury Wallet
-        return missingAmount < totalFees ? missingAmount : totalFees;
-    }
-
     function _swapDAforETH() public {
         if (
             (openZeppelinDefenderWallet.balance <
@@ -844,7 +816,11 @@ contract CalculumVault is
             }
             actualTx.pending = false;
         }
-        uint256 reserveGas = CalculateTransferBotGasReserveDA();
+        uint256 reserveGas = Utils.CalculateTransferBotGasReserveDA(
+            address(this),
+            openZeppelinDefenderWallet,
+            address(_asset)
+        );
         if (reserveGas > 0) {
             if (_asset.balanceOf(address(this)) < reserveGas) {
                 revert Errors.NotEnoughBalance(
@@ -866,17 +842,23 @@ contract CalculumVault is
      */
     function feesTransfer() external onlyRole(TRANSFER_BOT_ROLE) nonReentrant {
         _checkVaultOutMaintenance();
+        uint256 mgtFee = MgtFeePerVaultToken();
+        uint256 perfFee = PerfFeePerVaultToken();
         if (CURRENT_EPOCH == 0) revert Errors.FirstEpochNoFeeTransfer();
-        uint256 totalFees = getPnLPerVaultToken()
-            ? (MgtFeePerVaultToken().add(PerfFeePerVaultToken())).mulDiv(
+        uint256 totalFees = Utils.getPnLPerVaultToken(address(this), address(_asset))
+            ? mgtFee.add(perfFee).mulDiv(
                 TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
                 10 ** decimals()
             )
-            : MgtFeePerVaultToken().mulDiv(
+            : mgtFee.mulDiv(
                 TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
                 10 ** decimals()
             );
-        uint256 rest = totalFees.sub(CalculateTransferBotGasReserveDA());
+        uint256 rest = totalFees.sub(Utils.CalculateTransferBotGasReserveDA(
+            address(this),
+            openZeppelinDefenderWallet,
+            address(_asset)
+        ));
         rest = (rest > _asset.balanceOf(address(this)))
             ? _asset.balanceOf(address(this))
             : rest;
@@ -938,7 +920,7 @@ contract CalculumVault is
         uint256 mgtFee = MgtFeePerVaultToken();
         uint256 perfFee = PerfFeePerVaultToken();
         uint256 pnLVT = PnLPerVaultToken();
-        if (getPnLPerVaultToken()) {
+        if (Utils.getPnLPerVaultToken(address(this), address(_asset))) {
             return
                 (VAULT_TOKEN_PRICE[CURRENT_EPOCH.sub(1)].add(pnLVT))
                     .sub(mgtFee.add(perfFee))
@@ -1079,7 +1061,6 @@ contract CalculumVault is
      * @dev See {IERC4262-maxDeposit}
      */
     function maxDeposit(address) public view override returns (uint256) {
-        // return type(uint256).max;
         return MAX_DEPOSIT;
     }
 
@@ -1097,9 +1078,7 @@ contract CalculumVault is
     /**
      * @dev See {IERC4262-maxMint}
      */
-    function maxMint(address) public pure virtual override returns (uint256) {
-        // return type(uint256).max;
-    }
+    function maxMint(address) public pure virtual override returns (uint256) {}
 
     /**
      * @dev See {IERC4262-maxWithdraw}
