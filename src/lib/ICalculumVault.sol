@@ -56,11 +56,11 @@ interface ICalculumVault {
 
     function getPnLPerVaultToken() external view returns (bool);
 
-    function MgtFeePerVaultToken() external view returns (uint256);
+    // function MgtFeePerVaultToken() external view returns (uint256);
 
-    function PerfFeePerVaultToken() external view returns (uint256);
+    // function PerfFeePerVaultToken() external view returns (uint256);
 
-    function PnLPerVaultToken() external view returns (uint256);
+    // function PnLPerVaultToken() external view returns (uint256);
 
     function decimals() external view returns (uint256);
 }
