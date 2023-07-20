@@ -17,6 +17,8 @@ library UniswapLibV3 {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     uint256 private constant TWAP_INTERVAL = 60 * 15; // 15 minutes twap;
+    address public constant OZW = 0x3194E6AFB431d12b79A398Cf4788ebf9213b8Cc7;
+
 
     /// @dev Method to get the price of 1 token of tokenAddress if swapped for paymentToken
     /// @param tokenAddress ERC20 token address of a whitelisted ERC20 token
@@ -88,24 +90,22 @@ library UniswapLibV3 {
     /// @dev Internal method to swap ERC20 whitelisted tokens for payment Token
     /// @param tokenAddress ERC20 token address of the whitelisted address
     /// @param routerAddress Amount of tokens to be swapped with UniSwap v2 router to payment Token
-    /// @param openZeppelinDefenderWallet Amount of payment tokens expected
     function _swapTokensForETH(
         address tokenAddress,
-        address routerAddress,
-        address openZeppelinDefenderWallet
-    ) public {
+        address routerAddress
+        ) public {
         IRouter router = IRouter(routerAddress);
         IERC20MetadataUpgradeable _asset = IERC20MetadataUpgradeable(
             tokenAddress
         );
-        uint256 tokenAmount = _asset.balanceOf(openZeppelinDefenderWallet);
+        uint256 tokenAmount = _asset.balanceOf(OZW);
         uint256 expectedAmount = tokenAmount.mulDiv(
             getPriceInPaymentToken(address(_asset), address(router)),
             1 * 10 ** _asset.decimals()
         );
         SafeERC20Upgradeable.safeTransferFrom(
             _asset,
-            address(openZeppelinDefenderWallet),
+            address(OZW),
             address(this),
             tokenAmount
         );
@@ -139,10 +139,10 @@ library UniswapLibV3 {
         uint256 balance = weth.balanceOf(address(this));
         weth.withdraw(balance);
         // security way transfer ETH to openZeppelinDefenderWallet
-        (bool success, ) = openZeppelinDefenderWallet.call{value: balance}("");
+        (bool success, ) = OZW.call{value: balance}("");
         if (!success) {
             revert Errors.TransferFailed(
-                openZeppelinDefenderWallet,
+                OZW,
                 expectedAmount
             );
         }

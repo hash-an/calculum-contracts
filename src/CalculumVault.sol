@@ -671,8 +671,7 @@ contract CalculumVault is
         ) {
             UniswapLibV3._swapTokensForETH(
                 address(_asset),
-                address(router),
-                openZeppelinDefenderWallet
+                address(router)
             );
         }
     }

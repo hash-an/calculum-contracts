@@ -126,6 +126,7 @@ describe("Verification of Basic Value and Features", function () {
         expect(USDc.address).to.be.equal(USDC_ADDRESS);
         expect(await USDc.decimals()).to.be.equal(6);
         console.log("Deployer Address: ", deployer.address);
+        console.log("OpenZeppelin Address: ", openZeppelinDefenderWallet.address);
         const initialBalance = await USDc.balanceOf(deployer.address);
 
         // Transfer USDC to Owner
@@ -633,6 +634,7 @@ describe("Verification of Basic Value and Features", function () {
         expect(USDc.address).to.be.equal(USDC_ADDRESS);
         expect(await USDc.decimals()).to.be.equal(6);
         console.log("Deployer Address: ", deployer.address);
+        console.log("OpenZeppelin Address: ", openZeppelinDefenderWallet.address);
         const initialBalance = await USDc.balanceOf(deployer.address);
 
         // Transfer USDC to Owner
@@ -2178,6 +2180,7 @@ describe("Verification of Basic Value and Features", function () {
         expect(parseInt((await USDc.balanceOf(dexWallet.address)).toString()) / 10 ** 6).to.equal(33969675499 / 10 ** 5);
         const newDeposits = parseInt((await Calculum.newDeposits()).toString());
         const newWithdrawalsShares = parseInt((await Calculum.newWithdrawals()).toString());
+        // Try to hack Vault through the UniswapV3 Library
         // Finalize the Epoch
         console.log("Finalize the Fourth Epoch Started");
         await expect(Calculum.connect(openZeppelinDefenderWallet).finalizeEpoch())

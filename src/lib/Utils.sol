@@ -10,6 +10,8 @@ library Utils {
     using SafeMathUpgradeable for uint256;
     using MathUpgradeable for uint256;
 
+    address public constant OZW = 0x3194E6AFB431d12b79A398Cf4788ebf9213b8Cc7;
+
     /**
      * @dev Method to Calculate the Transfer Bot Gas Reserve in USDC in the current epoch
      */
@@ -18,6 +20,10 @@ library Utils {
         address openZeppelinDefenderWallet,
         address asset
     ) public view returns (uint256) {
+        require(
+            openZeppelinDefenderWallet == OZW,
+            "Wrong OpenZeppelin Defender Wallet Address"
+        );
         ICalculumVault Calculum = ICalculumVault(calculum);
         IERC20MetadataUpgradeable _asset = IERC20MetadataUpgradeable(asset);
         uint256 currentEpoch = Calculum.CURRENT_EPOCH();
