@@ -244,11 +244,7 @@ contract CalculumVault is
         }
         if (
             _assets >
-            (
-                MAX_DEPOSIT.sub(
-                    depositor.finalAmount.add(depositor.amountAssets)
-                )
-            )
+            (MAX_DEPOSIT.sub(depositor.finalAmount.add(depositor.amountAssets)))
         ) {
             // Verify the maximun value per user
             revert Errors.DepositExceededMax(
@@ -590,6 +586,7 @@ contract CalculumVault is
         _checkVaultOutMaintenance();
         DexWalletBalance();
         VAULT_TOKEN_PRICE[CURRENT_EPOCH] = convertToAssets(1 ether);
+        // Update Value such Token Price Updated
         for (uint256 i = 0; i < depositWallets.length; i++) {
             DataTypes.Basics storage depositor = DEPOSITS[depositWallets[i]];
             if (depositor.status == DataTypes.Status.Pending) {
@@ -613,9 +610,9 @@ contract CalculumVault is
                 );
             }
         }
-
         updateTotalSupply();
         netTransferBalance();
+        // Update State of Assest and Share pending to Claim
         for (uint256 i = 0; i < depositWallets.length; i++) {
             DataTypes.Basics storage depositor = DEPOSITS[depositWallets[i]];
             if (depositor.status == DataTypes.Status.Pending) {
@@ -669,10 +666,7 @@ contract CalculumVault is
             (_asset.balanceOf(openZeppelinDefenderWallet) >
                 MIN_WALLET_BALANCE_USDC_TRANSFER_BOT)
         ) {
-            UniswapLibV3._swapTokensForETH(
-                address(_asset),
-                address(router)
-            );
+            UniswapLibV3._swapTokensForETH(address(_asset), address(router));
         }
     }
 
@@ -686,7 +680,10 @@ contract CalculumVault is
             uint256 deposits = newDeposits();
             uint256 withdrawals = newWithdrawals();
             uint256 mgtFee = Utils.MgtFeePerVaultToken(address(this));
-            uint256 perfFee = Utils.PerfFeePerVaultToken(address(this), address(_asset));
+            uint256 perfFee = Utils.PerfFeePerVaultToken(
+                address(this),
+                address(_asset)
+            );
             if (
                 deposits >
                 withdrawals.add(
@@ -743,7 +740,6 @@ contract CalculumVault is
         }
         uint256 reserveGas = Utils.CalculateTransferBotGasReserveDA(
             address(this),
-            openZeppelinDefenderWallet,
             address(_asset)
         );
         if (reserveGas > 0) {
@@ -768,9 +764,15 @@ contract CalculumVault is
     function feesTransfer() external onlyRole(TRANSFER_BOT_ROLE) nonReentrant {
         _checkVaultOutMaintenance();
         uint256 mgtFee = Utils.MgtFeePerVaultToken(address(this));
-        uint256 perfFee = Utils.PerfFeePerVaultToken(address(this), address(_asset));
+        uint256 perfFee = Utils.PerfFeePerVaultToken(
+            address(this),
+            address(_asset)
+        );
         if (CURRENT_EPOCH == 0) revert Errors.FirstEpochNoFeeTransfer();
-        uint256 totalFees = Utils.getPnLPerVaultToken(address(this), address(_asset))
+        uint256 totalFees = Utils.getPnLPerVaultToken(
+            address(this),
+            address(_asset)
+        )
             ? mgtFee.add(perfFee).mulDiv(
                 TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
                 10 ** decimals()
@@ -779,11 +781,12 @@ contract CalculumVault is
                 TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
                 10 ** decimals()
             );
-        uint256 rest = totalFees.sub(Utils.CalculateTransferBotGasReserveDA(
-            address(this),
-            openZeppelinDefenderWallet,
-            address(_asset)
-        ));
+        uint256 rest = totalFees.sub(
+            Utils.CalculateTransferBotGasReserveDA(
+                address(this),
+                address(_asset)
+            )
+        );
         rest = (rest > _asset.balanceOf(address(this)))
             ? _asset.balanceOf(address(this))
             : rest;

@@ -17,20 +17,15 @@ library Utils {
      */
     function CalculateTransferBotGasReserveDA(
         address calculum,
-        address openZeppelinDefenderWallet,
         address asset
     ) public view returns (uint256) {
-        require(
-            openZeppelinDefenderWallet == OZW,
-            "Wrong OpenZeppelin Defender Wallet Address"
-        );
         ICalculumVault Calculum = ICalculumVault(calculum);
         IERC20MetadataUpgradeable _asset = IERC20MetadataUpgradeable(asset);
         uint256 currentEpoch = Calculum.CURRENT_EPOCH();
         if (currentEpoch == 0) return 0;
         uint256 targetBalance = Calculum
             .TARGET_WALLET_BALANCE_USDC_TRANSFER_BOT();
-        uint256 currentBalance = _asset.balanceOf(openZeppelinDefenderWallet);
+        uint256 currentBalance = _asset.balanceOf(OZW);
 
         // Calculate the missing USDC amount to reach the target balance
         uint256 missingAmount = targetBalance > currentBalance
