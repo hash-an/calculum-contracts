@@ -503,46 +503,46 @@ contract CalculumVault is
         withdrawer.status = DataTypes.Status.Completed;
     }
 
-    // /**
-    //  * @dev Setting epoch duration
-    //  * @param _epochDuration New epoch duration
-    //  * @param _maintTimeBefore New maintenance time before start epoch
-    //  * @param _maintTimeAfter New maintenance time after end epoch
-    //  */
-    // function setEpochDuration(
-    //     uint256 _epochDuration,
-    //     uint256 _maintTimeBefore,
-    //     uint256 _maintTimeAfter
-    // ) public onlyOwner {
-    //     _checkVaultInMaintenance();
-    //     if (_epochDuration < 1 minutes || _epochDuration > 12 weeks) {
-    //         revert Errors.WrongEpochDuration(_epochDuration);
-    //     }
-    //     if (
-    //         _epochDuration.mod(1 minutes) != 0 &&
-    //         _epochDuration.mod(1 days) != 0 &&
-    //         _maintTimeBefore.mod(1 minutes) != 0 &&
-    //         _maintTimeBefore.mod(1 days) != 0 &&
-    //         _maintTimeAfter.mod(1 minutes) != 0 &&
-    //         _maintTimeAfter.mod(1 days) != 0
-    //     ) {
-    //         revert Errors.WrongEpochDefinition(
-    //             _epochDuration,
-    //             _maintTimeBefore,
-    //             _maintTimeAfter
-    //         );
-    //     }
-    //     uint256 oldEpochDuration = EPOCH_DURATION;
-    //     EPOCH_DURATION = _epochDuration;
-    //     MAINTENANCE_PERIOD_PRE_START = _maintTimeBefore;
-    //     MAINTENANCE_PERIOD_POST_START = _maintTimeAfter;
-    //     emit EpochChanged(
-    //         oldEpochDuration,
-    //         _epochDuration,
-    //         _maintTimeBefore,
-    //         _maintTimeAfter
-    //     );
-    // }
+    /**
+     * @dev Setting epoch duration
+     * @param _epochDuration New epoch duration
+     * @param _maintTimeBefore New maintenance time before start epoch
+     * @param _maintTimeAfter New maintenance time after end epoch
+     */
+    function setEpochDuration(
+        uint256 _epochDuration,
+        uint256 _maintTimeBefore,
+        uint256 _maintTimeAfter
+    ) public onlyOwner {
+        _checkVaultInMaintenance();
+        if (_epochDuration < 1 minutes || _epochDuration > 12 weeks) {
+            revert Errors.WrongEpochDuration(_epochDuration);
+        }
+        if (
+            _epochDuration.mod(1 minutes) != 0 &&
+            _epochDuration.mod(1 days) != 0 &&
+            _maintTimeBefore.mod(1 minutes) != 0 &&
+            _maintTimeBefore.mod(1 days) != 0 &&
+            _maintTimeAfter.mod(1 minutes) != 0 &&
+            _maintTimeAfter.mod(1 days) != 0
+        ) {
+            revert Errors.WrongEpochDefinition(
+                _epochDuration,
+                _maintTimeBefore,
+                _maintTimeAfter
+            );
+        }
+        uint256 oldEpochDuration = EPOCH_DURATION;
+        EPOCH_DURATION = _epochDuration;
+        MAINTENANCE_PERIOD_PRE_START = _maintTimeBefore;
+        MAINTENANCE_PERIOD_POST_START = _maintTimeAfter;
+        emit EpochChanged(
+            oldEpochDuration,
+            _epochDuration,
+            _maintTimeBefore,
+            _maintTimeAfter
+        );
+    }
 
     /**
      * @dev Contract for Getting Actual Balance of the TraderBot Wallet in Dydx
@@ -960,16 +960,16 @@ contract CalculumVault is
         return MAX_DEPOSIT;
     }
 
-    // /**
-    //  * @dev Set Min and Max Value of the Deposit and Max Total Supply of Value
-    //  */
-    // function setInitialValue(
-    //     uint256[3] memory _initialValue
-    // ) external onlyOwner {
-    //     MIN_DEPOSIT = _initialValue[0];
-    //     MAX_DEPOSIT = _initialValue[1];
-    //     MAX_TOTAL_DEPOSIT = _initialValue[2];
-    // }
+    /**
+     * @dev Set Min and Max Value of the Deposit and Max Total Supply of Value
+     */
+    function setInitialValue(
+        uint256[3] memory _initialValue
+    ) external onlyOwner {
+        MIN_DEPOSIT = _initialValue[0];
+        MAX_DEPOSIT = _initialValue[1];
+        MAX_TOTAL_DEPOSIT = _initialValue[2];
+    }
 
     /**
      * @dev See {IERC4262-maxMint}
