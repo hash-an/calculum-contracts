@@ -160,9 +160,10 @@ describe("Verification of Basic Value and Features", function () {
             deployer
         )) as MockUpOracle__factory;
         // Deploy Oracle
+        const Balance = await USDc.balanceOf(dexWallet.address);
         Oracle = (await OracleFactory.deploy(
             dexWallet.address,
-            USDc.address
+            Balance
         )) as MockUpOracle;
         // eslint-disable-next-line no-unused-expressions
         expect(Oracle.address).to.properAddress;
@@ -667,9 +668,10 @@ describe("Verification of Basic Value and Features", function () {
             deployer
         )) as MockUpOracle__factory;
         // Deploy Oracle
+        const Balance = await USDc.balanceOf(dexWallet.address);
         Oracle = (await OracleFactory.deploy(
             dexWallet.address,
-            USDc.address
+            Balance
         )) as MockUpOracle;
         // eslint-disable-next-line no-unused-expressions
         expect(Oracle.address).to.properAddress;
@@ -1149,7 +1151,7 @@ describe("Verification of Basic Value and Features", function () {
         // Start summarize the Epoch
         console.log('\x1b[32m%s\x1b[0m', 'Start Summarize the Epoch');
         console.log('\x1b[32m%s\x1b[0m', "Epoch Number: ", (await Calculum.CURRENT_EPOCH()).toString());
-        const DexWalletBalance = parseInt((await Oracle.connect(deployer).GetAccount(dexWallet.address)).toString());
+        const DexWalletBalance = parseInt((await Oracle.connect(dexWallet).GetAccount(dexWallet.address)).toString());
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance Beginning : ", DexWalletBalance / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "(+/-) Strategy(ies) P/L : -2.5% -", 0);
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance EoP before Fees : ", (DexWalletBalance - 0) / 10 ** 6);
@@ -1414,7 +1416,7 @@ describe("Verification of Basic Value and Features", function () {
         // Start summarize the Epoch
         console.log('\x1b[32m%s\x1b[0m', 'Start Summarize the Epoch');
         console.log('\x1b[32m%s\x1b[0m', "Epoch Number: ", (await Calculum.CURRENT_EPOCH()).toString());
-        const DexWalletBalance = parseInt((await Oracle.connect(deployer).GetAccount(dexWallet.address)).toString());
+        const DexWalletBalance = parseInt((await Oracle.connect(dexWallet).GetAccount(dexWallet.address)).toString());
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance Beginning : ", 150000);
         console.log('\x1b[32m%s\x1b[0m', "(+/-) Strategy(ies) P/L : -2.5% -", 3750);
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance EoP before Fees : ", ((150000 - 3750) * 10 ** 6) / 10 ** 6);
@@ -1646,7 +1648,7 @@ describe("Verification of Basic Value and Features", function () {
         // Start summarize the Epoch
         console.log('\x1b[32m%s\x1b[0m', 'Start Summarize the Epoch');
         console.log('\x1b[32m%s\x1b[0m', "Epoch Number: ", (await Calculum.CURRENT_EPOCH()).toString());
-        const DexWalletBalance = parseInt((await Oracle.connect(deployer).GetAccount(dexWallet.address)).toString());
+        const DexWalletBalance = parseInt((await Oracle.connect(dexWallet).GetAccount(dexWallet.address)).toString());
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance Beginning : ", (DexWalletBalance + ((29244 / 10) * 10 ** 6)) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "(+/-) Strategy(ies) P/L : -2.0% -", 29244 / 10);
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance EoP before Fees : ", (DexWalletBalance) / 10 ** 6);
@@ -1947,7 +1949,7 @@ describe("Verification of Basic Value and Features", function () {
         // Start summarize the Epoch
         console.log('\x1b[32m%s\x1b[0m', 'Start Summarize the Epoch');
         console.log('\x1b[32m%s\x1b[0m', "Epoch Number: ", (await Calculum.CURRENT_EPOCH()).toString());
-        const DexWalletBalance = parseInt((await Oracle.connect(deployer).GetAccount(dexWallet.address)).toString());
+        const DexWalletBalance = parseInt((await Oracle.connect(dexWallet).GetAccount(dexWallet.address)).toString());
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance Beginning : ", (DexWalletBalance - (77307 * 10 ** 5)) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "(+/-) Strategy(ies) P/L : 4% ", 77307 / 10);
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance EoP before Fees : ", (DexWalletBalance) / 10 ** 6);
@@ -2277,7 +2279,7 @@ describe("Verification of Basic Value and Features", function () {
         // Start summarize the Epoch
         console.log('\x1b[32m%s\x1b[0m', 'Start Summarize the Epoch');
         console.log('\x1b[32m%s\x1b[0m', "Epoch Number: ", (await Calculum.CURRENT_EPOCH()).toString());
-        const DexWalletBalance = parseInt((await Oracle.connect(deployer).GetAccount(dexWallet.address)).toString());
+        const DexWalletBalance = parseInt((await Oracle.connect(dexWallet).GetAccount(dexWallet.address)).toString());
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance Beginning : ", (DexWalletBalance - (98941 * 10 ** 5)) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "(+/-) Strategy(ies) P/L : 3% ", 98941 / 10);
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance EoP before Fees : ", (DexWalletBalance) / 10 ** 6);
@@ -2543,7 +2545,7 @@ describe("Verification of Basic Value and Features", function () {
         // Start summarize the Epoch
         console.log('\x1b[32m%s\x1b[0m', 'Start Summarize the Epoch');
         console.log('\x1b[32m%s\x1b[0m', "Epoch Number: ", (await Calculum.CURRENT_EPOCH()).toString());
-        const DexWalletBalance = parseInt((await Oracle.connect(deployer).GetAccount(dexWallet.address)).toString());
+        const DexWalletBalance = parseInt((await Oracle.connect(dexWallet).GetAccount(dexWallet.address)).toString());
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance Beginning : ", (DexWalletBalance - (84537 * 10 ** 5)) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "(+/-) Strategy(ies) P/L : 2.5% +", 84537 / 10);
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance EoP before Fees : ", (DexWalletBalance) / 10 ** 6);
@@ -2845,7 +2847,7 @@ describe("Verification of Basic Value and Features", function () {
         // Start summarize the Epoch
         console.log('\x1b[32m%s\x1b[0m', 'Start Summarize the Epoch');
         console.log('\x1b[32m%s\x1b[0m', "Epoch Number: ", (await Calculum.CURRENT_EPOCH()).toString());
-        const DexWalletBalance = parseInt((await Oracle.connect(deployer).GetAccount(dexWallet.address)).toString());
+        const DexWalletBalance = parseInt((await Oracle.connect(dexWallet).GetAccount(dexWallet.address)).toString());
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance Beginning : ", (DexWalletBalance + (63266 * 10 ** 5)) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "(+/-) Strategy(ies) P/L : - 3% +", 63266 / 10);
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance EoP before Fees : ", (DexWalletBalance) / 10 ** 6);
@@ -3123,7 +3125,7 @@ describe("Verification of Basic Value and Features", function () {
         // Start summarize the Epoch
         console.log('\x1b[32m%s\x1b[0m', 'Start Summarize the Epoch');
         console.log('\x1b[32m%s\x1b[0m', "Epoch Number: ", (await Calculum.CURRENT_EPOCH()).toString());
-        const DexWalletBalance = parseInt((await Oracle.connect(deployer).GetAccount(dexWallet.address)).toString());
+        const DexWalletBalance = parseInt((await Oracle.connect(dexWallet).GetAccount(dexWallet.address)).toString());
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance Beginning : ", (DexWalletBalance - (56844 * 10 ** 5)) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "(+/-) Strategy(ies) P/L : 3% +", 56844 / 10);
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance EoP before Fees : ", (DexWalletBalance) / 10 ** 6);
@@ -3403,7 +3405,7 @@ describe("Verification of Basic Value and Features", function () {
         // Start summarize the Epoch
         console.log('\x1b[32m%s\x1b[0m', 'Start Summarize the Epoch');
         console.log('\x1b[32m%s\x1b[0m', "Epoch Number: ", (await Calculum.CURRENT_EPOCH()).toString());
-        const DexWalletBalance = parseInt((await Oracle.connect(deployer).GetAccount(dexWallet.address)).toString());
+        const DexWalletBalance = parseInt((await Oracle.connect(dexWallet).GetAccount(dexWallet.address)).toString());
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance Beginning : ", (DexWalletBalance - (48569 * 10 ** 5)) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "(+/-) Strategy(ies) P/L : 3% +", 48569 / 10);
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance EoP before Fees : ", (DexWalletBalance) / 10 ** 6);
@@ -3762,7 +3764,7 @@ describe("Verification of Basic Value and Features", function () {
         // Start summarize the Epoch
         console.log('\x1b[32m%s\x1b[0m', 'Start Summarize the Epoch');
         console.log('\x1b[32m%s\x1b[0m', "Epoch Number: ", (await Calculum.CURRENT_EPOCH()).toString());
-        const DexWalletBalance = parseInt((await Oracle.connect(deployer).GetAccount(dexWallet.address)).toString());
+        const DexWalletBalance = parseInt((await Oracle.connect(dexWallet).GetAccount(dexWallet.address)).toString());
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance Beginning : ", (DexWalletBalance - (0)) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "(+/-) Strategy(ies) P/L : 3% +", 0);
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance EoP before Fees : ", (DexWalletBalance) / 10 ** 6);
@@ -4033,7 +4035,7 @@ describe("Verification of Basic Value and Features", function () {
         // Start summarize the Epoch
         console.log('\x1b[32m%s\x1b[0m', 'Start Summarize the Epoch');
         console.log('\x1b[32m%s\x1b[0m', "Epoch Number: ", (await Calculum.CURRENT_EPOCH()).toString());
-        const DexWalletBalance = parseInt((await Oracle.connect(deployer).GetAccount(dexWallet.address)).toString());
+        const DexWalletBalance = parseInt((await Oracle.connect(dexWallet).GetAccount(dexWallet.address)).toString());
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance Beginning : ", (DexWalletBalance - (50001 * 10 ** 6)) / 10 ** 6);
         console.log('\x1b[32m%s\x1b[0m', "(+/-) Strategy(ies) P/L : 3% +", 50001);
         console.log('\x1b[32m%s\x1b[0m', "Dex Wallet Balance EoP before Fees : ", (DexWalletBalance) / 10 ** 6);

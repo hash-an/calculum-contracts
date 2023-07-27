@@ -1,27 +1,24 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
+contract MockUpOracle  {
+    uint256 assets;
+    address traderBotWallet;
+    address _owner;
 
-contract MockUpOracle is Ownable {
-    IERC20Upgradeable private _asset;
-    uint256 private Assets;
-    address private traderBotWallet;
-
-    constructor(address _wallet, IERC20Upgradeable asset) public {
+    constructor(address _wallet, uint256 _initialValue) {
+        _owner = msg.sender;
         traderBotWallet = _wallet;
-        _transferOwnership(msg.sender);
-        _asset = asset;
-        Assets = _asset.balanceOf(_wallet); // Simulate the First Deposit of Alice
+        assets = _initialValue; // Simulate the First Deposit of Alice
     }
 
     function GetAccount(address _wallet) public view returns (uint256) {
         if (_wallet != traderBotWallet) revert("Not authorized");
-        return Assets;
+        return assets;
     }
 
-    function setAssetValue(uint256 _newValue) public onlyOwner {
-        Assets = _newValue;
+    function setAssetValue(uint256 _newValue) public {
+        if (msg.sender != _owner) revert("Not authorized");
+        assets = _newValue;
     }
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.19;
 
 import "./Events.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/token/ERC20/utils/SafeERC20Upgradeable.sol";
@@ -44,7 +44,10 @@ abstract contract Claimable is OwnableUpgradeable, Events {
     function claimValues(
         address _token,
         address _to
-    ) public onlyOwner validAddress(_to) /// /// notBlacklisted(_to)
+    )
+        public
+        onlyOwner
+        validAddress(_to) /// /// notBlacklisted(_to)
     {
         if (_token == address(0)) {
             _claimNativeCoins(_to);
