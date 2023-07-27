@@ -8,6 +8,7 @@ import "./lib/Errors.sol";
 import "./lib/IRouter.sol";
 import "./lib/UniswapLibV3.sol";
 import "./lib/Utils.sol";
+import "./lib/IKwenta.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol";
@@ -44,7 +45,7 @@ contract CalculumVault is
     uint256 public EPOCH_START; // start 10 July 2022, Sunday 22:00:00  UTC
     // Transfer Bot Wallet in DEX
     address payable private openZeppelinDefenderWallet;
-    // Transfer Bot Wallet in DEX
+    // Trader Bot Wallet in DEX
     address payable private dexWallet;
     // Treasury Wallet of Calculum
     address public treasuryWallet;
@@ -58,6 +59,10 @@ contract CalculumVault is
     mapping(uint256 => uint256) public TOTAL_VAULT_TOKEN_SUPPLY;
     /// @dev Address of Uniswap v2 router to swap whitelisted ERC20 tokens to router.WETH()
     IRouter public router;
+    /// @dev Address of Kwenta Dex
+    IKwenta public kwenta;
+    /// @dev Kwenta Delegate Manager
+    IKwenta public delegateManager;
     // Interface for Oracle
     Oracle public oracle;
     // Period
@@ -118,13 +123,14 @@ contract CalculumVault is
         string memory _name,
         string memory _symbol,
         uint8 decimals_,
-        address[6] memory _initialAddress, // 0: Oracle, 1: Dex Wallet, 2: Treasury Wallet, 3: OpenZeppelin Defender Wallet, 4: Router, 5: USDCToken
+        address[7] memory _initialAddress, // 0: Oracle, 1: Dex Wallet, 2: Treasury Wallet, 3: OpenZeppelin Defender Wallet, 4: Router, 5: USDCToken
         uint256[7] memory _initialValue // 0: Start timestamp, 1: Min Deposit, 2: Max Deposit, 3: Max Total Supply Value
     ) public reinitializer(1) {
         if (
             !_initialAddress[0].isContract() ||
+            !_initialAddress[4].isContract() ||
             !_initialAddress[5].isContract() ||
-            !_initialAddress[4].isContract()
+            !_initialAddress[6].isContract()
         ) revert Errors.AddressIsNotContract();
         __Ownable_init();
         __ReentrancyGuard_init();
@@ -135,6 +141,7 @@ contract CalculumVault is
         _decimals = decimals_;
         oracle = Oracle(_initialAddress[0]);
         router = IRouter(_initialAddress[4]);
+        kwenta = IKwenta(_initialAddress[6]);
         dexWallet = payable(_initialAddress[1]);
         openZeppelinDefenderWallet = payable(_initialAddress[3]);
         treasuryWallet = _initialAddress[2];
@@ -151,6 +158,11 @@ contract CalculumVault is
         CurrentEpoch();
         MANAGEMENT_FEE_PERCENTAGE = 1 ether / 100; // Represent 1%
         PERFORMANCE_FEE_PERCENTAGE = 15 ether / 100; // Represent 15%
+
+        // Set the initial Delegate Manager
+        delegateManager = IKwenta(kwenta.newAccount());
+        // Add DexWallet as Delegate
+        delegateManager.addDelegate(address(dexWallet));
     }
 
     /**
@@ -629,6 +641,28 @@ contract CalculumVault is
             }
         }
         _swapDAforETH();
+    }
+
+    /**
+     * @dev Method Manage Delegate in Kwenta
+     */
+    function manageDelegate(address _delegate, bool add) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(_delegate != address(0), "Invalid delegate address");
+        
+        // Check if the delegate is already a delegate.
+        bool delegated = delegateManager.delegates(_delegate);
+        
+        if (add && !delegated) {
+            // If we're asked to add the delegate and it's not already a delegate, add it.
+            delegateManager.addDelegate(_delegate);
+        } else if (!add && delegated) {
+            // If we're asked to remove the delegate and it's currently a delegate, remove it.
+            delegateManager.removeDelegate(_delegate);
+        }
+    }
+
+    function isDelegate (address account) public view returns (bool) {
+        return delegateManager.delegates(account);
     }
 
     /**

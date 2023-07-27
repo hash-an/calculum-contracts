@@ -85,7 +85,7 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const USDC_ADDRESS = "0x7F5c764cBc14f9669B88837ca1490cCa17c31607";
 const UNISWAP_ROUTER2 = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
 const USDC_BIG_HOLDER = "0xEbe80f029b1c02862B9E8a70a7e5317C06F62Cae";
-const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
+const KWENTA_ADDRESS = "0x8234F990b149Ae59416dc260305E565e5DAfEb54";
 
 const snooze = (ms: any) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -245,7 +245,8 @@ describe("Verification of Basic Value and Features", function () {
                 treasuryWallet.address,
                 openZeppelinDefenderWallet.address,
                 UNISWAP_ROUTER2,
-                USDc.address
+                USDc.address,
+                KWENTA_ADDRESS
             ],
             [
                 EPOCH_START,
@@ -393,6 +394,8 @@ describe("Verification of Basic Value and Features", function () {
         expect(
             await ethers.provider.getBalance(openZeppelinDefenderWallet.address)
         ).to.lessThanOrEqual(ethers.utils.parseEther("0.5"));
+        // Verifi is DexWallet is a Delegate in Kwenta Dex
+        expect(await Calculum.isDelegate(dexWallet.address)).to.equal(true);
     });
 
     //   ** Verification of Sequence of Epoch */
@@ -577,6 +580,15 @@ describe("Verification of Basic Value and Features", function () {
         expect(await Calculum.owner()).to.equal(ZERO_ADDRESS);
     });
 
+    //   ** 4. Manage Delegates */
+    //   ** t1. Manage Delegates / Add / Remove */
+    it("4.- Manage Delegates", async () => {
+        await Calculum.connect(deployer).manageDelegate(lastdeployer.address, true);
+        expect(await Calculum.isDelegate(lastdeployer.address)).to.equal(true);
+        await Calculum.connect(deployer).manageDelegate(lastdeployer.address, false);
+        expect(await Calculum.isDelegate(lastdeployer.address)).to.equal(false);
+    });
+
     after(async () => {
         await network.provider.send("evm_mine", []);
         const time = Math.floor(
@@ -753,7 +765,8 @@ describe("Verification of Basic Value and Features", function () {
                 treasuryWallet.address,
                 openZeppelinDefenderWallet.address,
                 UNISWAP_ROUTER2,
-                USDc.address
+                USDc.address,
+                KWENTA_ADDRESS
             ],
             [
                 EPOCH_START,
@@ -909,6 +922,8 @@ describe("Verification of Basic Value and Features", function () {
         expect(
             await ethers.provider.getBalance(openZeppelinDefenderWallet.address)
         ).to.lessThanOrEqual(ethers.utils.parseEther("0.5"));
+        // Verifi is DexWallet is a Delegate in Kwenta Dex
+        expect(await Calculum.isDelegate(dexWallet.address)).to.equal(true);
     });
 
     //   ** Verification of Sequence of Epoch based on Excel */
