@@ -1,14 +1,19 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.19;
 
 import "./lib/IERC4626.sol";
 import "./lib/Claimable.sol";
-import "./lib/Helpers.sol";
+import "./lib/DataTypes.sol";
+import "./lib/Errors.sol";
+import "./lib/IRouter.sol";
+import "./lib/UniswapLibV3.sol";
+import "./lib/Utils.sol";
+import "./lib/IKwenta.sol";
+import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/security/PausableUpgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/access/AccessControlUpgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
-import "@uniswap/v2-periphery/interfaces/IUniswapV2Router02.sol";
 
 interface Oracle {
     function GetAccount(address _wallet) external view returns (uint256);
@@ -19,12 +24,12 @@ interface Oracle {
  * @dev Vault based on ERC-4626
  * @custom:a Alfredo Lopez / Calculum
  */
+/// @custom:oz-upgrades-unsafe-allow external-library-linking
 contract CalculumVault is
     IERC4626,
     ERC20Upgradeable,
     PausableUpgradeable,
     Claimable,
-    Helpers,
     AccessControlUpgradeable,
     ReentrancyGuardUpgradeable
 {
@@ -40,7 +45,7 @@ contract CalculumVault is
     uint256 public EPOCH_START; // start 10 July 2022, Sunday 22:00:00  UTC
     // Transfer Bot Wallet in DEX
     address payable private openZeppelinDefenderWallet;
-    // Transfer Bot Wallet in DEX
+    // Trader Bot Wallet in DEX
     address payable private dexWallet;
     // Treasury Wallet of Calculum
     address public treasuryWallet;
@@ -51,9 +56,13 @@ contract CalculumVault is
     // Vault Token Price per EPOCH
     mapping(uint256 => uint256) public VAULT_TOKEN_PRICE;
     // Total Supply per EPOCH
-    mapping(uint256 => uint256) private TOTAL_VAULT_TOKEN_SUPPLY;
+    mapping(uint256 => uint256) public TOTAL_VAULT_TOKEN_SUPPLY;
     /// @dev Address of Uniswap v2 router to swap whitelisted ERC20 tokens to router.WETH()
-    IUniswapV2Router02 public router;
+    IRouter public router;
+    /// @dev Address of Kwenta Dex
+    IKwenta public kwenta;
+    /// @dev Kwenta Delegate Manager
+    IKwenta public delegateManager;
     // Interface for Oracle
     Oracle public oracle;
     // Period
@@ -65,7 +74,7 @@ contract CalculumVault is
     // Maintenance Period After Start (in seconds)
     uint256 public MAINTENANCE_PERIOD_POST_START;
     // Actual Value of Assets during Trader Period
-    uint256 private DEX_WALLET_BALANCE;
+    uint256 public DEX_WALLET_BALANCE;
     // Max Deposit
     uint256 public MAX_DEPOSIT;
     // Min Deposit
@@ -83,15 +92,15 @@ contract CalculumVault is
     // Array of Wallet Addresses with Deposit
     address[] private depositWallets;
     // Mapping Deposits
-    mapping(address => Basics) public DEPOSITS; // Mapping of Deposits Realized
+    mapping(address => DataTypes.Basics) public DEPOSITS; // Mapping of Deposits Realized
     // Array of Wallet Addresses with Withdraw
     address[] private withdrawWallets;
     // Mapping Withdrawals
-    mapping(address => Basics) public WITHDRAWALS; // Mapping of Withdrawals Realized
+    mapping(address => DataTypes.Basics) public WITHDRAWALS; // Mapping of Withdrawals Realized
     // Constant for TraderBot Role
     bytes32 private constant TRANSFER_BOT_ROLE = keccak256("TRANSFER_BOT_ROLE");
     // Mapping of Struct NetTransfer
-    mapping(uint256 => NetTransfer) public netTransfer; // Mapping of Struct NetTransfer based on EPOCH
+    mapping(uint256 => DataTypes.NetTransfer) public netTransfer; // Mapping of Struct NetTransfer based on EPOCH
     // mapping for whitelist of wallet to access the Vault
     mapping(address => bool) public whitelist;
 
@@ -100,9 +109,12 @@ contract CalculumVault is
         _disableInitializers();
     }
 
-    modifier whitelisted(address wallet) {
-        if (whitelist[wallet] == false) {
-            revert NotWhitelisted(wallet);
+    modifier whitelisted(address caller, address _owner) {
+        if (_owner != caller) {
+            revert Errors.CallerIsNotOwner(caller, _owner);
+        }
+        if (whitelist[caller] == false) {
+            revert Errors.NotWhitelisted(caller);
         }
         _;
     }
@@ -111,30 +123,28 @@ contract CalculumVault is
         string memory _name,
         string memory _symbol,
         uint8 decimals_,
-        IERC20MetadataUpgradeable _USDCToken,
-        address _oracle,
-        address _dexWallet,
-        address _treasuryWallet,
-        address _openZeppelinDefenderWallet,
-        address _router,
+        address[7] memory _initialAddress, // 0: Oracle, 1: Dex Wallet, 2: Treasury Wallet, 3: OpenZeppelin Defender Wallet, 4: Router, 5: USDCToken
         uint256[7] memory _initialValue // 0: Start timestamp, 1: Min Deposit, 2: Max Deposit, 3: Max Total Supply Value
     ) public reinitializer(1) {
-        if (!address(_USDCToken).isContract()) {
-            revert AddressIsNotContract(address(_USDCToken));
-        }
-        if (!_oracle.isContract()) revert AddressIsNotContract(_oracle);
+        if (
+            !_initialAddress[0].isContract() ||
+            !_initialAddress[4].isContract() ||
+            !_initialAddress[5].isContract() ||
+            !_initialAddress[6].isContract()
+        ) revert Errors.AddressIsNotContract();
         __Ownable_init();
         __ReentrancyGuard_init();
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-        _setupRole(TRANSFER_BOT_ROLE, _openZeppelinDefenderWallet);
+        _setupRole(TRANSFER_BOT_ROLE, _initialAddress[3]);
         __ERC20_init(_name, _symbol);
-        _asset = _USDCToken;
+        _asset = IERC20MetadataUpgradeable(_initialAddress[5]);
         _decimals = decimals_;
-        oracle = Oracle(_oracle);
-        router = IUniswapV2Router02(_router);
-        dexWallet = payable(_dexWallet);
-        openZeppelinDefenderWallet = payable(_openZeppelinDefenderWallet);
-        treasuryWallet = _treasuryWallet;
+        oracle = Oracle(_initialAddress[0]);
+        router = IRouter(_initialAddress[4]);
+        kwenta = IKwenta(_initialAddress[6]);
+        dexWallet = payable(_initialAddress[1]);
+        openZeppelinDefenderWallet = payable(_initialAddress[3]);
+        treasuryWallet = _initialAddress[2];
         EPOCH_START = _initialValue[0];
         MIN_DEPOSIT = _initialValue[1];
         MAX_DEPOSIT = _initialValue[2];
@@ -148,6 +158,11 @@ contract CalculumVault is
         CurrentEpoch();
         MANAGEMENT_FEE_PERCENTAGE = 1 ether / 100; // Represent 1%
         PERFORMANCE_FEE_PERCENTAGE = 15 ether / 100; // Represent 15%
+
+        // Set the initial Delegate Manager
+        delegateManager = IKwenta(kwenta.newAccount());
+        // Add DexWallet as Delegate
+        delegateManager.addDelegate(address(dexWallet));
     }
 
     /**
@@ -223,39 +238,31 @@ contract CalculumVault is
     )
         external
         override
-        validAddress(_receiver)
-        whitelisted(_msgSender())
+        whitelisted(_msgSender(), _receiver)
         whenNotPaused
         nonReentrant
         returns (uint256)
     {
         _checkVaultInMaintenance();
         address caller = _msgSender();
-        Basics storage depositor = DEPOSITS[_receiver];
-        if (_receiver != caller) {
-            revert CallerIsNotOwner(caller, _receiver);
-        }
+        DataTypes.Basics storage depositor = DEPOSITS[_receiver];
         if (_assets < MIN_DEPOSIT) {
-            revert DepositAmountTooLow(_receiver, _assets);
+            revert Errors.DepositAmountTooLow(_receiver, _assets);
         }
         if (
             _assets >
-            (
-                maxDeposit(_receiver).sub(
-                    depositor.finalAmount.add(depositor.amountAssets)
-                )
-            )
+            (MAX_DEPOSIT.sub(depositor.finalAmount.add(depositor.amountAssets)))
         ) {
             // Verify the maximun value per user
-            revert DepositExceededMax(
+            revert Errors.DepositExceededMax(
                 _receiver,
-                maxDeposit(_receiver).sub(
+                MAX_DEPOSIT.sub(
                     depositor.finalAmount.add(depositor.amountAssets)
                 )
             );
         }
         if (totalAssets().add(_assets) > MAX_TOTAL_DEPOSIT) {
-            revert DepositExceedTotalVaultMax(
+            revert Errors.DepositExceedTotalVaultMax(
                 _receiver,
                 totalAssets().add(_assets),
                 MAX_TOTAL_DEPOSIT
@@ -290,10 +297,10 @@ contract CalculumVault is
      *
      * NOTE: most implementations will require pre-approval of the Vault with the Vault’s underlying asset token.
      */
-    function mint(
-        uint256 _shares,
-        address _receiver
-    ) external override returns (uint256) {}
+    // function mint(
+    //     uint256 _shares,
+    //     address _receiver
+    // ) external override returns (uint256) {}
 
     /**
      * @dev Burns shares from owner and sends exactly assets of underlying tokens to receiver.
@@ -314,9 +321,7 @@ contract CalculumVault is
     )
         external
         override
-        validAddress(_owner)
-        validAddress(_receiver)
-        whitelisted(_msgSender())
+        whitelisted(_msgSender(), _owner)
         whenNotPaused
         nonReentrant
         returns (uint256)
@@ -324,11 +329,11 @@ contract CalculumVault is
         _checkVaultInMaintenance();
         address caller = _msgSender();
         if ((_owner != caller) || (_receiver != caller)) {
-            revert CallerIsNotOwnerOrReceiver(caller, _owner, _receiver);
+            revert Errors.CallerIsNotOwnerOrReceiver(caller, _owner, _receiver);
         }
-        if (_assets == 0) revert AmountMustBeGreaterThanZero(caller);
+        if (_assets == 0) revert Errors.AmountMustBeGreaterThanZero(caller);
         if (_assets > maxWithdraw(_owner)) {
-            revert NotEnoughBalance(_assets, maxWithdraw(_owner));
+            revert Errors.NotEnoughBalance(_assets, maxWithdraw(_owner));
         }
 
         uint256 shares = previewWithdraw(_assets);
@@ -361,9 +366,7 @@ contract CalculumVault is
     )
         external
         override
-        validAddress(_owner)
-        validAddress(_receiver)
-        whitelisted(_msgSender())
+        whitelisted(_msgSender(), _owner)
         whenNotPaused
         nonReentrant
         returns (uint256)
@@ -371,11 +374,11 @@ contract CalculumVault is
         _checkVaultInMaintenance();
         address caller = _msgSender();
         if ((_owner != caller) || (_receiver != caller)) {
-            revert CallerIsNotOwnerOrReceiver(caller, _owner, _receiver);
+            revert Errors.CallerIsNotOwnerOrReceiver(caller, _owner, _receiver);
         }
-        if (_shares == 0) revert AmountMustBeGreaterThanZero(caller);
+        if (_shares == 0) revert Errors.AmountMustBeGreaterThanZero(caller);
         if (_shares > maxRedeem(_owner)) {
-            revert NotEnoughBalance(_shares, maxRedeem(_owner));
+            revert Errors.NotEnoughBalance(_shares, maxRedeem(_owner));
         }
 
         uint256 assets = previewRedeem(_shares);
@@ -401,17 +404,17 @@ contract CalculumVault is
         uint256 _shares,
         uint256 _assets
     ) private {
-        Basics storage depositor = DEPOSITS[_wallet];
+        DataTypes.Basics storage depositor = DEPOSITS[_wallet];
         if (!isDepositWallet(_wallet)) depositWallets.push(_wallet);
-        if (DEPOSITS[_wallet].status == Status.Inactive) {
-            DEPOSITS[_wallet] = Basics({
-                status: Status.Pending,
+        if (DEPOSITS[_wallet].status == DataTypes.Status.Inactive) {
+            DEPOSITS[_wallet] = DataTypes.Basics({
+                status: DataTypes.Status.Pending,
                 amountAssets: _assets,
                 amountShares: _shares,
                 finalAmount: uint256(0)
             });
         } else {
-            depositor.status = Status.Pending;
+            depositor.status = DataTypes.Status.Pending;
             depositor.amountAssets += _assets;
             depositor.amountShares += _shares;
         }
@@ -430,16 +433,20 @@ contract CalculumVault is
         bool _isWithdraw
     ) private {
         if (!isWithdrawWallet(_wallet)) withdrawWallets.push(_wallet);
-        Basics storage withdrawer = WITHDRAWALS[_wallet];
-        if (WITHDRAWALS[_wallet].status == Status.Inactive) {
-            WITHDRAWALS[_wallet] = Basics({
-                status: _isWithdraw ? Status.PendingWithdraw : Status.PendingRedeem,
+        DataTypes.Basics storage withdrawer = WITHDRAWALS[_wallet];
+        if (WITHDRAWALS[_wallet].status == DataTypes.Status.Inactive) {
+            WITHDRAWALS[_wallet] = DataTypes.Basics({
+                status: _isWithdraw
+                    ? DataTypes.Status.PendingWithdraw
+                    : DataTypes.Status.PendingRedeem,
                 amountAssets: _assets,
                 amountShares: _shares,
                 finalAmount: uint256(0)
             });
         } else {
-            withdrawer.status = _isWithdraw ? Status.PendingWithdraw : Status.PendingRedeem;
+            withdrawer.status = _isWithdraw
+                ? DataTypes.Status.PendingWithdraw
+                : DataTypes.Status.PendingRedeem;
             withdrawer.amountAssets += _assets;
             withdrawer.amountShares += _shares;
         }
@@ -451,14 +458,12 @@ contract CalculumVault is
      */
     function claimShares(
         address _owner
-    ) external whitelisted(_msgSender()) nonReentrant {
+    ) external whitelisted(_msgSender(), _owner) nonReentrant {
         _checkVaultInMaintenance();
         address caller = _msgSender();
-        Basics storage depositor = DEPOSITS[_owner]; 
-        if (_owner != caller) {
-            revert CallerIsNotOwner(caller, _owner);
-        }
-        if (!isClaimerMint(_owner)) revert CalletIsNotClaimerToDeposit(_owner);
+        DataTypes.Basics storage depositor = DEPOSITS[_owner];
+        if (!isClaimerMint(_owner))
+            revert Errors.CalletIsNotClaimerToDeposit(_owner);
         _mint(_owner, depositor.amountShares);
         emit Deposit(
             caller,
@@ -467,7 +472,7 @@ contract CalculumVault is
             depositor.amountShares
         );
         delete depositor.amountShares;
-        depositor.status = Status.Completed;
+        depositor.status = DataTypes.Status.Completed;
     }
 
     /**
@@ -478,19 +483,16 @@ contract CalculumVault is
     function claimAssets(
         address _receiver,
         address _owner
-    ) external whitelisted(_msgSender()) nonReentrant {
+    ) external whitelisted(_msgSender(), _owner) nonReentrant {
         _checkVaultInMaintenance();
         address caller = _msgSender();
-        Basics storage withdrawer = WITHDRAWALS[_owner];
-        if (_owner != caller) {
-            revert CallerIsNotOwner(caller, _owner);
-        }
+        DataTypes.Basics storage withdrawer = WITHDRAWALS[_owner];
         if (!isClaimerWithdraw(_owner)) {
-            revert CalletIsNotClaimerToRedeem(_owner);
+            revert Errors.CalletIsNotClaimerToRedeem(_owner);
         }
         // TODO: add a verification of the amount shares to be redeemed
         if (withdrawer.amountAssets > _asset.balanceOf(address(this))) {
-            revert NotEnoughBalance(
+            revert Errors.NotEnoughBalance(
                 withdrawer.amountAssets,
                 _asset.balanceOf(address(this))
             );
@@ -510,7 +512,7 @@ contract CalculumVault is
         );
         delete withdrawer.amountAssets;
         delete withdrawer.amountShares;
-        withdrawer.status = Status.Completed;
+        withdrawer.status = DataTypes.Status.Completed;
     }
 
     /**
@@ -523,23 +525,20 @@ contract CalculumVault is
         uint256 _epochDuration,
         uint256 _maintTimeBefore,
         uint256 _maintTimeAfter
-    ) external onlyOwner {
+    ) public onlyOwner {
         _checkVaultInMaintenance();
         if (_epochDuration < 1 minutes || _epochDuration > 12 weeks) {
-            revert WrongEpochDuration(_epochDuration);
+            revert Errors.WrongEpochDuration(_epochDuration);
         }
         if (
             _epochDuration.mod(1 minutes) != 0 &&
             _epochDuration.mod(1 days) != 0 &&
-            _epochDuration.mod(1 weeks) != 0 &&
             _maintTimeBefore.mod(1 minutes) != 0 &&
             _maintTimeBefore.mod(1 days) != 0 &&
-            _maintTimeBefore.mod(1 weeks) != 0 &&
             _maintTimeAfter.mod(1 minutes) != 0 &&
-            _maintTimeAfter.mod(1 days) != 0 &&
-            _maintTimeAfter.mod(1 weeks) != 0
+            _maintTimeAfter.mod(1 days) != 0
         ) {
-            revert WrongEpochDefinition(
+            revert Errors.WrongEpochDefinition(
                 _epochDuration,
                 _maintTimeBefore,
                 _maintTimeAfter
@@ -566,7 +565,7 @@ contract CalculumVault is
         } else {
             DEX_WALLET_BALANCE = oracle.GetAccount(address(dexWallet));
             if (DEX_WALLET_BALANCE == 0) {
-                revert ActualAssetValueIsZero(
+                revert Errors.ActualAssetValueIsZero(
                     address(oracle),
                     address(dexWallet)
                 );
@@ -584,153 +583,86 @@ contract CalculumVault is
         _checkVaultOutMaintenance();
         DexWalletBalance();
         VAULT_TOKEN_PRICE[CURRENT_EPOCH] = convertToAssets(1 ether);
+        // Update Value such Token Price Updated
         for (uint256 i = 0; i < depositWallets.length; i++) {
-            Basics storage depositor = DEPOSITS[depositWallets[i]];
-            if (depositor.status == Status.Pending) {
+            DataTypes.Basics storage depositor = DEPOSITS[depositWallets[i]];
+            if (depositor.status == DataTypes.Status.Pending) {
                 depositor.amountShares = convertToShares(
                     depositor.amountAssets
                 );
             }
         }
         for (uint256 i = 0; i < withdrawWallets.length; i++) {
-            Basics storage withdrawer = WITHDRAWALS[withdrawWallets[i]];
-            if (withdrawer.status == Status.PendingWithdraw) {
+            DataTypes.Basics storage withdrawer = WITHDRAWALS[
+                withdrawWallets[i]
+            ];
+            if (withdrawer.status == DataTypes.Status.PendingWithdraw) {
                 withdrawer.amountShares = convertToShares(
                     withdrawer.amountAssets
                 );
             }
-            if (withdrawer.status == Status.PendingRedeem) {
+            if (withdrawer.status == DataTypes.Status.PendingRedeem) {
                 withdrawer.amountAssets = convertToAssets(
                     withdrawer.amountShares
                 );
             }
         }
-
         updateTotalSupply();
         netTransferBalance();
+        // Update State of Assest and Share pending to Claim
         for (uint256 i = 0; i < depositWallets.length; i++) {
-            Basics storage depositor = DEPOSITS[depositWallets[i]];
-            if (depositor.status == Status.Pending) {
-                depositor.status = Status.Claimet;
+            DataTypes.Basics storage depositor = DEPOSITS[depositWallets[i]];
+            if (depositor.status == DataTypes.Status.Pending) {
                 depositor.amountShares = convertToShares(
                     depositor.amountAssets
                 );
+                depositor.status = DataTypes.Status.Claimet;
                 depositor.finalAmount += depositor.amountAssets;
                 delete depositor.amountAssets;
             }
         }
         for (uint256 i = 0; i < withdrawWallets.length; i++) {
-            Basics storage withdrawer = WITHDRAWALS[withdrawWallets[i]];
-            if (withdrawer.status == Status.PendingWithdraw) {
+            DataTypes.Basics storage withdrawer = WITHDRAWALS[
+                withdrawWallets[i]
+            ];
+            if (withdrawer.status == DataTypes.Status.PendingWithdraw) {
                 withdrawer.amountShares = convertToShares(
                     withdrawer.amountAssets
                 );
-                withdrawer.status = Status.Claimet;
+                withdrawer.status = DataTypes.Status.Claimet;
                 withdrawer.finalAmount += withdrawer.amountAssets;
             }
-            if (withdrawer.status == Status.PendingRedeem) {
+            if (withdrawer.status == DataTypes.Status.PendingRedeem) {
                 withdrawer.amountAssets = convertToAssets(
                     withdrawer.amountShares
                 );
-                withdrawer.status = Status.Claimet;
+                withdrawer.status = DataTypes.Status.Claimet;
                 withdrawer.finalAmount += withdrawer.amountAssets;
             }
         }
         _swapDAforETH();
     }
 
-    function MgtFeePerVaultToken() public view returns (uint256) {
-        if (CURRENT_EPOCH == 0) {
-            return 0;
-        } else {
-            return
-                VAULT_TOKEN_PRICE[CURRENT_EPOCH.sub(1)].mulDiv(
-                    MANAGEMENT_FEE_PERCENTAGE.mulDiv(EPOCH_DURATION, 31556926), // the constants is the more appropriate way to indicate a years (equivalent 365.24 days)
-                    10 ** decimals(),
-                    MathUpgradeable.Rounding.Up
-                );
-        }
-    }
-
-    function PerfFeePerVaultToken() public view returns (uint256) {
-        if (CURRENT_EPOCH == 0) return 0;
-        if (getPnLPerVaultToken()) {
-            return
-                PnLPerVaultToken().mulDiv(
-                    PERFORMANCE_FEE_PERCENTAGE,
-                    10 ** decimals(),
-                    MathUpgradeable.Rounding.Up
-                );
-        } else {
-            return 0;
-        }
-    }
-
     /**
-     * @dev Method for getting Profit/Loss per vault token generated by the trading strategy for the epoch
+     * @dev Method Manage Delegate in Kwenta
      */
-    function PnLPerVaultToken() public view returns (uint256) {
-        if (CURRENT_EPOCH == 0) return 0;
-        if (getPnLPerVaultToken()) {
-            return (
-                DEX_WALLET_BALANCE
-                    .mulDiv(
-                        10 ** _asset.decimals(),
-                        TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)].mulDiv(
-                            10 ** _asset.decimals(),
-                            10 ** decimals()
-                        )
-                    )
-                    .sub(VAULT_TOKEN_PRICE[CURRENT_EPOCH.sub(1)])
-            );
-        } else {
-            return (
-                VAULT_TOKEN_PRICE[CURRENT_EPOCH.sub(1)].sub(
-                    DEX_WALLET_BALANCE.mulDiv(
-                        10 ** _asset.decimals(),
-                        TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)].mulDiv(
-                            10 ** _asset.decimals(),
-                            10 ** decimals()
-                        )
-                    )
-                )
-            );
+    function manageDelegate(address _delegate, bool add) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(_delegate != address(0), "Invalid delegate address");
+        
+        // Check if the delegate is already a delegate.
+        bool delegated = delegateManager.delegates(_delegate);
+        
+        if (add && !delegated) {
+            // If we're asked to add the delegate and it's not already a delegate, add it.
+            delegateManager.addDelegate(_delegate);
+        } else if (!add && delegated) {
+            // If we're asked to remove the delegate and it's currently a delegate, remove it.
+            delegateManager.removeDelegate(_delegate);
         }
     }
 
-    /**
-     * @dev Method for update Profit/Loss per vault token generated by the trading strategy for the epoch
-     * TODO: check the sign of the profit/loss, because it is negative in some cases
-     */
-    function getPnLPerVaultToken() public view returns (bool) {
-        if (CURRENT_EPOCH == 0) return false;
-        return (DEX_WALLET_BALANCE.mulDiv(
-            10 ** _asset.decimals(),
-            TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)].mulDiv(
-                10 ** _asset.decimals(),
-                10 ** decimals()
-            )
-        ) >= VAULT_TOKEN_PRICE[CURRENT_EPOCH.sub(1)]);
-    }
-
-    /// @dev Method to get the price of 1 token of tokenAddress if swapped for router.WETH()
-    /// @param tokenAddress ERC20 token address of a whitelisted ERC20 token
-    /// @return price Price in payment Token equivalent with its decimals
-    function getPriceInPaymentToken(
-        address tokenAddress
-    ) public view returns (uint256 price) {
-        if (tokenAddress == address(router.WETH())) return 1;
-
-        address[] memory path = new address[](2);
-        uint256[] memory amounts = new uint256[](2);
-        path[0] = tokenAddress;
-        path[1] = address(router.WETH());
-        amounts = router.getAmountsOut(
-            1 * 10 ** IERC20MetadataUpgradeable(tokenAddress).decimals(),
-            path
-        );
-
-        price = amounts[1];
+    function isDelegate (address account) public view returns (bool) {
+        return delegateManager.delegates(account);
     }
 
     /**
@@ -746,93 +678,35 @@ contract CalculumVault is
         }
     }
 
-    /**
-     * @dev Method to Calculate the Transfer Bot Gas Reserve in USDC in the current epoch
-     */
-    function CalculateTransferBotGasReserveDA() public view returns (uint256) {
-        if (CURRENT_EPOCH == 0) return 0;
-        uint256 targetBalance = TARGET_WALLET_BALANCE_USDC_TRANSFER_BOT;
-        uint256 currentBalance = _asset.balanceOf(openZeppelinDefenderWallet);
-
-        // Calculate the missing USDC amount to reach the target balance
-        uint256 missingAmount = targetBalance > currentBalance
-            ? targetBalance - currentBalance
-            : 0;
-
-        // Calculate the total fees to be collected for the current epoch
-        uint256 totalFees = getPnLPerVaultToken()
-            ? (MgtFeePerVaultToken().add(PerfFeePerVaultToken())).mulDiv(
-                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
-                10 ** decimals()
-            )
-            : MgtFeePerVaultToken().mulDiv(
-                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
-                10 ** decimals()
-            );
-
-        // Take the smallest amount between the missing USDC and the total fees
-        // Deduct the amount from the fees sent to the protocol Treasury Wallet
-        return missingAmount < totalFees ? missingAmount : totalFees;
-    }
-
-    function _swapDAforETH() private {
+    function _swapDAforETH() public {
         if (
             (openZeppelinDefenderWallet.balance <
                 MIN_WALLET_BALANCE_ETH_TRANSFER_BOT) &&
             (_asset.balanceOf(openZeppelinDefenderWallet) >
                 MIN_WALLET_BALANCE_USDC_TRANSFER_BOT)
         ) {
-            uint256 swapAmount = _asset.balanceOf(openZeppelinDefenderWallet);
-            SafeERC20Upgradeable.safeTransferFrom(
-                _asset,
-                address(openZeppelinDefenderWallet),
-                address(this),
-                swapAmount
-            );
-            _asset.approve(address(router), swapAmount);
-            _swapTokensForETH(
-                address(_asset),
-                swapAmount,
-                swapAmount.mulDiv(
-                    getPriceInPaymentToken(address(_asset)),
-                    1 * 10 ** _asset.decimals()
-                )
-            );
+            UniswapLibV3._swapTokensForETH(address(_asset), address(router));
         }
     }
 
-    /// @dev Internal method to swap ERC20 whitelisted tokens for payment Token
-    /// @param tokenAddress ERC20 token address of the whitelisted address
-    /// @param tokenAmount Amount of tokens to be swapped with UniSwap v2 router to payment Token
-    function _swapTokensForETH(
-        address tokenAddress,
-        uint256 tokenAmount,
-        uint256 expectedAmount
-    ) private {
-        address[] memory path = new address[](2);
-        path[0] = address(tokenAddress);
-        path[1] = address(router.WETH());
-        /// do the swap
-        router.swapExactTokensForETHSupportingFeeOnTransferTokens(
-            tokenAmount,
-            expectedAmount.mulDiv(0.9 ether, 1 ether), // Allow for up to 10% max slippage
-            path,
-            address(openZeppelinDefenderWallet),
-            block.timestamp
-        );
-    }
-
     function netTransferBalance() private {
-        NetTransfer storage actualTx = netTransfer[CURRENT_EPOCH];
+        DataTypes.NetTransfer storage actualTx = netTransfer[CURRENT_EPOCH];
         if ((totalSupply() == 0) && (CURRENT_EPOCH == 0)) {
             actualTx.pending = true;
             actualTx.direction = true;
             actualTx.amount = newDeposits();
         } else {
+            uint256 deposits = newDeposits();
+            uint256 withdrawals = newWithdrawals();
+            uint256 mgtFee = Utils.MgtFeePerVaultToken(address(this));
+            uint256 perfFee = Utils.PerfFeePerVaultToken(
+                address(this),
+                address(_asset)
+            );
             if (
-                newDeposits() >
-                newWithdrawals().add(
-                    MgtFeePerVaultToken().add(PerfFeePerVaultToken()).mulDiv(
+                deposits >
+                withdrawals.add(
+                    mgtFee.add(perfFee).mulDiv(
                         TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
                         10 ** decimals()
                     )
@@ -840,35 +714,31 @@ contract CalculumVault is
             ) {
                 actualTx.pending = true;
                 actualTx.direction = true;
-                actualTx.amount = newDeposits().sub(
-                    newWithdrawals().add(
-                        MgtFeePerVaultToken()
-                            .add(PerfFeePerVaultToken())
-                            .mulDiv(
-                                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
-                                10 ** decimals()
-                            )
+                actualTx.amount = deposits.sub(
+                    withdrawals.add(
+                        mgtFee.add(perfFee).mulDiv(
+                            TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
+                            10 ** decimals()
+                        )
                     )
                 );
             } else {
                 actualTx.pending = true;
                 actualTx.direction = false;
-                actualTx.amount = newWithdrawals()
+                actualTx.amount = withdrawals
                     .add(
-                        MgtFeePerVaultToken()
-                            .add(PerfFeePerVaultToken())
-                            .mulDiv(
-                                TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
-                                10 ** decimals()
-                            )
+                        mgtFee.add(perfFee).mulDiv(
+                            TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
+                            10 ** decimals()
+                        )
                     )
-                    .sub(newDeposits());
+                    .sub(deposits);
             }
         }
     }
 
     function dexTransfer() external onlyRole(TRANSFER_BOT_ROLE) nonReentrant {
-        NetTransfer storage actualTx = netTransfer[CURRENT_EPOCH];
+        DataTypes.NetTransfer storage actualTx = netTransfer[CURRENT_EPOCH];
         _checkVaultOutMaintenance();
         if (actualTx.pending) {
             if (actualTx.direction) {
@@ -887,10 +757,13 @@ contract CalculumVault is
             }
             actualTx.pending = false;
         }
-        uint256 reserveGas = CalculateTransferBotGasReserveDA();
+        uint256 reserveGas = Utils.CalculateTransferBotGasReserveDA(
+            address(this),
+            address(_asset)
+        );
         if (reserveGas > 0) {
             if (_asset.balanceOf(address(this)) < reserveGas) {
-                revert NotEnoughBalance(
+                revert Errors.NotEnoughBalance(
                     reserveGas,
                     _asset.balanceOf(address(this))
                 );
@@ -909,20 +782,33 @@ contract CalculumVault is
      */
     function feesTransfer() external onlyRole(TRANSFER_BOT_ROLE) nonReentrant {
         _checkVaultOutMaintenance();
-        if (CURRENT_EPOCH == 0) revert FirstEpochNoFeeTransfer();
-        uint256 totalFees = getPnLPerVaultToken()
-            ? (MgtFeePerVaultToken().add(PerfFeePerVaultToken())).mulDiv(
+        uint256 mgtFee = Utils.MgtFeePerVaultToken(address(this));
+        uint256 perfFee = Utils.PerfFeePerVaultToken(
+            address(this),
+            address(_asset)
+        );
+        if (CURRENT_EPOCH == 0) revert Errors.FirstEpochNoFeeTransfer();
+        uint256 totalFees = Utils.getPnLPerVaultToken(
+            address(this),
+            address(_asset)
+        )
+            ? mgtFee.add(perfFee).mulDiv(
                 TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
                 10 ** decimals()
             )
-            : MgtFeePerVaultToken().mulDiv(
+            : mgtFee.mulDiv(
                 TOTAL_VAULT_TOKEN_SUPPLY[CURRENT_EPOCH.sub(1)],
                 10 ** decimals()
             );
-        uint256 rest = totalFees.sub(CalculateTransferBotGasReserveDA());
+        uint256 rest = totalFees.sub(
+            Utils.CalculateTransferBotGasReserveDA(
+                address(this),
+                address(_asset)
+            )
+        );
         rest = (rest > _asset.balanceOf(address(this)))
             ? _asset.balanceOf(address(this))
-            : rest ;
+            : rest;
         if (rest > 0)
             SafeERC20Upgradeable.safeTransfer(_asset, treasuryWallet, rest);
         emit FeesTransfer(CURRENT_EPOCH, rest);
@@ -949,7 +835,7 @@ contract CalculumVault is
                     : (_shares * totalAssets()) / supply;
         } else {
             _assets = _shares.mulDiv(
-                UpdateVaultPriceToken(),
+                Utils.UpdateVaultPriceToken(address(this), address(_asset)),
                 10 ** decimals(),
                 MathUpgradeable.Rounding.Up
             );
@@ -971,29 +857,9 @@ contract CalculumVault is
         } else {
             _shares = _assets.mulDiv(
                 10 ** decimals(),
-                UpdateVaultPriceToken(),
+                Utils.UpdateVaultPriceToken(address(this), address(_asset)),
                 MathUpgradeable.Rounding.Up
             );
-        }
-    }
-
-    function UpdateVaultPriceToken() private view returns (uint256) {
-        if (getPnLPerVaultToken()) {
-            return
-                (
-                    VAULT_TOKEN_PRICE[CURRENT_EPOCH.sub(1)].add(
-                        PnLPerVaultToken()
-                    )
-                ).sub(MgtFeePerVaultToken().add(PerfFeePerVaultToken())).add(1);
-        } else {
-            return
-                VAULT_TOKEN_PRICE[CURRENT_EPOCH.sub(1)]
-                    .sub(
-                        PnLPerVaultToken().add(
-                            MgtFeePerVaultToken().add(PerfFeePerVaultToken())
-                        )
-                    )
-                    .add(1);
         }
     }
 
@@ -1002,7 +868,7 @@ contract CalculumVault is
      * @param _claimer address of the wallet
      */
     function isClaimerMint(address _claimer) public view returns (bool) {
-        return DEPOSITS[_claimer].status == Status.Claimet;
+        return DEPOSITS[_claimer].status == DataTypes.Status.Claimet;
     }
 
     /**
@@ -1010,15 +876,13 @@ contract CalculumVault is
      * @param _claimer address of the wallet
      */
     function isClaimerWithdraw(address _claimer) public view returns (bool) {
-        return WITHDRAWALS[_claimer].status == Status.Claimet;
+        return WITHDRAWALS[_claimer].status == DataTypes.Status.Claimet;
     }
 
     /**
      * @dev Setter for the TraderBot Wallet
      */
-    function setdexWallet(
-        address _dexWallet
-    ) external onlyOwner {
+    function setdexWallet(address _dexWallet) external onlyOwner {
         dexWallet = payable(_dexWallet);
     }
 
@@ -1043,7 +907,9 @@ contract CalculumVault is
 
     function newDeposits() public view returns (uint256 _total) {
         for (uint256 i = 0; i < depositWallets.length; i++) {
-            if (DEPOSITS[depositWallets[i]].status == Status.Pending) {
+            if (
+                DEPOSITS[depositWallets[i]].status == DataTypes.Status.Pending
+            ) {
                 _total += DEPOSITS[depositWallets[i]].amountAssets;
             }
         }
@@ -1051,7 +917,9 @@ contract CalculumVault is
 
     function newShares() private view returns (uint256 _total) {
         for (uint256 i = 0; i < depositWallets.length; i++) {
-            if (DEPOSITS[depositWallets[i]].status == Status.Pending) {
+            if (
+                DEPOSITS[depositWallets[i]].status == DataTypes.Status.Pending
+            ) {
                 _total += DEPOSITS[depositWallets[i]].amountShares;
             }
         }
@@ -1059,8 +927,13 @@ contract CalculumVault is
 
     function newWithdrawals() public view returns (uint256 _total) {
         for (uint256 i = 0; i < withdrawWallets.length; i++) {
-            Basics storage withdrawer = WITHDRAWALS[withdrawWallets[i]];
-            if ((withdrawer.status == Status.PendingRedeem) || (withdrawer.status == Status.PendingWithdraw)) {
+            DataTypes.Basics storage withdrawer = WITHDRAWALS[
+                withdrawWallets[i]
+            ];
+            if (
+                (withdrawer.status == DataTypes.Status.PendingRedeem) ||
+                (withdrawer.status == DataTypes.Status.PendingWithdraw)
+            ) {
                 _total += withdrawer.amountAssets;
             }
         }
@@ -1068,8 +941,13 @@ contract CalculumVault is
 
     function newWithdrawalsShares() private view returns (uint256 _total) {
         for (uint256 i = 0; i < withdrawWallets.length; i++) {
-            Basics storage withdrawer = WITHDRAWALS[withdrawWallets[i]];
-            if ((withdrawer.status == Status.PendingRedeem) || (withdrawer.status == Status.PendingWithdraw)) {
+            DataTypes.Basics storage withdrawer = WITHDRAWALS[
+                withdrawWallets[i]
+            ];
+            if (
+                (withdrawer.status == DataTypes.Status.PendingRedeem) ||
+                (withdrawer.status == DataTypes.Status.PendingWithdraw)
+            ) {
                 _total += withdrawer.amountShares;
             }
         }
@@ -1092,7 +970,7 @@ contract CalculumVault is
     /**
      * @dev See {IERC4262-previewMint}
      */
-    function previewMint(uint256 shares) public view returns (uint256) {}
+    // function previewMint(uint256 shares) public view returns (uint256) {}
 
     /**
      * @dev See {IERC4262-previewWithdraw}
@@ -1113,7 +991,6 @@ contract CalculumVault is
      * @dev See {IERC4262-maxDeposit}
      */
     function maxDeposit(address) public view override returns (uint256) {
-        // return type(uint256).max;
         return MAX_DEPOSIT;
     }
 
@@ -1131,9 +1008,7 @@ contract CalculumVault is
     /**
      * @dev See {IERC4262-maxMint}
      */
-    function maxMint(address) public pure virtual override returns (uint256) {
-        // return type(uint256).max;
-    }
+    // function maxMint(address) public pure virtual override returns (uint256) {}
 
     /**
      * @dev See {IERC4262-maxWithdraw}
@@ -1165,7 +1040,7 @@ contract CalculumVault is
             (block.timestamp <
                 (getCurrentEpoch().add(MAINTENANCE_PERIOD_POST_START)))
         ) {
-            revert VaultInMaintenance(_msgSender(), block.timestamp);
+            revert Errors.VaultInMaintenance();
         }
     }
 
@@ -1175,7 +1050,7 @@ contract CalculumVault is
                 (getNextEpoch().sub(MAINTENANCE_PERIOD_PRE_START))) ||
             (block.timestamp > (getNextEpoch()))
         ) {
-            revert VaultOutMaintenance(_msgSender(), block.timestamp);
+            revert Errors.VaultOutMaintenance();
         }
     }
 

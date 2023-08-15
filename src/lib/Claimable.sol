@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.19;
 
-import "@openzeppelin-contracts-upgradeable/contracts/utils/math/SafeMathUpgradeable.sol";
-import "@openzeppelin-contracts-upgradeable/contracts/utils/math/MathUpgradeable.sol";
+import "./Events.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/token/ERC721/IERC721Upgradeable.sol";
 import "@openzeppelin-contracts-upgradeable/contracts/token/ERC1155/IERC1155Upgradeable.sol";
@@ -15,14 +14,11 @@ import "@openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.
  * @dev Implementation of the claiming utils that can be useful for withdrawing accidentally sent tokens that are not used in bridge operations.
  * @custom:a Alfredo Lopez / Calculum
  */
-abstract contract Claimable is OwnableUpgradeable {
-    using SafeMathUpgradeable for uint256;
-    using MathUpgradeable for uint256;
+abstract contract Claimable is OwnableUpgradeable, Events {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using AddressUpgradeable for address;
-    // Event when the Smart Contract receive Amount of Native or ERC20 tokens
 
-    event ValueReceived(address indexed sender, uint256 indexed value);
+    // Event when the Smart Contract receive Amount of Native or ERC20 tokens
 
     /// @notice Handle receive ether
     receive() external payable {
@@ -45,13 +41,21 @@ abstract contract Claimable is OwnableUpgradeable {
      * @param _token address of the claimed token or address(0) for native coins.
      * @param _to address of the tokens/coins receiver.
      */
-    function claimValues(address _token, address _to) public onlyOwner validAddress(_to) 
-    /// /// notBlacklisted(_to)
+    function claimValues(
+        address _token,
+        address _to
+    )
+        public
+        onlyOwner
+        validAddress(_to) /// /// notBlacklisted(_to)
     {
         if (_token == address(0)) {
             _claimNativeCoins(_to);
         } else {
-            require(_token.isContract(), "ERC20 Vault: Address: not a contract");
+            require(
+                _token.isContract(),
+                "ERC20 Vault: Address: not a contract"
+            );
             _claimErc20Tokens(_token, _to);
         }
     }
@@ -64,8 +68,11 @@ abstract contract Claimable is OwnableUpgradeable {
         uint256 amount = address(this).balance;
 
         // solhint-disable-next-line avoid-low-level-calls, avoid-call-value
-        (bool success,) = _to.call{value: amount}("");
-        require(success, "ERC20: Address: unable to send value, recipient may have reverted");
+        (bool success, ) = _to.call{value: amount}("");
+        require(
+            success,
+            "ERC20: Address: unable to send value, recipient may have reverted"
+        );
     }
 
     /**
@@ -84,7 +91,10 @@ abstract contract Claimable is OwnableUpgradeable {
      * @param _token address of the claimed ERC721 token.
      * @param _to address of the tokens receiver.
      */
-    function _claimErc721Tokens(address _token, address _to) public validAddress(_to) onlyOwner {
+    function _claimErc721Tokens(
+        address _token,
+        address _to
+    ) public validAddress(_to) onlyOwner {
         IERC721Upgradeable token = IERC721Upgradeable(_token);
         uint256 balance = token.balanceOf(address(this));
         token.safeTransferFrom(address(this), _to, balance);
@@ -95,11 +105,11 @@ abstract contract Claimable is OwnableUpgradeable {
      * @param _token address of the claimed ERC721 token.
      * @param _to address of the tokens receiver.
      */
-    function _claimErc1155Tokens(address _token, address _to, uint256 _id)
-        public
-        validAddress(_to)
-        onlyOwner
-    {
+    function _claimErc1155Tokens(
+        address _token,
+        address _to,
+        uint256 _id
+    ) public validAddress(_to) onlyOwner {
         IERC1155Upgradeable token = IERC1155Upgradeable(_token);
         uint256 balance = token.balanceOf(address(this), _id);
         bytes memory data = "0x00";

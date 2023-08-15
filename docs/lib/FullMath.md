@@ -1,8 +1,8 @@
 # Solidity API
 
-# Contract Helpers
-**Title:** Helpers Methods
-**Author:** Alfredo Lopez / Calculum
+# Contract FullMath
+**Title:** Contains 512-bit math functions
+**Author:** 
 
 **Description:** 
 
