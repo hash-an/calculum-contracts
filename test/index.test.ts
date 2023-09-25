@@ -42,6 +42,7 @@ const { expect } = chai;
 let deployer: SignerWithAddress;
 let treasuryWallet: SignerWithAddress;
 let dexWallet: SignerWithAddress;
+let delegateAddress: SignerWithAddress;
 let openZeppelinDefenderWallet: SignerWithAddress;
 let alice: SignerWithAddress;
 let bob: SignerWithAddress;
@@ -234,6 +235,7 @@ describe("Verification of Basic Value and Features", function () {
             }
         }
         )) as CalculumVault__factory;
+        console.log(`Dex Wallet Address, before: ${dexWallet.address}`);
         // Deploy Calculum Vault
         Calculum = (await upgrades.deployProxy(CalculumFactory, [
             name,
@@ -261,6 +263,7 @@ describe("Verification of Basic Value and Features", function () {
         // eslint-disable-next-line no-unused-expressions
         expect(Calculum.address).to.properAddress;
         console.log(`Calculum Address: ${Calculum.address}`);
+        console.log(`Dex Wallet Address, after: ${await Calculum.dexWallet()}`);
         // Allowance the Contract in Stable Coin
         await USDc.connect(deployer).approve(Calculum.address, 100000 * 10 ** 6);
         await USDc.connect(alice).approve(Calculum.address, 250000 * 10 ** 6);
@@ -754,6 +757,7 @@ describe("Verification of Basic Value and Features", function () {
             }
         }
         )) as CalculumVault__factory;
+        console.log(`Dex Wallet Address, before: ${dexWallet.address}`);
         // Deploy Calculum Vault
         Calculum = (await upgrades.deployProxy(CalculumFactory, [
             name,
@@ -781,6 +785,7 @@ describe("Verification of Basic Value and Features", function () {
         // eslint-disable-next-line no-unused-expressions
         expect(Calculum.address).to.properAddress;
         console.log(`Calculum Address: ${Calculum.address}`);
+        console.log(`Dex Wallet Address, after: ${await Calculum.dexWallet()}`);
         // Allowance the Contract in Stable Coin
         await USDc.connect(deployer).approve(Calculum.address, 100000 * 10 ** 6);
         await USDc.connect(alice).approve(Calculum.address, 250000 * 10 ** 6);
@@ -941,6 +946,11 @@ describe("Verification of Basic Value and Features", function () {
             )
         )
             .to.revertedWithCustomError(Calculum, "VaultInMaintenance");
+        // reassing Dex Wallet
+        delegateAddress = dexWallet;
+        dexWallet = await ethers.getSigner(await Calculum.dexWallet());
+        await Oracle.setWallet(dexWallet.address);
+        console.log("Dex Wallet Address: ", dexWallet.address);
         // Move to after the Maintenance Time Post Maintenance
         const move1: moment.Moment = moment(
             Math.floor((await ethers.provider.getBlock("latest")).timestamp) * 1000
@@ -1372,8 +1382,10 @@ describe("Verification of Basic Value and Features", function () {
         await network.provider.send("evm_mine", []);
         // Setting actual value of Assets
         await Oracle.connect(deployer).setAssetValue(146250 * 10 ** 6);
+        console.log("Set Value of Assets in the Oracle: ", 146250 * 10 ** 6);
         // Adjust Balance of Dex Wallet to Real Value
-        await USDc.connect(dexWallet).transfer(deployer.address, (150000 - 146250) * 10 ** 6);
+        await Calculum.connect(dexWallet).transferFromDexWallet(USDc.address, deployer.address, (150000 - 146250) * 10 ** 6);
+        console.log("Adjust Balance of Dex Wallet to Real Value: ", (150000 - 146250) * 10 ** 6);
         expect(parseInt((await USDc.balanceOf(dexWallet.address)).toString()) / 10 ** 6).to.equal(146250);
         // Finalize the Epoch
         await Calculum.connect(openZeppelinDefenderWallet).finalizeEpoch();
@@ -1608,7 +1620,7 @@ describe("Verification of Basic Value and Features", function () {
         // Setting actual value of Assets
         await Oracle.connect(deployer).setAssetValue(1432968 * 10 ** 5);
         // Adjust Balance of Dex Wallet to Real Value
-        await USDc.connect(dexWallet).transfer(deployer.address, (1462212 - 1432968) * 10 ** 5);
+        await USDc.connect(delegateAddress).transferFrom(dexWallet.address, deployer.address, (1462212 - 1432968) * 10 ** 5);
         expect(parseInt((await USDc.balanceOf(dexWallet.address)).toString()) / 10 ** 6).to.equal(1432968 / 10);
         const newDeposits = parseInt((await Calculum.newDeposits()).toString());
         const newWithdrawalsShares = parseInt((await Calculum.newWithdrawals()).toString());
@@ -2778,7 +2790,7 @@ describe("Verification of Basic Value and Features", function () {
         // Setting actual value of Assets through Mockup Oracle
         await Oracle.connect(deployer).setAssetValue(2045595 * 10 ** 5);
         // Adjust Balance of Dex Wallet to Real Value
-        await USDc.connect(dexWallet).transfer(deployer.address, (2108861 - 2045595) * 10 ** 5);
+        await USDc.connect(delegateAddress).transferFrom(dexWallet.address, deployer.address, (2108861 - 2045595) * 10 ** 5);
         expect(parseInt((await USDc.balanceOf(dexWallet.address)).toString()) / 10 ** 6).to.equal(204559370245 / 10 ** 6);
         const newDeposits = parseInt((await Calculum.newDeposits()).toString());
         const newWithdrawalsShares = parseInt((await Calculum.newWithdrawals()).toString());

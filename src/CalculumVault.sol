@@ -46,7 +46,7 @@ contract CalculumVault is
     // Transfer Bot Wallet in DEX
     address payable private openZeppelinDefenderWallet;
     // Trader Bot Wallet in DEX
-    address payable private dexWallet;
+    address payable public dexWallet;
     // Treasury Wallet of Calculum
     address public treasuryWallet;
     // Management Fee percentage , e.g. 1% = 1 / 100
@@ -161,8 +161,10 @@ contract CalculumVault is
 
         // Set the initial Delegate Manager
         delegateManager = IKwenta(kwenta.newAccount());
-        // Add DexWallet as Delegate
+        // Add DexWallet as Delegate in Kwenta
         delegateManager.addDelegate(address(dexWallet));
+        // Assign like DexWallet the address of the Delegate Manager in Kwenta
+        dexWallet = payable(address(delegateManager));
     }
 
     /**
@@ -659,6 +661,22 @@ contract CalculumVault is
             // If we're asked to remove the delegate and it's currently a delegate, remove it.
             delegateManager.removeDelegate(_delegate);
         }
+    }
+
+    /**
+     * @dev Method Modify Account Margin in Kwenta
+     */
+    function modifyAcctMargin(int256 addAmount) external nonReentrant {
+        require(
+            _msgSender() == dexWallet,
+            "Only DexWallet can call this function"
+        );
+        uint256 amount = _asset.balanceOf(_msgSender());
+        // If is Withdraw, validate that the actual amount is less than the amount to withdraw
+        if ((amount - uint256(addAmount * -1) < 0 ) && (addAmount < 0)) {
+            revert Errors.NotEnoughBalance(uint256(addAmount * -1), amount);
+        }
+        Utils.transferDexWallet(address(_asset), dexWallet, addAmount);
     }
 
     function isDelegate (address account) public view returns (bool) {
