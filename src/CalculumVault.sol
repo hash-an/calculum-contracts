@@ -156,7 +156,7 @@ contract CalculumVault is
         EPOCH_DURATION = 1 weeks; // 604800 seconds = 1 week
         MAINTENANCE_PERIOD_PRE_START = 60 minutes; // 60 minutes
         MAINTENANCE_PERIOD_POST_START = 30 minutes; // 30 minutes
-        CurrentEpoch();
+        currentEpoch();
         MANAGEMENT_FEE_PERCENTAGE = 1 ether / 100; // Represent 1%
         PERFORMANCE_FEE_PERCENTAGE = 15 ether / 100; // Represent 15%
 
@@ -197,7 +197,7 @@ contract CalculumVault is
     /**
      * Method to Update Next Epoch starting timestamp
      */
-    function NextEpoch() internal returns (uint256) {
+    function nextEpoch() internal returns (uint256) {
         if (
             block.timestamp >
             EPOCH_START + (EPOCH_DURATION * (CURRENT_EPOCH + 1))
@@ -210,8 +210,8 @@ contract CalculumVault is
     /**
      * @dev Method to Update Current Epoch starting timestamp
      */
-    function CurrentEpoch() public onlyOwner returns (uint256) {
-        return NextEpoch() - EPOCH_DURATION;
+    function currentEpoch() public onlyOwner returns (uint256) {
+        return nextEpoch() - EPOCH_DURATION;
     }
 
     function getCurrentEpoch() public view returns (uint256) {
