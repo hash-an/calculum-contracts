@@ -329,7 +329,7 @@ contract CalculumVault is
     {
         _checkVaultInMaintenance();
         address caller = _msgSender();
-        if ((_owner != caller) || (_receiver != caller)) {
+        if (_receiver != caller) {
             revert Errors.CallerIsNotOwnerOrReceiver(caller, _owner, _receiver);
         }
         if (_assets == 0) revert Errors.AmountMustBeGreaterThanZero(caller);
