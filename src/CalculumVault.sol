@@ -123,8 +123,9 @@ contract CalculumVault is
         string memory _name,
         string memory _symbol,
         uint8 decimals_,
-        address[7] memory _initialAddress, // 0: Oracle, 1: Dex Wallet, 2: Treasury Wallet, 3: OpenZeppelin Defender Wallet, 4: Router, 5: USDCToken
-        uint256[7] memory _initialValue // 0: Start timestamp, 1: Min Deposit, 2: Max Deposit, 3: Max Total Supply Value
+        address[7] memory _initialAddress, // 0: Oracle, 1: Dex Wallet, 2: Treasury Wallet, 3: OpenZeppelin Defender Wallet, 4: Router, 5: USDCToken, 6: Kwenta Exchange
+        uint256[7] memory _initialValue // 0: Start timestamp, 1: Min Deposit, 2: Max Deposit, 3: Max Total Supply Value, 4: Minimal Wallet Ballance USDC in Transfer Bot,
+                                        // 5: Wallet Target Balance USDC in Transfer Bot, 6: Minimal Wallet Balance of ETH in Transfer Bot
     ) public reinitializer(1) {
         if (
             !_initialAddress[0].isContract() ||
